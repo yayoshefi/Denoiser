@@ -23,7 +23,7 @@ p=logical(padarray(ones(m-miniwindow+1,n-miniwindow+1),[floor(miniwindow/2),floo
 str=strcat(Parameter.description,Parameter.Method,'_metric_',Parameter.metric,...
     '_Context_',Parameter.Context,'_',num2str(Parameter.Spatil.lambda,'%G'),...
     '_normalize',num2str(Parameter.normalize),'_sigma',num2str(Parameter.sigma));
-if Analysis.Save;  mkdir( strcat('Results/',date,'/',str) );  end
+if Analysis.Save;  mkdir( strcat(Parameter.location,'\Results\',date,'\',str) );  end
 
 if ismatrix(Noise)
     Data=im2col(double(Image)+Noise,[wsize,wsize],'sliding');

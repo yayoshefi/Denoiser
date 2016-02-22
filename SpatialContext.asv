@@ -60,7 +60,7 @@ switch Parameter.Context
     case 'entropy'  %minimize Co-Occurence sparsity
         %use delta function to converge to this distriboution
         AssignImg=col2im(AssignVec,[wsize,wsize],[Parameter.row,Parameter.col]);
-        NN=Parameter.Spatil.NN;
+        NN=3;
         Neigbour=im2col(AssignImg,[NN,NN],'sliding');
         Neigbour(ceil(NN^2/2),:)=[];
         LocalHist=histc(Neigbour,1:K,1);        
@@ -71,7 +71,7 @@ switch Parameter.Context
     case 'comeans'
         [S]=affinity (Data, Centers,0,true)';
         Lhat=AssignVec;
-        NN=Parameter.Spatil.NN;  %window2
+        NN=5;  %window2
         padding=floor(NN/2);
         Analysis.LabelsSize=Analysis.LabelsSize-(NN-1);
         m=Analysis.LabelsSize(1)    ;n=Analysis.LabelsSize(2);
@@ -99,7 +99,7 @@ switch Parameter.Context
             L(p,:)=(1-Parameter.Spatil.lambda)*reshape(S(p,:),m*n,K)+Parameter.Spatil.lambda/(NN^2-1)*H*CCthr;
             [Pr,Lhat]=max(L,[],2);
             
-            Debug (CCthr,Lhat,Pr,iter);
+            Debug (Lhat,Pr,iter);
             ShowProb (L,samp);
 
             
@@ -213,10 +213,8 @@ tmp_Labels=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
 
 figure('Name',strcat('temporal image properties ',num2str(iter), 'iteration'));
 subplot(2,2,3);
-imagesc(CoOc);colormap jet; title ('Co-Occurence matrix');
+imagesc()
 subplot(2,2,4);
-modes=sum(CoOc>0,2);
-plot(modes); xlabel('Labels');ylabel('modes for every cluster')
 
 subplot(2,2,1);
 imagesc(Pr_Img);title ('Probabilty to be in Lhat'); colormap jet
