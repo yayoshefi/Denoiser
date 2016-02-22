@@ -25,7 +25,7 @@ str=strcat(Parameter.description,Parameter.Method,'_metric_',Parameter.metric,..
     '_normalize',num2str(Parameter.normalize),'_sigma',num2str(Parameter.sigma));
 if Analysis.Save;  mkdir( strcat('Results/',date,'/',str) );  end
 
-if Noise
+if ismatrix(Noise)
     Data=im2col(double(Image)+Noise,[wsize,wsize],'sliding');
 else
     Data=Image;
