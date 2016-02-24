@@ -17,7 +17,7 @@ K=max(AssignVec);
 [wsize2, pnum]=size(Data);
 asgn.type='()';
 
-Centers=zeros(wsize2,1,K);
+Centers=inf*ones(wsize2,1,K);
 tmpE=zeros(1,wsize2);
 E80=zeros(1,1,K);
 
@@ -36,32 +36,32 @@ for k=K:-1:1
         continue;       %skipes that Data, it will have no center
     end            
     cluster=Data(:,AssignVec==k);
-    Centers(:,1,k)=mean(cluster,2);
-    if Parameter.normalize==2
-        Centersnorm=(sum(Centers(:,1,k).^2)).^0.5;
-        Centers(:,1,k)=Centers(:,1,k)./Centersnorm(ones(wsize2,1),:,:);
+    if ~isempty(cluster)
+        Centers(:,1,k)=mean(cluster,2);
+        if Parameter.normalize==2
+            Centersnorm=(sum(Centers(:,1,k).^2)).^0.5;
+            Centers(:,1,k)=Centers(:,1,k)./Centersnorm(ones(wsize2,1),:,:);
+        end
+
+
+        cluster_0=cluster-Centers(:,ones(1,clstsize),k);
+        [U,S]=svd(cluster_0,'econ');
+
+        S=sum(S.^2,2);
+        asgn.subs={1:size(S,1)};
+        E=subsasgn(tmpE,asgn,S);
+        Energy(:,:,k)=E';
+
+        E=cumsum(E);
+        Eper=E/E(end);
+        if clstsize<2
+            E80(k)=0;
+        else
+            E80(k)=find(Eper>0.8,1);
+        end
+
+        asgn.subs={1:size(U,1),1:size(U,2),k};
+        Basis=subsasgn(Basis,asgn,U);
     end
-
-
-    cluster_0=cluster-Centers(:,ones(1,clstsize),k);
-    [U,S]=svd(cluster_0,'econ');
-
-    S=sum(S.^2,2);
-    asgn.subs={1:size(S,1)};
-    E=subsasgn(tmpE,asgn,S);
-    Energy(:,:,k)=E';
-
-    E=cumsum(E);
-    Eper=E/E(end);
-    if clstsize<2
-        E80(k)=0;
-    else
-        E80(k)=find(Eper>0.8,1);
-    end
-
-    asgn.subs={1:size(U,1),1:size(U,2),k};
-    Basis=subsasgn(Basis,asgn,U);
-
-
 end
 end

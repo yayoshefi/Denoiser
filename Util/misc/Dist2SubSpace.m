@@ -56,6 +56,7 @@ switch Parameter.metric
             waitbar(k/K);
 
             pointdist=sum(Data.^2)-2*Centers(:,:,k)'*Data+Centers(:,:,k)'*Centers(:,:,k);
+            if Centers(1,:,k)==inf; pointdist=inf; end %fix empty clusters
         %     pointdist=sum( (Data-Centers(:,ones(1,pnum),k)).^2 );
            if Dim(k)==0
                projectiondist=0;
