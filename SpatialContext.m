@@ -94,7 +94,7 @@ switch Parameter.Context
             CCNorm=sum(CC,2);
             CCN=CC./CCNorm(:,ones(1,K),:); CCN(CC==0)=0; %to avoid 0/0=nan
             
-            Parameter.Spatil.CoOcThr=0.01;
+            Parameter.Spatil.CoOcThr=0.005;
             
             CCN(CCN<Parameter.Spatil.CoOcThr)=0;
             CCNorm=sum(CCN,2);
