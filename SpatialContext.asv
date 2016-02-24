@@ -60,7 +60,7 @@ switch Parameter.Context
     case 'entropy'  %minimize Co-Occurence sparsity
         %use delta function to converge to this distriboution
         AssignImg=col2im(AssignVec,[wsize,wsize],[Parameter.row,Parameter.col]);
-        NN=3;
+        NN=Parameter.Spatil.NN;
         Neigbour=im2col(AssignImg,[NN,NN],'sliding');
         Neigbour(ceil(NN^2/2),:)=[];
         LocalHist=histc(Neigbour,1:K,1);        
@@ -71,14 +71,16 @@ switch Parameter.Context
     case 'comeans'
         [S]=affinity (Data, Centers,0,true)';
         Lhat=AssignVec;
-        NN=5;  %window2
+        NN=Parameter.Spatil.NN;  %window2
         padding=floor(NN/2);
         Analysis.LabelsSize=Analysis.LabelsSize-(NN-1);
         m=Analysis.LabelsSize(1)    ;n=Analysis.LabelsSize(2);
         p=logical(padarray(ones(m,n),[padding,padding]));
         
+        Analysis.LabelsSize=Analysis.LabelsSize+(NN-1); %restore values to origin
+        
         samp=randperm(size(S,1),3);
-        for iter=1:3   
+        for iter=1:2   
             AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
 %             AssignImg=padarray(AssignImg,[padding,padding],-1);
             
@@ -90,8 +92,10 @@ switch Parameter.Context
             CC=Indicator*H;
             CCNorm=sum(CC,2);
             CCN=CC./CCNorm(:,ones(1,K),:);
-            thr=0.005;
-            CCN(CCN<thr)=0;
+            
+            Parameter.Spatil.CoOcThr=0.005;
+            
+            CCN(CCN<Parameter.Spatil.CoOcThr)=0;
             CCNorm=sum(CCN,2);
             CCthr=CCN./CCNorm(:,ones(1,K),:);
             
@@ -99,7 +103,7 @@ switch Parameter.Context
             L(p,:)=(1-Parameter.Spatil.lambda)*reshape(S(p,:),m*n,K)+Parameter.Spatil.lambda/(NN^2-1)*H*CCthr;
             [Pr,Lhat]=max(L,[],2);
             
-            Debug (Lhat,Pr,iter);
+            Debug (CCthr,Lhat,Pr,iter);
             ShowProb (L,samp);
 
             
@@ -213,8 +217,16 @@ tmp_Labels=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
 
 figure('Name',strcat('temporal image properties ',num2str(iter), 'iteration'));
 subplot(2,2,3);
-imagesc()
+imagesc(CoOc);colormap jet; title ('Co-Occurence matrix');
+LCoOc=log2(CoOc);
+
+H=mean(  -sum(CoOc.*log2(CoOc),2)/size(CoOc,1)  );
+xlabel(strcat('mean entropy for each row is: ',num2str (H)));
 subplot(2,2,4);
+modes=sum(CoOc>0,2);
+plot(modes);title (strcat('using ',num2str(Parameter.Spatil.CoOcThr), 'as Thr'));
+axis([1,size(CoOc,1),0,15]);
+xlabel('Labels');ylabel('modes for every cluster')
 
 subplot(2,2,1);
 imagesc(Pr_Img);title ('Probabilty to be in Lhat'); colormap jet

@@ -77,8 +77,10 @@ switch Parameter.Context
         m=Analysis.LabelsSize(1)    ;n=Analysis.LabelsSize(2);
         p=logical(padarray(ones(m,n),[padding,padding]));
         
+        Analysis.LabelsSize=Analysis.LabelsSize+(NN-1); %restore values to origin
+        
         samp=randperm(size(S,1),3);
-        for iter=1:3   
+        for iter=1:2   
             AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
 %             AssignImg=padarray(AssignImg,[padding,padding],-1);
             
@@ -90,8 +92,10 @@ switch Parameter.Context
             CC=Indicator*H;
             CCNorm=sum(CC,2);
             CCN=CC./CCNorm(:,ones(1,K),:);
-            thr=0.005;
-            CCN(CCN<thr)=0;
+            
+            Parameter.Spatil.CoOcThr=0.005;
+            
+            CCN(CCN<Parameter.Spatil.CoOcThr)=0;
             CCNorm=sum(CCN,2);
             CCthr=CCN./CCNorm(:,ones(1,K),:);
             
@@ -214,9 +218,18 @@ tmp_Labels=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
 figure('Name',strcat('temporal image properties ',num2str(iter), 'iteration'));
 subplot(2,2,3);
 imagesc(CoOc);colormap jet; title ('Co-Occurence matrix');
+
+LCoOc=log2(CoOc);
+LCoOc(CoOc==0)=0;  % no nan resulting from inf*0;
+H_row=-sum( CoOc.*LCoOc,2 );
+H=mean(H_row);
+
+xlabel(strcat('mean entropy for each row is: ',num2str (H)));
 subplot(2,2,4);
 modes=sum(CoOc>0,2);
-plot(modes); xlabel('Labels');ylabel('modes for every cluster')
+plot(modes);title (strcat('using ',num2str(Parameter.Spatil.CoOcThr), 'as Thr'));
+axis([1,size(CoOc,1),0,15]);
+xlabel('Labels');ylabel('modes for every cluster')
 
 subplot(2,2,1);
 imagesc(Pr_Img);title ('Probabilty to be in Lhat'); colormap jet

@@ -65,13 +65,13 @@ if Analysis.Save
     
     mkdir( strcat(Parameter.location,'\Results\',date,'\',str) );
     
-    saveas(h1,strcat('Results\',date,'\',str,'\',h1Num,'_D-noisedImages.jpg'))
+    saveas(h1,strcat(Parameter.location,'\Results\',date,'\',str,'\',h1Num,'_D-noisedImages.jpg'))
     if exist('h2','var')         % print Lables if there is
-        saveas(h2,strcat('Results\',date,'\',str,'\',h2Num,'_Lables.jpg'))
+        saveas(h2,strcat(Parameter.location,'\Results\',date,'\',str,'\',h2Num,'_Lables.jpg'))
     end
 
     % write parameters to text file
-    fileID = fopen(strcat('Results\',date(),'\',str,'\','Parameter.txt'),'w');
+    fileID = fopen(strcat(Parameter.location,'\Results\',date(),'\',str,'\','Parameter.txt'),'w');
     fprintf(fileID,ParameterText(Parameter));
     fclose(fileID);
 end

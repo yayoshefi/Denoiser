@@ -27,8 +27,8 @@ Parameter.Spectral=struct('clustrsNUM',InitClustersNUM,'dictsize',dictsize,...
 % **************     Spatial clustring Parameters     ****************
 Parameter.Spatil.spatialdist='decomposition';        Parameter.Spatil.lambda=0.005;
 %'landmarks' / 'decomposition'  /  'simplenoramlize' /'none'
-Parameter.Spatil.sigma=20;   Parameter.Spatil.NN=5;      Parameter.Spatil.Thr='unused';
-Parameter.location=[];
+Parameter.Spatil.sigma=20;   Parameter.Spatil.NN=3;      Parameter.Spatil.CoOcThr='unused';
+Parameter.location='C:\Users\Yair\Dropbox\Thesis code';
 %%  ############# Analysis  ##############
 Analysis=struct('Show',true,'Save',true,'figures',2,'Fast',true,'miniwindow',5,...
     'Handles',[],'K',0,'LabelsSize',...

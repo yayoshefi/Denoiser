@@ -8,7 +8,7 @@ global Parameter Analysis
 
 Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
 sigma=40;
-wsize=7;
+wsize=9;
 normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'
                         %'varing_cluster_size'

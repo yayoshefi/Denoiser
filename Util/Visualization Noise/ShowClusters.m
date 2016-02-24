@@ -128,7 +128,7 @@ title('Clusters Histogram')
 
 
 if Analysis.Save
-    saveas(gcf,strcat('Results\',date,'\',str,'\',num2str(Analysis.Handles.Lables),'_Lables Analysis.jpg'))
+    saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',str,'\',num2str(Analysis.Handles.Lables),'_Lables Analysis.jpg'))
 end
 if verLessThan('matlab','8.4');     curr=gcf;
 else                                curr=get(gcf,'Number'); end
@@ -176,15 +176,21 @@ if E
 end
 %%%
 V_img=zeros (size(AssignImg));     
-for k=1:Analysis.K
-    ind=AssignVec==k;
-    V=sqrt(  sum( sum( (Data(:,ind)-Centers(:,ones(1,sum(ind)),k)).^2,2 )/sum(ind) )  );
-    
-    V_img(AssignImg==k)=V;
-    
+% for k=1:Analysis.K
+%     ind=AssignVec==k;
+%     V=sqrt(  sum( sum( (Data(:,ind)-Centers(:,ones(1,sum(ind)),k)).^2,2 )/sum(ind) )  );
+%     
+%     V_img(AssignImg==k)=V;
+%     
+% end
+V_vec=sum( Data-Centers(:,AssignVec).^2 );
+if length (V_vec)== (m*n)
+    V_img=reshape(V_vec,[m,n]);
+else V_img=reshape(V_vec,[m-2,n-2]);
 end
+
 subplot (2,2,3)
-imagesc (V_img), axis image;title ('tmp Energy')
+imagesc (V_img), axis image;title ('tmp Energy, for each pixel sperattly')
 colorbar
 %%%%
 
@@ -203,7 +209,7 @@ if ~Analysis.Fast
     colorbar
 end
 if Analysis.Save
-    saveas(gcf,strcat('Results/',date,'/',str,'/',num2str(Analysis.Handles.Clusters),'_Cluster Properties_.jpg'))
+    saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',str,'\',num2str(Analysis.Handles.Clusters),'_Cluster Properties_.jpg'))
 end
 if verLessThan('matlab','8.4');     curr=gcf;
 else                                curr=get(gcf,'Number'); end
@@ -302,7 +308,7 @@ ylabel('density _{(#patches in Cluster)} ')
 xlabel('[patch SNR');
 
 if Analysis.Save
-    saveas(gcf,strcat('Results\',date,'\',str,'\',num2str(Analysis.Handles.Patch),'_Plots Analysis_.jpg'))
+    saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',str,'\',num2str(Analysis.Handles.Patch),'_Plots Analysis_.jpg'))
 end
 if verLessThan('matlab','8.4');     curr=gcf;
 else                                curr=get(gcf,'Number'); end
@@ -364,7 +370,7 @@ axis image ;colorbar
 title ('DC Change(absolute value) After Clean');
 
 if Analysis.Save
-    saveas(gcf,strcat('Results\',date,'\',str,'\',num2str(Analysis.Handles.Cleaning),'_Cleaning Analysis_.jpg'))
+    saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',str,'\',num2str(Analysis.Handles.Cleaning),'_Cleaning Analysis_.jpg'))
 end
 end
 
