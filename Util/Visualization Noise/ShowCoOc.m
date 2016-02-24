@@ -21,7 +21,7 @@ CoOc=Indicator*H;
 
 
 CoOcNorm=sum(CoOc,2);
-CoOcN=CoOc./CoOcNorm(:,ones(1,size(CoOc,1)),:);
+CoOcN=CoOc./CoOcNorm(:,ones(1,size(CoOc,1)),:);CoOcN(CoOc==0)=0;
 
 LogCoOc=log2(CoOcN);
 LogCoOc(CoOcN==0)=0;  % no nan resulting from inf*0;
