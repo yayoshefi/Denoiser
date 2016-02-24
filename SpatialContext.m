@@ -80,7 +80,7 @@ switch Parameter.Context
         Analysis.LabelsSize=Analysis.LabelsSize+(NN-1); %restore values to origin
         
         samp=randperm(size(S,1),3);
-        for iter=1:2   
+        for iter=1:4  
             AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
 %             AssignImg=padarray(AssignImg,[padding,padding],-1);
             
@@ -91,13 +91,13 @@ switch Parameter.Context
             Indicator=sparse(Lhat(p),1:m*n,ones(1,m*n),K,m*n);
             CC=Indicator*H;
             CCNorm=sum(CC,2);
-            CCN=CC./CCNorm(:,ones(1,K),:);
+            CCN=CC./CCNorm(:,ones(1,K),:); CCN(CC==0)=0; %to avoid 0/0=nan
             
-            Parameter.Spatil.CoOcThr=0.005;
+            Parameter.Spatil.CoOcThr=0.01;
             
             CCN(CCN<Parameter.Spatil.CoOcThr)=0;
             CCNorm=sum(CCN,2);
-            CCthr=CCN./CCNorm(:,ones(1,K),:);
+            CCthr=CCN./CCNorm(:,ones(1,K),:); CCthr(CCN==0)=0;
             
             L=S;
             L(p,:)=(1-Parameter.Spatil.lambda)*reshape(S(p,:),m*n,K)+Parameter.Spatil.lambda/(NN^2-1)*H*CCthr;
@@ -227,8 +227,8 @@ H=mean(H_row);
 xlabel(strcat('mean entropy for each row is: ',num2str (H)));
 subplot(2,2,4);
 modes=sum(CoOc>0,2);
-plot(modes);title (strcat('using ',num2str(Parameter.Spatil.CoOcThr), 'as Thr'));
-axis([1,size(CoOc,1),0,15]);
+plot(modes);title (strcat('using Thr: ',num2str(Parameter.Spatil.CoOcThr)));
+axis([1,size(CoOc,1),0,15]);grid on
 xlabel('Labels');ylabel('modes for every cluster')
 
 subplot(2,2,1);

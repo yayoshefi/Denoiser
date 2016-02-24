@@ -100,7 +100,7 @@ title('Clusters Histogram')
 
 %% ----------- Energy of each Cluster, Image space --------------
 if E
-    Energy=sqrt(sum(Energy,1));
+    Energy=sum(Energy,1)/Parameter.wsize2;
     EnergyImg=zeros(size(AssignImg));
 end
 
@@ -152,46 +152,52 @@ for k=1:Analysis.K
     Analysis.Neighbours(AssignImg(p)==k)=Curr(AssignImg(p)==k);
 end
 %% ----------- Clusters amount for each mini window --------------
-subplot(2,2,1);
+subplot(3,2,1);
 CountImg=col2im(Analysis.count,[miniwindow,miniwindow],size(AssignImg),'sliding');
 
-imagesc(CountImg);title (['amount of diffrent clusters in each ' ,num2str(miniwindow),' window'])
+imagesc(CountImg); axis image;title (['amount of diffrent clusters in each ' ,num2str(miniwindow),' window'])
 colorbar
 
-subplot(2,2,2);
+subplot(3,2,2);
 NeighboursImg=col2im(Analysis.Neighbours,[miniwindow,miniwindow],size(AssignImg),'sliding');
 
-imagesc(NeighboursImg);title (['#Similar clusters in each ' ,num2str(miniwindow),' window'])
+imagesc(NeighboursImg); axis image;title (['#Similar clusters in each ' ,num2str(miniwindow),' window'])
 colorbar
 
 
 %% ----------- Energy of each Cluster, Image space --------------
 
 if E 
-    subplot(2,2,4)
-    imagesc(EnergyImg);title ('Clusters Energy')
-    xlabel({'\surd\Sigma\sigma_{ii}^2','\sigma_{ii}=Var(U(:,i))'})
+    subplot(3,2,4)
+    imagesc(EnergyImg); axis image;title ('Clusters Energy')
+    xlabel({strcat('\Sigma\sigma_{ii}^2 /wsize^2'),'\sigma_{ii}=Var(U(:,i))'})
 %     xlabel('sqrt(\Sigma[var_i])');
     colorbar
 end
-%%%
+%%
 V_img=zeros (size(AssignImg));     
-% for k=1:Analysis.K
-%     ind=AssignVec==k;
-%     V=sqrt(  sum( sum( (Data(:,ind)-Centers(:,ones(1,sum(ind)),k)).^2,2 )/sum(ind) )  );
-%     
-%     V_img(AssignImg==k)=V;
-%     
-% end
-V_vec=sum( Data-Centers(:,AssignVec).^2 );
-if length (V_vec)== (m*n)
-    V_img=reshape(V_vec,[m,n]);
-else V_img=reshape(V_vec,[m-2,n-2]);
+for k=1:Analysis.K
+    ind=AssignVec==k;
+    V=sum( sum( (Data(:,ind)-Centers(:,ones(1,sum(ind)),k)).^2,2 )/Parameter.wsize2 )/sum(ind);
+    
+    V_img(AssignImg==k)=V;
+    
 end
-
-subplot (2,2,3)
-imagesc (V_img), axis image;title ('tmp Energy, for each pixel sperattly')
+subplot (3,2,3)
+imagesc (V_img), axis image;title ('tmp Energy per cluster, calcualting directly from pixels ')
 colorbar
+
+
+subplot (3,2,[5,6])
+V_vec=sum( Data-Centers(:,AssignVec).^2 )/Parameter.wsize2;
+if length (V_vec)== (m*n)
+    V_img_pixels=reshape(V_vec,[m,n]);
+else V_img_pixels=reshape(V_vec,[m-2,n-2]);
+end
+imagesc (V_img_pixels), axis image;title ('Energy for each pixel sperattly')
+colorbar
+
+
 %%%%
 
 %% ----------- Gap distance between NN(1)to NN(2) --------------

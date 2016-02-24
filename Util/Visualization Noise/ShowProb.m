@@ -17,6 +17,7 @@ bar(data); colormap jet
 title (strcat ('prob. for pixels: ',num2str(samp)));
 c=colorbar;c.Label.String='Labels';
 xlabel ('pixel');ylabel('Probabilty')
+grid on;
 
 % 
 % colors={'b','r','k','g','m','y'};
