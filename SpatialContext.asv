@@ -218,12 +218,9 @@ tmp_Labels=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
 figure('Name',strcat('temporal image properties ',num2str(iter), 'iteration'));
 subplot(2,2,3);
 imagesc(CoOc);colormap jet; title ('Co-Occurence matrix');
-
 LCoOc=log2(CoOc);
-LCoOc(CoOc==0)=0;  % no nan resulting from inf*0;
-H_row=-sum( CoOc.*LCoOc,2 );
-H=mean(H_row);
 
+H=mean(  -sum(CoOc.*log2(CoOc),2)/size(CoOc,1)  );
 xlabel(strcat('mean entropy for each row is: ',num2str (H)));
 subplot(2,2,4);
 modes=sum(CoOc>0,2);

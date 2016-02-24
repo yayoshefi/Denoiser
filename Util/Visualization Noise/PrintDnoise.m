@@ -63,20 +63,15 @@ if Analysis.Save
     '_',num2str(Parameter.Spatil.lambda,'%G'),'_normalize',num2str(Parameter.normalize),...
     '_sigma',num2str(Parameter.sigma));
     
-    mkdir( strcat('Results/',date,'/',str) );
+    mkdir( strcat(Parameter.location,'\Results\',date,'\',str) );
     
-    saveas(h1,strcat('Results\',date,'\',str,'\',h1Num,'_D-noisedImages.jpg'))
-%     print(h1, '-djpeg', '-r300','-noui',...
-%         strcat('Results\',date(),'\',str,'\',h1Num,'_D-noisedImages.jpg'))
+    saveas(h1,strcat(Parameter.location,'\Results\',date,'\',str,'\',h1Num,'_D-noisedImages.jpg'))
     if exist('h2','var')         % print Lables if there is
-        saveas(h2,strcat('Results\',date,'\',str,'\',h2Num,'_Lables.jpg'))
-%             print(h2, '-djpeg', '-r300','-noui',...
-%         strcat('Results\',date(),'\',str,'\',h2Num,'_Lables.jpg'))
+        saveas(h2,strcat(Parameter.location,'\Results\',date,'\',str,'\',h2Num,'_Lables.jpg'))
     end
 
     % write parameters to text file
-    fileID = fopen(strcat('Results\',date(),'\',str,'\','Parameter.txt'),'w');
-%     fprintf(fileID,'%6s %12s\n','x','exp(x)');
+    fileID = fopen(strcat(Parameter.location,'\Results\',date(),'\',str,'\','Parameter.txt'),'w');
     fprintf(fileID,ParameterText(Parameter));
     fclose(fileID);
 end
