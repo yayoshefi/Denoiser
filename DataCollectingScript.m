@@ -2,7 +2,7 @@
 clearvars ContextPsnr Psnr CentersCount
 load Database; %Images = createImages();
 Image=barbara;
-description='test lambda rate for co-means NN=5 5iteraton';
+description='test lambda rate for co-means NN=5 5iteraton ';
 %% --------------------------- PARAMETERS ------------------------------
 
 global Parameter Analysis
@@ -35,7 +35,7 @@ for sigma=sigma_array
     Input=double(Image)+Noise;
 
     for wsize=wsize_array
-        Parameter.wsize=wsize;                                  % Parameter of varsplit is depend on wsize
+        Parameter.wsize2=wsize^2;                                  % Parameter of varsplit is depend on wsize
         
         Data=im2col(Input,[wsize,wsize],'sliding');
         X=Data;
