@@ -36,6 +36,7 @@ for sigma=sigma_array
 
     for wsize=wsize_array
         Parameter.wsize2=wsize^2;                                  % Parameter of varsplit is depend on wsize
+        Analysis.LabelsSize=[Parameter.row-sqrt(Parameter.wsize2)+1,Parameter.col-sqrt(Parameter.wsize2)+1];
         
         Data=im2col(Input,[wsize,wsize],'sliding');
         X=Data;
@@ -84,20 +85,22 @@ if ischar(Parameter.Context)
     PrintDnoise ({Output,Context_Output},{result,result2},AssignVec,AssignVec2)
 else
      PrintDnoise ({Output},{result},AssignVec)
+     [EpsNorm1,EpsNorm2]=ShowCoOc(AssignVec);
 end
 
 Psnr.(['Lambda',num2str(l)]).(['normalize',num2str(normalize)])...
     .(['wsize',num2str(wsize)]).(['sigma',num2str(sigma)])=result;
-CentersCount.(['Lambda',num2str(l)]).(['normalize',num2str(normalize)])...
-    .(['wsize',num2str(wsize)]).(['sigma',num2str(sigma)])=round(size(Centers,3));
+% CentersCount.(['Lambda',num2str(l)]).(['normalize',num2str(normalize)])...
+%     .(['wsize',num2str(wsize)]).(['sigma',num2str(sigma)])=round(size(Centers,3));
+EpsNorm.(['Lambda',num2str(l)]).(['normalize',num2str(normalize)])...
+    .(['wsize',num2str(wsize)]).(['sigma',num2str(sigma)])=[EpsNorm1,EpsNorm2];
 close all
             end
         end
     end
 end
  %% save info
-Distance_Normalzie=struct('psnr',Psnr,'centers',CentersCount,'Parameters',Parameter);
-save (strcat('Results/',date,'/','Distance_Normalzie.mat'), 'Distance_Normalzie', '-v7.3')
-%     Parameter.location= strcat('Results/',date,'/',str);
+Dist_Norm4Entropy=struct('psnr',Psnr,'EpsNorm',EpsNorm,'Parameters',Parameter);
+save (strcat(Parameter.location,'\Results/',date,'/','Dist_Norm4Entropy.mat'), 'Dist_Norm4Entropy', '-v7.3')
 
 rmpath(NewPath);
