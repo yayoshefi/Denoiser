@@ -2,12 +2,12 @@
 % clearvars
 load Database;Images = createImages();
 Image=barbara;
-description='Co Means NN=5_';
+description='checking natural entropy';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 
 Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
-sigma=40;
+sigma=30;
 wsize=9;
 normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'

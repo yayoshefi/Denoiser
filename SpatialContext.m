@@ -80,7 +80,7 @@ switch Parameter.Context
 %         Analysis.LabelsSize=Analysis.LabelsSize+(NN-1); %restore values to origin
         
         samp=randperm(size(S,1),3);
-        for iter=1:5  
+        for iter=1:3
             
             AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
             AssignImg=padarray(AssignImg,[padding,padding],-1);

@@ -3,7 +3,7 @@ global Parameter Analysis
 %%  ############# Parameter  ##############
 InitClustersNUM=350;        MaxSubSpace=0;      MinimunClusterSize=20;
 SplitType='median'; % 'median' or 'totvar'
-Context='comeans'; % [] or 'spectral' or 'graphcut' 'rl' or 'mrf' 'entropy'
+Context=[]; % [] or 'spectral' or 'graphcut' 'rl' or 'mrf' 'entropy'
 
 % **************     other clustring Parameters     ****************
 Parameter.MSS=MaxSubSpace;          Parameter.minclstsize=MinimunClusterSize;
