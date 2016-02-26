@@ -1,8 +1,8 @@
 %%---------------- Data Collecting-------------------Octover Version
-clearvars ContextPsnr Psnr CentersCount
+clearvars ContextPsnr Psnr CentersCount EpsNorm
 load Database; %Images = createImages();
 Image=barbara;
-description='test lambda rate for co-means NN=5 5iteraton';
+description='EpsNorm vs Noise';
 %% --------------------------- PARAMETERS ------------------------------
 
 global Parameter Analysis
@@ -12,10 +12,10 @@ metric ='euclidean';        %distance function can be 'euclidean','mahalanobis'
                             %'varing_cluster_size'                            
 
 % ---- arrays ----
-sigma_array=[20,40,60];
+sigma_array=[0,10,20,30,40,60,80];
 wsize_array=[7,9];
-normalize_array=[0,1];          %normalize 0-do nothing ; 1-only bias; 2- bias and gain
-lambda_array=[0,0.001,0.005,0.01,0.03,0.05,0.1,.3,0.5,1];
+normalize_array=[0];          %normalize 0-do nothing ; 1-only bias; 2- bias and gain
+lambda_array=[0,0.001,0.005,0.01];
 
 Parameter=struct('description',description,'row',size(Image,1),'col',size(Image,2),...
     'Method',Method,'metric',metric);
@@ -35,7 +35,8 @@ for sigma=sigma_array
     Input=double(Image)+Noise;
 
     for wsize=wsize_array
-        Parameter.wsize=wsize;                                  % Parameter of varsplit is depend on wsize
+        Parameter.wsize2=wsize^2;                                  % Parameter of varsplit is depend on wsize
+        Analysis.LabelSize=[Parameter.row-sqrt(Parameter.wsize2)+1,Parameter.col-sqrt(Parameter.wsize2)+1];
         
         Data=im2col(Input,[wsize,wsize],'sliding');
         X=Data;
@@ -84,20 +85,22 @@ if ischar(Parameter.Context)
     PrintDnoise ({Output,Context_Output},{result,result2},AssignVec,AssignVec2)
 else
      PrintDnoise ({Output},{result},AssignVec)
+     [EpsNorm1,EpsNorm2]=ShowCoOc(AssignVec);
 end
 
 Psnr.(['Lambda',num2str(l)]).(['normalize',num2str(normalize)])...
     .(['wsize',num2str(wsize)]).(['sigma',num2str(sigma)])=result;
-CentersCount.(['Lambda',num2str(l)]).(['normalize',num2str(normalize)])...
-    .(['wsize',num2str(wsize)]).(['sigma',num2str(sigma)])=round(size(Centers,3));
+% CentersCount.(['Lambda',num2str(l)]).(['normalize',num2str(normalize)])...
+%     .(['wsize',num2str(wsize)]).(['sigma',num2str(sigma)])=round(size(Centers,3));
+EpsNorm.(['Lambda',num2str(l)]).(['normalize',num2str(normalize)])...
+    .(['wsize',num2str(wsize)]).(['sigma',num2str(sigma)])=[EpsNorm1,EpsNorm2];
 close all
             end
         end
     end
 end
  %% save info
-Distance_Normalzie=struct('psnr',Psnr,'centers',CentersCount,'Parameters',Parameter);
-save (strcat('Results/',date,'/','Distance_Normalzie.mat'), 'Distance_Normalzie', '-v7.3')
-%     Parameter.location= strcat('Results/',date,'/',str);
+Dist_Norm4Entropy=struct('psnr',Psnr,'EpsNorm',EpsNorm,'Parameters',Parameter);
+save (strcat(Parameter.location,'\Results/',date,'/','Dist_Norm4Entropy.mat'), 'Dist_Norm4Entropy', '-v7.3')
 
 rmpath(NewPath);
