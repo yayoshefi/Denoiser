@@ -2,12 +2,12 @@
 % clearvars
 load Database;Images = createImages();
 Image=barbara;
-description='checking natural entropy';
+description='check mutual dist_';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 
 Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
-sigma=30;
+sigma=40;
 wsize=9;
 normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'

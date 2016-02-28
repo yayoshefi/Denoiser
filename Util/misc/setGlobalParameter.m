@@ -1,10 +1,10 @@
 function setGlobalParameter()
 global Parameter Analysis
 %%  ############# Parameter  ##############
-InitClustersNUM=350;        MaxSubSpace=0;      MinimunClusterSize=20;
+InitClustersNUM=70;        MaxSubSpace=0;      MinimunClusterSize=20;
 SplitType='median'; % 'median' or 'totvar'
-Context=[]; % [] or 'spectral' or 'graphcut' 'rl' or 'mrf' 'entropy'
-
+Context='mutualdist'; % [] or 'spectral' or 'graphcut' 'rl' or 'mrf' 'entropy'
+                   % 'mutualdist', 'comeans' 
 % **************     other clustring Parameters     ****************
 Parameter.MSS=MaxSubSpace;          Parameter.minclstsize=MinimunClusterSize;
 Parameter.SplitType=SplitType;      Parameter.Context=Context;

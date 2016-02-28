@@ -78,8 +78,8 @@ switch Parameter.Context
             AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
             Neigbour=im2col(AssignImg,[NN,NN],'sliding');
             Neigbour(ceil(NN^2/2),:)=[];
-            Hist=histc(Neigbour,1:K,1)/(NN^2-1);
-            p=logical(padarray(ones(m-2*padding,n-2*padding),[padding,padding]));
+            Hist=histc(Neigbour,1:K,1);
+            p=logical(padarray(ones(m,n),[padding,padding]));
 
             [C,H]=clusterRep(Data,Lhat(p),Hist);
 
@@ -89,7 +89,7 @@ switch Parameter.Context
                 d_hist=inf*ones(1,pnum);
                 for i=1:pnum
                     if p(i)
-                        [~, d_histCurr] = emd(squeeze(C)',squeeze(C)',H(k,:)' ,Hist(i,:), @gdf);
+                        [~, d_histCurr] = emd(squeeze(C),squeeze(C),H(k,:) ,Hist(i,:), @gdf);
                     else        d_histCurr=0;
                     end
                     d_hist(i)=d_hist(i)+d_histCurr;
