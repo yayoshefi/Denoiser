@@ -9,7 +9,7 @@ global Parameter Analysis
 Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
 sigma=40;
 wsize=9;
-normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain
+normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain (-5)- Oracle
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'
                         %'varing_cluster_size'
 
@@ -29,15 +29,16 @@ Input=double(Image)+Noise;
 Data=im2col(double(Input),[wsize,wsize],'sliding');
 X=Data;
 
-% X=g*p+b
+% X=g*p+b       NORMALIZATION
 Xmean=mean(X);
 X=X-Xmean(ones(wsize^2,1),:);               % X- bias normalize
 Xnorm=(sum(X.^2)).^0.5;
 Xn=X./(Xnorm(ones(wsize^2,1),:)+0.001);     % Xn- gain normalize
 
-if Parameter.normalize==2; Patches=Xn;
-elseif Parameter.normalize==1; Patches=X; 
-else Patches=Data;
+if Parameter.normalize==2;      Patches=Xn;
+elseif Parameter.normalize==1;  Patches=X; 
+elseif Parameter.normalize==0;  Patches=Data;
+elseif Parameter.normalize==-5; Patchesim2col(double(Image),[wsize,wsize],'sliding'); %OracleMode
 end
 clearvars Xmean Xnorm row col normalize description metric 
 clearvars lena boat house barbara mond mondrian be

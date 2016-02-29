@@ -26,29 +26,31 @@ for iter=1:4
     Neigbour=im2col(AssignImg,[NN,NN],'sliding');
     Neigbour(ceil(NN^2/2),:)=[];
     H=histc(Neigbour,1:K,1)';
+    
+    if isfield(Analysis.CCOracle)
+        CCthr=Analysis.CCOracle;
+    else
+        Parameter.Spatil.CoOcThr=0.005;
+        Indicator=sparse(Lhat,1:m*n,ones(1,m*n),K,m*n);
+        CC=Indicator*H;
+        CCNorm=sum(CC,2);
+        CCN=CC./CCNorm(:,ones(1,K),:); CCN(CC==0)=0; %to avoid 0/0=nan
 
-    Indicator=sparse(Lhat,1:m*n,ones(1,m*n),K,m*n);
-    CC=Indicator*H;
-    CCNorm=sum(CC,2);
-    CCN=CC./CCNorm(:,ones(1,K),:); CCN(CC==0)=0; %to avoid 0/0=nan
-
-    Parameter.Spatil.CoOcThr=0.005;
-
-    CCN(CCN<Parameter.Spatil.CoOcThr)=0;
-    CCNorm=sum(CCN,2);
-    CCthr=CCN./CCNorm(:,ones(1,K),:); CCthr(CCN==0)=0;
-
-%             L=S;
-%             L(p,:)=(1-Parameter.Spatil.lambda)*reshape(S(p,:),m*n,K)+Parameter.Spatil.lambda/(NN^2-1)*H*CCthr;
+        CCN(CCN<Parameter.Spatil.CoOcThr)=0;
+        CCNorm=sum(CCN,2);
+        CCthr=CCN./CCNorm(:,ones(1,K),:); CCthr(CCN==0)=0;
+    end
+    %L=S;  %two versions, one is not updating the ceneters and one does update
     L=(1-Parameter.Spatil.lambda)*S+Parameter.Spatil.lambda/(NN^2-1)*H*CCthr;
+    %L(p,:)=(1-Parameter.Spatil.lambda)*reshape(S(p,:),m*n,K)+Parameter.Spatil.lambda/(NN^2-1)*H*CCthr;
+    
     [Pr,Lhat]=max(L,[],2);
+    if Analysis.DebuggerMode
+        Debug(CCthr,Lhat,Pr,iter);ShowProb (L,samp);end
 
-    Debug (CCthr,Lhat,Pr,iter);
-    ShowProb (L,samp);
-
-
-%             [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);
-    [S]=affinity (Data, Centers,0,true)';
+%    fixed  Centers
+%    [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);
+%    [S]=affinity (Data, Centers,0,true)';
 end
 
 AssignVec2=Lhat;
