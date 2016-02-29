@@ -15,6 +15,7 @@ function [C,H]=clusterRep(Data,AssignVec,Hist)
 K=size(Centers,3); pnum=size(Data,2);
 
 H=zeros(K,K);
+tic
 for k=1:K
     cluster=Hist(:,AssignVec==k);
     clstsize=size(cluster,2);
@@ -29,6 +30,7 @@ for k=1:K
             RepD=tempD;  Rep=candidate;   end
     end
     H(k)=Rep;
+    if ~mod(k,10); disp (strcat('calculated: ',num2str(k), ' clusters Hist Rep. in :',num2str (toc), ' sec'));end
 end
 C=Centers; 
 end

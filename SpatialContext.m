@@ -12,140 +12,25 @@ function [AssignVec2]=SpatialContext (Data,AssignVec,Centers,varargin)
 global Parameter Analysis
 
 % ----- Parameters -----
-Parameter.metric ='euclidean';
-K=size(Centers,3);
 wsize=sqrt(Parameter.wsize2);
 m=Analysis.LabelsSize(1);
 n=Analysis.LabelsSize(2);
 
-
-pnames = {'s'           'basis' };
-dflts =  {ones(wsize^2,1,K),0 };
-[Energy,Basis] = internal.stats.parseArgs(pnames, dflts, varargin{:});
-
 switch Parameter.Context
     case 'spectral'
-%         if Parameter.Spatil.lambda==0; Parameter.Spatil.lambda=0.1; end
-%         E=CoherentAffinity (Patches, Centers,'s',Energy,'basis',Basis,'lambda',lambda);
-        [E]=affinity (Data, Centers,20,1);
-        B = Spatialaffinity ();
-        E_spatial=[E;Parameter.Spatil.lambda*B];
-        [AssignVec2]=MySpectralClustering(E_spatial,'e');
-                
-    case 'graphcut' %mrf solver 
-        [E]=affinity (Data, Centers,0,1);
-        Dc=exp(reshape(E',[m,n,K]).*10^2);
-        Sc = ones(K) - eye(K);
-        
-        [Hc, Vc] = SpatialCues( reshape(Data(1,:),[m,n]) );
-        
-        gch = GraphCut('open', Dc, Parameter.Spatil.lambda*Sc, exp(-Vc*5), exp(-Hc*5) );
-        [gch, L] = GraphCut('expand',gch,5);
-        gch = GraphCut('close', gch);
-        
-        AssignVec2=L(:)';
-    case 'rl' %relaxation labling
-        knn=0; value=true;
-        [E]=affinity (Data, Centers,knn,value);          %,varargin{1:6});
-        [E_directional,comp]=Compatability (E,AssignVec);
-        S=sum( E_directional.*comp(ones(K,1),:,:),3 );
-        
-        p=logical(padarray(ones(m-2,n-2),[1,1]));
-        p=p(:)';
-        Enew=E(ones(K,1),p).*(1+S);
-        [Pr, AssignVec2]=max(Enew);
-        
+        AssignVec2=SpectralContext (Data,AssignVec,Centers,varargin);                
+    case 'graphcut'
+        AssignVec2=MRFContext_addonSolver(Data,AssignVec,Centers);
+    case 'rl'
+        AssignVec2=RelaxLabel(Data,AssignVec,Centers);
     case 'mrf'
-            [AssignVec2]=MRFContext(Data,AssignVec,Centers);
-    case 'entropy'  %minimize Co-Occurence sparsity
-        %use delta function to converge to this distriboution
-        AssignImg=col2im(AssignVec,[wsize,wsize],[Parameter.row,Parameter.col]);
-        NN=Parameter.Spatil.NN;
-        Neigbour=im2col(AssignImg,[NN,NN],'sliding');
-        Neigbour(ceil(NN^2/2),:)=[];
-        LocalHist=histc(Neigbour,1:K,1);        
-        
-        Histoids=K*eye(K);
-        [AssignVec2,C]=kmeans(LocalHist',K,'start',Histoids,'distance','correlation');
-        
+        [AssignVec2]=MRFContext(Data,AssignVec,Centers);
+    case 'entropy'  
+        AssignVec2= MinEntropyCC (Data,AssignVec,Centers);
     case 'mutualdist'
-        [dim,pnum]=size (Data);
-        NN=Parameter.Spatil.NN;  %window2
-        padding=floor(NN/2);
-        
-        Lhat=AssignVec;
-        for iter=1:1
-            AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
-            Neigbour=im2col(AssignImg,[NN,NN],'sliding');
-            Neigbour(ceil(NN^2/2),:)=[];
-            Hist=histc(Neigbour,1:K,1)/(NN^2-1);
-            p=logical(padarray(ones(m-2*padding,n-2*padding),[padding,padding]));
-
-            [C,H]=clusterRep(Data,Lhat(p),Hist);
-
-            MutualDist=inf*ones(1,pnum);  AssignVec2=Lhat;
-            for k=1:K
-                d_vis=sqrt(  abs( sum(Data.^2)-2*C(:,:,k)'*Data+C(:,:,k)'*C(:,:,k) )  );
-                d_hist=inf*ones(1,pnum);
-                for i=1:pnum
-                    if p(i)
-                        [~, d_histCurr] = emd(squeeze(C)',squeeze(C)',H(k,:)' ,Hist(i,:), @gdf);
-                    else        d_histCurr=0;
-                    end
-                    d_hist(i)=d_hist(i)+d_histCurr;
-                end
-                tempDist=d_vis+Parameter.Spatil.lambda*d_hist;
-
-                MutualDist(tempDist<MutualDist)=tempDist(tempDist<MutualDist);
-                AssignVec2(tempDist<MutualDist)=k;
-            end
-        end
+        AssignVec2=MutualDist(Data,AssignVec,Centers);
     case 'comeans'
-        [S]=affinity (Data, Centers,0,true)';
-        Lhat=AssignVec;
-        NN=Parameter.Spatil.NN;  %window2
-        padding=floor(NN/2);
-%         Analysis.LabelsSize=Analysis.LabelsSize-(NN-1);
-        m=Analysis.LabelsSize(1)    ;n=Analysis.LabelsSize(2);
-%         p=logical(padarray(ones(m,n),[padding,padding]));
-%         
-%         Analysis.LabelsSize=Analysis.LabelsSize+(NN-1); %restore values to origin
-        
-        samp=randperm(size(S,1),3);
-        for iter=1:4
-            
-            AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
-            AssignImg=padarray(AssignImg,[padding,padding],-1);
-            
-            Neigbour=im2col(AssignImg,[NN,NN],'sliding');
-            Neigbour(ceil(NN^2/2),:)=[];
-            H=histc(Neigbour,1:K,1)';
-            
-            Indicator=sparse(Lhat,1:m*n,ones(1,m*n),K,m*n);
-            CC=Indicator*H;
-            CCNorm=sum(CC,2);
-            CCN=CC./CCNorm(:,ones(1,K),:); CCN(CC==0)=0; %to avoid 0/0=nan
-            
-            Parameter.Spatil.CoOcThr=0.005;
-            
-            CCN(CCN<Parameter.Spatil.CoOcThr)=0;
-            CCNorm=sum(CCN,2);
-            CCthr=CCN./CCNorm(:,ones(1,K),:); CCthr(CCN==0)=0;
-            
-%             L=S;
-%             L(p,:)=(1-Parameter.Spatil.lambda)*reshape(S(p,:),m*n,K)+Parameter.Spatil.lambda/(NN^2-1)*H*CCthr;
-            L=(1-Parameter.Spatil.lambda)*S+Parameter.Spatil.lambda/(NN^2-1)*H*CCthr;
-            [Pr,Lhat]=max(L,[],2);
-            
-            Debug (CCthr,Lhat,Pr,iter);
-            ShowProb (L,samp);
-
-            
-%             [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);
-            [S]=affinity (Data, Centers,0,true)';
-        end
-        
-        AssignVec2=Lhat;
+         AssignVec2=CoMeans(Data,AssignVec,Centers);
 end
  if length(AssignVec2)~=length(AssignVec) % so that AssignVec2 will be always same size
      mprime=sqrt(length(AssignVec2)); m=Parameter.row-wsize+1;
