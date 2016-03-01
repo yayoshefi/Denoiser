@@ -31,8 +31,8 @@ K=max(AssignVec);
 
 for k=1:K
     clstsize=sum(AssignVec==k);
-    if isfield(Analysis.CenterOracle)
-            center=Analysis.CenterOracle(:,:,k);
+    if Parameter.ORACLE
+            center=Analysis.ORACLE.Centers(:,:,k);
     else    center=mean(X(:,AssignVec==k),2);
     end
     cluster_0=X(:,AssignVec==k)-center(:,ones(1,clstsize));

@@ -9,8 +9,6 @@ global Parameter Analysis
 K=size(Centers,3);
 wsize=sqrt(Parameter.wsize2);
 
-if Parameter.ORACLE
-        Centers=Analysis.ORACLE.Centers;end
 [S]=affinity (Data, Centers,0,true)';
 Lhat=AssignVec;
 NN=Parameter.Spatil.NN;  %window2
@@ -31,8 +29,8 @@ for iter=1:4
     Neigbour(ceil(NN^2/2),:)=[];
     H=histc(Neigbour,1:K,1)';
     
-    if Parameter.ORACLE
-        CCthr=Analysis.ORACLE.CoOc;
+    if isfield(Analysis,'CCOracle')
+        CCthr=Analysis.CCOracle; Centers=Analysis.CCOracle
     else
         Parameter.Spatil.CoOcThr=0.005;
         Indicator=sparse(Lhat,1:m*n,ones(1,m*n),K,m*n);

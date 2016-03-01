@@ -1,41 +1,43 @@
 function setGlobalParameter()
-global Parameter Analysis
+global Parameter Analysis ORACLE
 %%  ############# Parameter  ##############
-InitClustersNUM=70;        MaxSubSpace=0;      MinimunClusterSize=20;
-Debug=true;
+InitClustersNUM=250;        MaxSubSpace=0;      MinimunClusterSize=20;
+Debug=true;                 USEORACLE=false;
 SplitType='median'; % 'median' or 'totvar'
-Context='mutualdist'; % [] or 'spectral' or 'graphcut' 'rl' or 'mrf' 'entropy'
+Context='comeans'; % [] or 'spectral' or 'graphcut' 'rl' or 'mrf' 'entropy'
                    % 'mutualdist', 'comeans' 
 % **************     other clustring Parameters     ****************
 Parameter.MSS=MaxSubSpace;          Parameter.minclstsize=MinimunClusterSize;
 Parameter.SplitType=SplitType;      Parameter.Context=Context;
-Parameter.subsample=0.20;
+Parameter.subsample=0.20;           Parameter.ORACLE=USEORACLE;
 
 % **************      Method Parameter     *****************
 if ~isfield (Parameter,'wsize2');Parameter.wsize2=81;end  %default value
 Parameter.values=struct('VarianceSplit',5*Parameter.wsize2,'Distance',InitClustersNUM,...
     'kmeans',InitClustersNUM,'Distance_Normalize',InitClustersNUM);
-
 Parameter.values.VarianceSplit=300;
-% sigma^2*wsize^2  (sigma^2=15)-lower than the noise                  cluster amount
-%sigma^2*THR (THR=?5)- this is for the case of first vec energy
 
 % **************   Spectral (KSVD) Parameters     ****************
 dictsize=300;           sparsity=3;         HardThr=1;
 Parameter.Spectral=struct('clustrsNUM',InitClustersNUM,'dictsize',dictsize,...
     'sparsity',sparsity,'HardThr',HardThr,'Fast',true);
 
-% **************     Spatial clustring Parameters     ****************
+% **************     Context clustring Parameters     ****************
 Parameter.Spatil.spatialdist='decomposition';        Parameter.Spatil.lambda=0.005;
 %'landmarks' / 'decomposition'  /  'simplenoramlize' /'none'
 Parameter.Spatil.sigma=20;   Parameter.Spatil.NN=5;      Parameter.Spatil.CoOcThr='unused';
 Parameter.location='C:/Users/Yair/Dropbox/Thesis code';
 %%  ############# Analysis  ##############
-Analysis=struct('Show',true,'Save',true,'figures',2,'Fast',true,'miniwindow',5,...
-    'Handles',[],'K',0,'DebuggerMode',Debug,'LabelsSize',...
+if Parameter.ORACLE; if ~exist('ORACLE','var');ORACLE=Analysis.ORACLE;end;end %use last ORACLE Or updat
+Analysis=struct('Show',true,'Save',true,'figures',2,'Fast',true,'Handles',[]...
+    ,'K',0,'DebuggerMode',Debug,'LabelsSize',...
     [Parameter.row-sqrt(Parameter.wsize2)+1,Parameter.col-sqrt(Parameter.wsize2)+1]);
-if isfield(Analysis.CenterOracle);Analysis=rmfield(Analysis,'CenterOracle');end
+if Parameter.ORACLE; Analysis.ORACLE=ORACLE;end
 end
+
+% Parameter.values.VarianceSplit=300;
+% % sigma^2*wsize^2  (sigma^2=15)-lower than the noise                  cluster amount
+% %sigma^2*THR (THR=?5)- this is for the case of first vec energy
 
 %{
 Parameter fields:
