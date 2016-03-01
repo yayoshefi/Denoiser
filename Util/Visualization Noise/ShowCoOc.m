@@ -3,7 +3,7 @@ global Parameter
 row=Parameter.row;      col=Parameter.col;
 wsize=sqrt(Parameter.wsize2);
 K=max(AssignVec);
-alpha1=0.005; alpha2=0.02;
+alpha1=0.005; alpha2=0.02; alpha3=0.0001; 
 
 AssignImg=col2im(AssignVec,[wsize,wsize],[Parameter.row,Parameter.col]);
 [m,n]=size(AssignImg);
@@ -29,7 +29,7 @@ LogCoOc(CoOcN==0)=0;  % no nan resulting from inf*0;
 H_row=-sum( CoOcN.*LogCoOc,2 );
 H=mean(H_row);
 
-epsNorm1=sum(sum(CoOcN>alpha1));epsNorm2=sum(sum(CoOcN>alpha2));
+epsNorm1=sum(sum(CoOcN>alpha1));epsNorm2=sum(sum(CoOcN>alpha2)); epsNorm3=sum(sum(CoOcN>alpha3));
 
 figure;colormap 'jet'; 
 subplot(2,2,1); imagesc(log(CoOcN+1));
@@ -51,10 +51,10 @@ xlabel (strcat( 'amount of labels ',num2str(K) ));axis ([1,K,0,1]); grid minor
 
 if nargin>1
     if strcmp(varargin{1},'CoOc')
-        varargout{1}=CoOcN;
-    else
-        varargout{1}=epsNorm1; varargout{2}=epsNorm2;
-    end
+        varargout{1}=CoOcN;end
+else
+    varargout{1}=epsNorm1; varargout{2}=epsNorm3;
+end
 end
 
 % glcm = graycomatrix(AssignImg,'GrayLimits',[1,K],'NumLevels',K,'Offset',[0,1;1,0],'Symmetric',true);

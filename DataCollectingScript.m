@@ -1,8 +1,8 @@
 %%---------------- Data Collecting-------------------Octover Version
 clearvars ContextPsnr Psnr CentersCount
 load Database; %Images = createImages();
-Image=boat;
-description='test lambda rate for co-means NN=5 5iteraton ';
+Image=lena;
+description='test Alpha Thr Co-Occurrence NN=5 5iteraton ';
 %% --------------------------- PARAMETERS ------------------------------
 
 global Parameter Analysis
