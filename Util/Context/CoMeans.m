@@ -34,7 +34,7 @@ for iter=1:4
     if Parameter.ORACLE
         CCthr=Analysis.ORACLE.CoOc;
     else
-        Parameter.Spatil.CoOcThr=0.005;
+        if ~isinteger(Parameter.Spatil.CoOcThr);Parameter.Spatil.CoOcThr=0.005;end
         Indicator=sparse(Lhat,1:m*n,ones(1,m*n),K,m*n);
         CC=Indicator*H;
         CCNorm=sum(CC,2);

@@ -19,9 +19,9 @@ ylabel('psnr')
 end
 
 for w=1:W
-    
-    [psnr_1]=struct2data (Method_1,'psnr',wsizes(w));
-    [psnr_2]=struct2data (Method_2,'psnr',wsizes(w));
+
+    [psnr_1]=struct2data (Method_1,'psnr.Lambda1.normalize0',wsizes(w));
+    [psnr_2]=struct2data (Method_2,'psnr.Lambda1.normalize0',wsizes(w));
     
     subplot(W,1,w); hold on; grid on
     if isempty (psnr_2)
@@ -35,4 +35,4 @@ end
     
 if nargout;varargout{1}=handle;end
 end
-
+%    Data_NN_5.psnr.Lambda1.normalize0.wsize7  
