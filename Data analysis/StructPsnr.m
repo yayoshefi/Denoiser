@@ -18,14 +18,15 @@ for m=1:arguments
     if sum(comparefield);cmpvalues{comparefield}=values{comparefield}(m);
     end
     
-    pointer=Strct.psnr;
-
+%     pointer=Strct.psnr;
+    pointer=Strct;
 for idx=1:length(fields)
     substrct=strcat(fields{idx},num2str(cmpvalues{idx}));
     pointer=pointer.(substrct);
 end
 if isfield (pointer,strcat('sigma',num2str(sigma(1))))
     cell_data=struct2cell( pointer );
+    if length (cell_data)>length(sigma);cell_data=cell_data(1:length(sigma));end
     data=[data;cell2mat(cell_data)'];
 end
 

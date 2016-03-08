@@ -30,9 +30,9 @@ n=col-wsize2^0.5+1;         % number of columns in Assign Mat
 
 % E=zeros((m-2)*(n-2),K);
 E=zeros(K,pnum);
-if Parameter.normalize==2
-    sigma=wsize2/4;
-else    sigma=wsize2/4;
+if Parameter.normalize==2;              sigma=wsize2/4;
+elseif  Parameter.wsize2==1;            sigma=14;   %arbitary 
+else                                    sigma=wsize2/4;
 end
 
 pnames = {'dim'       's'   'basis'};

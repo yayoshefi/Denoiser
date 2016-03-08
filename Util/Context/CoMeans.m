@@ -55,8 +55,8 @@ for iter=1:4
         Debug(CCthr,Lhat,Pr,iter);ShowProb (L,samp);end
 
 %    fixed  Centers
-%    [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);
-%    [S]=affinity (Data, Centers,0,true)';
+   [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);
+   [S]=affinity (Data, Centers,0,true)';
 end
 
 AssignVec2=Lhat;

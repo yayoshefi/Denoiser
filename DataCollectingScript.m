@@ -2,7 +2,7 @@
 clearvars ContextPsnr Psnr CentersCount
 load Database; %Images = createImages();
 Image=barbara;
-description='collecting data NN=11;Thr=0.005 NON Moving Centers ';
+description='collecting data Moving Centers ';
 %% --------------------------- PARAMETERS ------------------------------
 
 global Parameter Analysis
@@ -12,12 +12,12 @@ metric ='euclidean';        %distance function can be 'euclidean','mahalanobis'
                             %'varing_cluster_size'                            
 
 % ---- arrays ----
-sigma_array=[10,20,30,40,60,80];
+sigma_array=[10,20,30,40,50,60,80];
 wsize_array=[5,7,9];
 normalize_array=[0];          %normalize 0-do nothing ; 1-only bias; 2- bias and gain
-lambda_array=[0.001,0.005,0.01];%,0.03,0.05,0.1,.3,0.5,1];
+lambda_array=[0.001,0.005,0.01,0.05];%,0.03,0.05,0.1,.3,0.5,1];
 NN_array=[3,5,7,9,11];
-CoOcThr_array=[0.005,0.0001];
+CoOcThr_array=[0.005,0.0001,0.01];
 
 Parameter=struct('description',description,'row',size(Image,1),'col',size(Image,2),...
     'Method',Method,'metric',metric);
@@ -114,5 +114,5 @@ end
  %% save info
 full_Data=struct('psnr',Psnr,'ContextPsnr',ContextPsnr,'Parameters',Parameter);
 save (strcat(Parameter.location,'\Results/',date,'/','full_Data.mat'), 'full_Data', '-v7.3')
-
+full_Data
 rmpath(NewPath);

@@ -25,7 +25,7 @@ Parameter.Spectral=struct('clustrsNUM',InitClustersNUM,'dictsize',dictsize,...
 % **************     Context clustring Parameters     ****************
 Parameter.Spatil.spatialdist='decomposition';        Parameter.Spatil.lambda=0.005;
 %'landmarks' / 'decomposition'  /  'simplenoramlize' /'none'
-Parameter.Spatil.sigma=20;   Parameter.Spatil.NN=11;      Parameter.Spatil.CoOcThr='unused';
+Parameter.Spatil.sigma=20;   Parameter.Spatil.NN=7;      Parameter.Spatil.CoOcThr='unused';
 Parameter.location='C:/Users/Yair/Dropbox/Thesis code';
 %%  ############# Analysis  ##############
 if Parameter.ORACLE; if ~exist('ORACLE','var');ORACLE=Analysis.ORACLE;end;end %use last ORACLE Or updat
