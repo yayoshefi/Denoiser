@@ -1,14 +1,14 @@
 %%---------------- Main Script: De noising-------------------GitHub Version
 % clearvars
 load Database;Images = createImages();
-Image=Images{3};
-description='Toy Example';
+Image=barbara;
+description='Fast Mutual Distance';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 
 Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
 sigma=40;
-wsize=1;
+wsize=7;
 normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain (-5)- Oracle
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'
                         %'varing_cluster_size'

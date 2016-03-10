@@ -4,7 +4,7 @@ global Parameter Analysis ORACLE
 InitClustersNUM=250;        MaxSubSpace=0;      MinimunClusterSize=20;
 Debug=false;                 USEORACLE=false;
 SplitType='median'; % 'median' or 'totvar'
-Context='comeans'; % [] or 'spectral' or 'graphcut' 'rl' or 'mrf' 'entropy'
+Context='mutualdist'; % [] or 'spectral' or 'graphcut' 'rl' or 'mrf' 'entropy'
                    % 'mutualdist', 'comeans' 
 % **************     other clustring Parameters     ****************
 Parameter.MSS=MaxSubSpace;          Parameter.minclstsize=MinimunClusterSize;

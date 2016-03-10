@@ -16,12 +16,12 @@ if isscalar (samp) ; samp=randperm(n,samp);end
 data=affinity(samp,:,:);
 figure;
 for p=1:P
-    subplot(P,1,p);
+    if p==1;title (strcat ('prob. for pixels: ',num2str(samp)));        end
     bar(data(:,:,p)); colormap jet;grid on;
     c=colorbar;c.Label.String='Labels';
-    if p==1;title (strcat ('prob. for pixels: ',num2str(samp)));        end    
     if p==P;xlabel ('pixel');ylabel('Probabilty');                      end
 end
+
 
 % 
 % colors={'b','r','k','g','m','y'};

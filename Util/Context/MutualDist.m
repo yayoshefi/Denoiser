@@ -27,22 +27,16 @@ for iter=1:1
     AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
     Neigbour=im2col(AssignImg,[NN,NN],'sliding');
     Neigbour(ceil(NN^2/2),:)=[];
-    Hist=histc(Neigbour,1:K,1)/(NN^2-1);
+    Hist=histc(Neigbour,1:K,1)'/(NN^2-1);
     p=logical(padarray(ones(m-2*padding,n-2*padding),[padding,padding]));
 
     [C,H]=clusterRep(Data,Lhat(p),Hist);
 
-    MutualDist=inf*ones(1,pnum);  AssignVec2=Lhat;
+    d_hist=inf*ones(1,pnum);    MutualDist=inf*ones(1,pnum);  AssignVec2=Lhat;
     for k=1:K
         d_vis=sqrt(  abs( sum(Data.^2)-2*C(:,:,k)'*Data+C(:,:,k)'*C(:,:,k) )  );
-        d_hist=inf*ones(1,pnum);
-        for i=1:pnum
-            if p(i)
-                [~, d_histCurr] = emd(squeeze(C)',squeeze(C)',H(k,:)' ,Hist(i,:), @gdf);
-            else        d_histCurr=0;
-            end
-            d_hist(i)=d_hist(i)+d_histCurr;
-        end
+        d_hist(:,k)=FastEMD(Centers,H(k,:),Centers,Hist);
+        
         tempDist=d_vis+Parameter.Spatil.lambda*d_hist;
 
         MutualDist(tempDist<MutualDist)=tempDist(tempDist<MutualDist);

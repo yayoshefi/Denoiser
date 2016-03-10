@@ -5,6 +5,8 @@ function AssignVec2=CoMeans(Data,AssignVec,Centers)
 % space.
 % this is consistent with Tokt 1st Scheme of minimizing the functional
 
+SpatialRefernce='MessagePass';
+
 global Parameter Analysis
 K=size(Centers,3);
 wsize=sqrt(Parameter.wsize2);
@@ -23,7 +25,8 @@ m=Analysis.LabelsSize(1)    ;n=Analysis.LabelsSize(2);
 
 samp=randperm(size(S,1),3);
 for iter=1:4
-
+    
+%     if iter>1; SpatialRefernce='emd';end
     AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
     AssignImg=padarray(AssignImg,[padding,padding],-1);
 
@@ -45,14 +48,21 @@ for iter=1:4
         CCthr=CCN./CCNorm(:,ones(1,K),:); CCthr(CCN==0)=0;
     end
     
-    L=(1-Parameter.Spatil.lambda)*S + Parameter.Spatil.lambda/(NN^2-1)*H*CCthr;
+    switch SpatialRefernce
+        case 'MessagePass'
+            E_h=H/(NN^2-1);
+        case 'emd'
+            E_h=HistDist (H,CC,Centers);
+    end
+            
+    L=(1-Parameter.Spatil.lambda)*S + Parameter.Spatil.lambda*E_h*CCthr;
     % when not caclculating partial histogrmas
     %L=S;
     %L(p,:)=(1-Parameter.Spatil.lambda)*reshape(S(p,:),m*n,K)+Parameter.Spatil.lambda/(NN^2-1)*H*CCthr;
     
     [Pr,Lhat]=max(L,[],2);
     if Analysis.DebuggerMode && ~(mod(iter+1,2))
-        Debug(CCthr,Lhat,Pr,iter);ShowProb (L,samp);end
+        Debug(CCthr,Lhat,Pr,iter);ShowProb (cat(3,S,E_h,L),samp);end
 
 %    fixed  Centers
    [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);
@@ -60,6 +70,36 @@ for iter=1:4
 end
 
 AssignVec2=Lhat;
+end
+function E_h=HistDist (H,CC,Centers)
+global Parameter
+
+pnum=size(H,1);         speed='fast';
+
+if Parameter.wsize2==1;     Centers=squeeze(Centers)';
+else                        Centers=squeeze(Centers);   end
+PrH=DiagonalMult(H,1./sum(H,2),'l');
+PrH(H==0)=0;
+
+D_h=zeros(size(H));
+switch speed
+    case 'normal'
+        for k=1:length (CC)
+            for i=1:pnum
+                [~,D_h(i,k)]=emd(Centers',Centers',PrH(i,:)',CC(k,:)');
+            end
+        end
+    case 'fast'
+        for k=1:length (CC)
+            D_h(:,k)=FastEMD(Centers,CC(k,:),Centers,PrH);
+        end
+end
+        
+
+affinity=exp(-D_h/(2*Parameter.Spatil.sigma^2));
+E_h=DiagonalMult(affinity,1./sum(affinity,2),'l');
+E_h(affinity==0)=0;
+
 end
 
 function[] = Debug (CoOc,Lhat,Pr,iter)
