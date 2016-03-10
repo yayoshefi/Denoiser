@@ -57,7 +57,7 @@ switch Parameter.metric
             if Parameter.wsize2==1;
                 pointdist=Data.^2-2*Centers(:,:,k)'*Data+Centers(:,:,k)'*Centers(:,:,k);
             else
-                pointdist=sum(Data.^2,2)-2*Centers(:,:,k)'*Data+Centers(:,:,k)'*Centers(:,:,k);
+                pointdist=sum(Data.^2)-2*Centers(:,:,k)'*Data+Centers(:,:,k)'*Centers(:,:,k);
             end
             if Centers(1,:,k)==inf; pointdist=inf; end %fix empty clusters
         %     pointdist=sum( (Data-Centers(:,ones(1,pnum),k)).^2 );
