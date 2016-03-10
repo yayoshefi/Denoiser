@@ -62,7 +62,7 @@ for iter=1:4
     
     [Pr,Lhat]=max(L,[],2);
     if Analysis.DebuggerMode && ~(mod(iter+1,2))
-        Debug(CCthr,Lhat,Pr,iter);ShowProb (cat(3,S,E_h,L),samp);end
+        ShowProb (cat(3,S,E_h,L),samp);Debug(CCthr,Lhat,Pr,iter);end
 
 %    fixed  Centers
    [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);

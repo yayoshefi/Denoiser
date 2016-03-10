@@ -23,7 +23,7 @@ for k=1:K
     for c_i=1:clstsize
         candidate=cluster(c_i,:);
         tempD=0;
-        tempD=FastEMD(Centers,candidate,Centers,cluster);
+        tempD=FastEMD(squeeze(Centers),candidate,squeeze(Centers),cluster);
 %         for m=1:clstsize
 %             tempD=tempD+emd(squeeze(Centers)',squeeze(Centers)',candidate',cluster(:,m)',@gdf);
 %         end
@@ -31,7 +31,7 @@ for k=1:K
             RepD=tempD;  Rep=candidate;   end
     end
     H(k,:)=Rep;
-%     if ~mod(k,10); disp (strcat('calculated: ',num2str(k), ' clusters Hist Rep. in :',num2str (toc), ' sec'));end
+    if ~mod(k,10); disp (strcat('calculated: ',num2str(k), ' clusters Hist Rep. in :',num2str (toc), ' sec'));end
 end
 C=Centers; 
 end
