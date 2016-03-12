@@ -5,7 +5,7 @@ function AssignVec2=CoMeans(Data,AssignVec,Centers)
 % space.
 % this is consistent with Tokt 1st Scheme of minimizing the functional
 
-SpatialRefernce='MessagePass';
+SpatialRefernce='CenterPixel';
 
 global Parameter Analysis
 K=size(Centers,3);
@@ -26,7 +26,7 @@ m=Analysis.LabelsSize(1)    ;n=Analysis.LabelsSize(2);
 samp=randperm(size(S,1),3);
 for iter=1:4
     
-%     if iter>1; SpatialRefernce='emd';end
+%     if iter>1; SpatialRefernce='CenterPixel';end
     AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
     AssignImg=padarray(AssignImg,[padding,padding],-1);
 
@@ -51,7 +51,7 @@ for iter=1:4
     switch SpatialRefernce
         case 'MessagePass'
             E_h=H/(NN^2-1);
-        case 'emd'
+        case 'CenterPixel'
             E_h=HistDist (H,CC,Centers);
     end
             
@@ -81,7 +81,7 @@ else                        Centers=squeeze(Centers);   end
 PrH=DiagonalMult(H,1./sum(H,2),'l');
 PrH(H==0)=0;
 
-D_h=zeros(size(H));
+D_h=zeros(size(H)); E_h=zeros(size(H));
 switch speed
     case 'normal'
         for k=1:length (CC)
@@ -90,15 +90,22 @@ switch speed
             end
         end
     case 'fast'
-        for k=1:length (CC)
-            D_h(:,k)=FastEMD(Centers,CC(k,:),Centers,PrH);
+        dist=FastEMD(Centers,CC(1,:),Centers,PrH);
+        E_h(:,1)=1;
+        for k=2:length (CC)
+%             D_h(:,k)=FastEMD(Centers,CC(k,:),Centers,PrH); with
+%             k=1:length
+            tempdist=FastEMD(Centers,CC(k,:),Centers,PrH);
+            E_h(tempdist<dist,k)=1;
+            E_h(tempdist<dist,1:k-1)=0;
+            dist(tempdist<dist)=tempdist(tempdist<dist);
         end
 end
         
 
-affinity=exp(-D_h/(2*Parameter.Spatil.sigma^2));
-E_h=DiagonalMult(affinity,1./sum(affinity,2),'l');
-E_h(affinity==0)=0;
+% affinity=exp(-D_h/(2*Parameter.Spatil.sigma^2));
+% E_h=DiagonalMult(affinity,1./sum(affinity,2),'l');
+% E_h(affinity==0)=0;
 
 end
 

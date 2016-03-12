@@ -5,7 +5,7 @@ function AssignVec2=CoMeans(Data,AssignVec,Centers)
 % space.
 % this is consistent with Tokt 1st Scheme of minimizing the functional
 
-SpatialRefernce='emd';
+SpatialRefernce='CenterPixel';
 
 global Parameter Analysis
 K=size(Centers,3);
@@ -25,7 +25,8 @@ m=Analysis.LabelsSize(1)    ;n=Analysis.LabelsSize(2);
 
 samp=randperm(size(S,1),3);
 for iter=1:4
-
+    
+%     if iter>1; SpatialRefernce='CenterPixel';end
     AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
     AssignImg=padarray(AssignImg,[padding,padding],-1);
 
@@ -50,7 +51,7 @@ for iter=1:4
     switch SpatialRefernce
         case 'MessagePass'
             E_h=H/(NN^2-1);
-        case 'emd'
+        case 'CenterPixel'
             E_h=HistDist (H,CC,Centers);
     end
             
@@ -61,7 +62,7 @@ for iter=1:4
     
     [Pr,Lhat]=max(L,[],2);
     if Analysis.DebuggerMode && ~(mod(iter+1,2))
-        Debug(CCthr,Lhat,Pr,iter);ShowProb (cat(3,S,E_h,L),samp);end
+        ShowProb (cat(3,S,E_h,L),samp);Debug(CCthr,Lhat,Pr,iter);end
 
 %    fixed  Centers
    [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);
@@ -80,7 +81,7 @@ else                        Centers=squeeze(Centers);   end
 PrH=DiagonalMult(H,1./sum(H,2),'l');
 PrH(H==0)=0;
 
-D_h=zeros(size(H));
+D_h=zeros(size(H)); E_h=zeros(size(H));E_h(:,1)=1;
 switch speed
     case 'normal'
         for k=1:length (CC)
@@ -89,16 +90,21 @@ switch speed
             end
         end
     case 'fast'
-        for k=1:length (CC)
-            D_h(:,k)=FastEMD(Centers,CC(k,:),Centers,PrH);
+        tempdist=FastEMD(Centers,CC(1,:),Centers,PrH);
+        for k=2:length (CC)
+%             D_h(:,k)=FastEMD(Centers,CC(k,:),Centers,PrH); with
+%             k=1:length
+            tempdist=FastEMD(Centers,CC(k,:),Centers,PrH);
+            E_h(tempdist<dist,k)=1;
+            E_h(D_h(:,k)<D_h(:,k-1),1:k-1)=0;
+            dist=tempdist
         end
 end
         
 
-affinity=exp(-D_h/(2*Parameter.Spatil.sigma^2));
-E_h=DiagonalMult(affinity,1./sum(affinity,2),'l');
-
-E_h(affinity==0)=0;
+% affinity=exp(-D_h/(2*Parameter.Spatil.sigma^2));
+% E_h=DiagonalMult(affinity,1./sum(affinity,2),'l');
+% E_h(affinity==0)=0;
 
 end
 
