@@ -11,6 +11,7 @@ global Parameter Analysis
 K=size(Centers,3);
 wsize=sqrt(Parameter.wsize2);
 
+
 if Parameter.ORACLE
         Centers=Analysis.ORACLE.Centers;end
 [S]=affinity (Data, Centers,0,true)';
@@ -24,8 +25,9 @@ m=Analysis.LabelsSize(1)    ;n=Analysis.LabelsSize(2);
 %Analysis.LabelsSize=Analysis.LabelsSize+(NN-1); %restore values to origin
 
 samp=randperm(size(S,1),3);
-for iter=1:4
-    
+ratio=0; CC_Hold=inf;
+for iter=1:6
+    disp (strcat('current ratio: ',num2str(ratio)));
 %     if iter>1; SpatialRefernce='CenterPixel';end
     AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
     AssignImg=padarray(AssignImg,[padding,padding],-1);
@@ -46,6 +48,10 @@ for iter=1:4
         CCN(CCN<Parameter.Spatil.CoOcThr)=0;
         CCNorm=sum(CCN,2);
         CCthr=CCN./CCNorm(:,ones(1,K),:); CCthr(CCN==0)=0;
+        
+        CC_Hnew=CC_Entropy(CCthr); ratio=CC_Hnew/CC_Hold; CC_Hold=CC_Hnew;
+        
+
     end
     
     switch SpatialRefernce
@@ -61,11 +67,12 @@ for iter=1:4
     %L(p,:)=(1-Parameter.Spatil.lambda)*reshape(S(p,:),m*n,K)+Parameter.Spatil.lambda/(NN^2-1)*H*CCthr;
     
     [Pr,Lhat]=max(L,[],2);
-    if Analysis.DebuggerMode && ~(mod(iter+1,2))
-        ShowProb (cat(3,S,E_h,L),samp);Debug(CCthr,Lhat,Pr,iter);end
+    if Analysis.DebuggerMode && ~(mod(iter+1,2));
+        Debug(CCthr,Lhat,Pr,iter,S,E_h,L,samp);end
 
 %    fixed  Centers
    [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);
+   Centers=cat(3,Centers,inf*ones(wsize^2,1,K-size(Centers,3)));      % To avoid case of degenarated Centers
    [S]=affinity (Data, Centers,0,true)';
 end
 
@@ -109,8 +116,12 @@ end
 
 end
 
-function[] = Debug (CoOc,Lhat,Pr,iter)
+function[] = Debug (CoOc,Lhat,Pr,iter,S,E_h,L,samp)
 global Parameter
+
+ShowProb (cat(3,S,E_h*CoOc,L),samp);
+subplot(3,1,1);ylabel('Pr. visual');subplot(3,1,2);ylabel('Pr. Hist')
+
 wsize=sqrt(Parameter.wsize2);
 
 % ShowCoOc(Lhat); set(gcf,'Name',strcat('Co-Occurence ',num2str(iter), ' iteration'));
@@ -140,4 +151,11 @@ subplot(2,2,2)
 imagesc(tmp_Labels);title ('Temp Label image'); colormap jet
 xlabel(strcat(num2str(length(unique(Lhat))) ,' diffrent labels'))
 
+end
+
+function H=CC_Entropy(CoOcN)
+LogCoOc=log2(CoOcN);
+LogCoOc(CoOcN==0)=0;  % no nan resulting from inf*0;
+H_row=-sum( CoOcN.*LogCoOc,2 );
+H=mean(H_row);
 end

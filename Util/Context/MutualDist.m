@@ -32,10 +32,10 @@ for iter=1:1
 
     [C,H]=clusterRep(Data,Lhat(p),Hist);
 
-    d_hist=inf*ones(1,pnum);    MutualDist=inf*ones(1,pnum);  AssignVec2=Lhat;
+    MutualDist=inf*ones(1,pnum);  AssignVec2=Lhat;
     for k=1:K
         d_vis=sqrt(  abs( sum(Data.^2)-2*C(:,:,k)'*Data+C(:,:,k)'*C(:,:,k) )  );
-        d_hist(:,k)=FastEMD(squeeze(Centers),H(k,:),squeeze(Centers),Hist);
+        d_hist=FastEMD(squeeze(Centers),H(k,:),squeeze(Centers),Hist);
         
         tempDist=d_vis+Parameter.Spatil.lambda*d_hist;
 
