@@ -2,7 +2,7 @@
 
 % change if necessary: struct name,strctfields,strctvalues
 strctfields={'Lambda'   ,'NN'   ,'CoOcThr'  ,'normalize'    ,'wsize'};
-strctvalues={ 1         ,3      ,2          ,0              ,7      }; %defualt stats
+strctvalues={ 1         ,3      ,2          ,0              ,5      }; %defualt stats
 
 variable1='Lambda'; 
 Var1_array=[3];
@@ -14,7 +14,7 @@ for i=1:length(Var1_array)
 strctvalues{LogicVar1}=Var1_array(i);
 
 variable2='NN';         %can compare multiplie variables
-Var2_array=[3,5,7,9,11];
+Var2_array=[5,7,9];
 LogicVar2=ismember(strctfields,variable2);
 strctvalues{LogicVar2}=Var2_array;
 

@@ -40,16 +40,19 @@ catch ME
 end
 % COM2=sum(DiagonalMult(F2,W2','r'),2);
 COM2=F2*W2';
-
+%{
 cluster1ToCOM1=W1(ones(d,1),:).*F1-COM1(:,ones(1,features));
 COM1tocluster2=W2(ones(d,1),:).*F2-COM1(:,ones(1,features));
 
 cluster2ToCOM2=W1(ones(d,1),:).*F2-COM2(:,ones(1,features));
 COM2tocluster1=W2(ones(d,1),:).*F2-COM1(:,ones(1,features));
 
+p2p=sqrt(  sum( (W1(ones(d,1),:).*F1-W2(ones(d,1),:).*F2).^2 )  );
+
 
 ub1= sqrt(sum( sum(cluster1ToCOM1.^2) )) + sqrt(sum( sum(COM1tocluster2.^2) ));
 ub2= sqrt(sum( sum(cluster2ToCOM2.^2) )) + sqrt(sum( sum(COM2tocluster1.^2) ));
+%}
 
 if isvector(W2)
     lb=sum(W2)*norm(COM1-COM2);
@@ -59,6 +62,6 @@ end
 
 %dist=(ub1+lb)/2;
 dist=lb;            %by random check (curse of dimmentionalty)
-
+% fprintf('lower bound is: %3.2G ; Upper bpund is: %3.2G \n while the point to point dist is : %3.2G\n',lb(1),ub1(1),p2p(1));
 
 end

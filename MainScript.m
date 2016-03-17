@@ -2,7 +2,7 @@
 % clearvars
 load Database;Images = createImages();
 Image=barbara;
-description='Fast Mutual Distance';
+description='EMD VS FastEMD';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 
@@ -87,15 +87,25 @@ visualtime=toc-contexttime-cleaningtime-itertime;
 
 
 %% ----------------------  Summary  ------------------
+fprintf(['#Centers    psnr    noise    ',Method,'    normalize',' cluster(s)','  Clean(s)','  visual(s)\n',...
+    ' %3u       %2.3f   %3u      %u            %u      %3G     %3G     %3G\n'],...
+    size(Centers,3), result, sigma,Parameter.values.(Method),Parameter.normalize ,itertime, cleaningtime,visualtime);
 
-disp(['  #Centers    psnr    noise    ',Method,'    normalize',' cluster(s)','  Clean(s)','  visual(s)'])
-disp([round(size(Centers,3)), result, round(sigma), Parameter.values.(Method) ,...
-    Parameter.normalize ,round(itertime), round(cleaningtime),round(visualtime)])
+% disp(['  #Centers    psnr    noise    ',Method,'    normalize',' cluster(s)','  Clean(s)','  visual(s)'])
+% disp([round(size(Centers,3)), result, round(sigma), Parameter.values.(Method) ,...
+%     Parameter.normalize ,round(itertime), round(cleaningtime),round(visualtime)])
 
 if ischar(Parameter.Context)
-disp(['  #Centers    psnr    noise    ',Parameter.Context,'    normalize',' context(s)'])
-disp([length(unique(AssignVec2)), result2, round(sigma), Parameter.Spatil.lambda ,...
-    Parameter.normalize ,round(contexttime)])
+    if ischar(Parameter.Spatil.CoOcThr);Parameter.Spatil.CoOcThr=nan;end
+    fprintf(strcat('#Centers    psnr    Context    noise    ,',Parameter.Context,'-Lambda  context(s)  K2    NN    CC_{Thr}\n',...
+        ' %3u       %2.3f   %2.3f     %3u           %G          %G     %u      %u     %3.2E\n'),...
+        size(Centers,3), result,result2, sigma,Parameter.Spatil.lambda,...
+        contexttime,length (unique(AssignVec2)),Parameter.Spatil.NN,Parameter.Spatil.CoOcThr);
+
+% disp(['  #Centers    psnr    noise    ',Parameter.Context,'    normalize',' context(s)'])
+% disp([length(unique(AssignVec2)), result2, round(sigma), Parameter.Spatil.lambda ,...
+%     Parameter.normalize ,round(contexttime)])
+
 end
 
 % rmpath(NewPath);

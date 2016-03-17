@@ -1,10 +1,10 @@
 function setGlobalParameter()
 global Parameter Analysis ORACLE
 %%  ############# Parameter  ##############
-InitClustersNUM=250;        MaxSubSpace=0;      MinimunClusterSize=20;
+InitClustersNUM=70;        MaxSubSpace=0;      MinimunClusterSize=20;
 Debug=false;                 USEORACLE=false;
 SplitType='median'; % 'median' or 'totvar'
-Context='comeans'; % [] or 'spectral' or 'graphcut' 'rl' or 'mrf' 'entropy'
+Context='mutualdist'; % [] or 'spectral' or 'graphcut' 'rl' or 'mrf' 'entropy'
                    % 'mutualdist', 'comeans' 
 % **************     other clustring Parameters     ****************
 Parameter.MSS=MaxSubSpace;          Parameter.minclstsize=MinimunClusterSize;
@@ -23,14 +23,14 @@ Parameter.Spectral=struct('clustrsNUM',InitClustersNUM,'dictsize',dictsize,...
     'sparsity',sparsity,'HardThr',HardThr,'Fast',true);
 
 % **************     Context clustring Parameters     ****************
-Parameter.Spatil.spatialdist='decomposition';        Parameter.Spatil.lambda=0.005;
+Parameter.Spatil.spatialdist='decomposition';        Parameter.Spatil.lambda=0.05;
 %'landmarks' / 'decomposition'  /  'simplenoramlize' /'none'
 Parameter.Spatil.sigma=20;   Parameter.Spatil.NN=7;      Parameter.Spatil.CoOcThr='unused';
 Parameter.location='C:/Users/Yair/Dropbox/Thesis code';
 %%  ############# Analysis  ##############
 if Parameter.ORACLE; if ~exist('ORACLE','var');ORACLE=Analysis.ORACLE;end;end %use last ORACLE Or update
 Analysis=struct('Show',true,'Save',true,'figures',2,'Fast',true,'Handles',[]...
-    ,'K',0,'DebuggerMode',Debug,'LabelsSize',...
+    ,'K',0,'DebuggerMode',Debug,'ColorMap','jet','LabelsSize',...
     [Parameter.row-sqrt(Parameter.wsize2)+1,Parameter.col-sqrt(Parameter.wsize2)+1]);
 if Parameter.ORACLE; Analysis.ORACLE=ORACLE;end
 end

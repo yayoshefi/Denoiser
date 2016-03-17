@@ -15,15 +15,16 @@ function [C,H]=clusterRep(Data,AssignVec,Hist)
 K=size(Centers,3); pnum=size(Data,2);
 
 H=zeros(K,K);
-tic
+tic;
 for k=1:K
     cluster=Hist(AssignVec==k,:);
     clstsize=size(cluster,1);
     RepD=inf; Rep=zeros(1,K);
     for c_i=1:clstsize
         candidate=cluster(c_i,:);
-        tempD=0;
         tempD=FastEMD(squeeze(Centers),candidate,squeeze(Centers),cluster);
+        tempD=sum(tempD);
+%         tempD=0;        
 %         for m=1:clstsize
 %             tempD=tempD+emd(squeeze(Centers)',squeeze(Centers)',candidate',cluster(:,m)',@gdf);
 %         end
@@ -31,7 +32,7 @@ for k=1:K
             RepD=tempD;  Rep=candidate;   end
     end
     H(k,:)=Rep;
-    if ~mod(k,10); disp (strcat('calculated: ',num2str(k), ' clusters Hist Rep. in :',num2str (toc), ' sec'));end
+    if ~mod(k,10); fprintf ('calculated: %u Histograms clusters Rep. in :% 3f sec\n',k,toc);end
 end
 C=Centers; 
 end

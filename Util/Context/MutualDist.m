@@ -22,17 +22,22 @@ n=Analysis.LabelsSize(2);
 NN=Parameter.Spatil.NN;  %window2
 padding=floor(NN/2);
 
-Lhat=AssignVec;
-for iter=1:1
+Lhat=AssignVec; MaxIter=3; figure;
+for iter=1:MaxIter
     AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
+    %% Debug
+    subplot(MaxIter,1,iter);imagesc(AssignImg);colormap (Analysis.ColorMap);title(['iteration ',num2str(iter)]);
+    %%
+    AssignImg=padarray(AssignImg,[padding,padding],-1);
+    
     Neigbour=im2col(AssignImg,[NN,NN],'sliding');
     Neigbour(ceil(NN^2/2),:)=[];
     Hist=histc(Neigbour,1:K,1)'/(NN^2-1);
-    p=logical(padarray(ones(m-2*padding,n-2*padding),[padding,padding]));
+%     p=logical(padarray(ones(m-2*padding,n-2*padding),[padding,padding]));
+%     [C,H]=clusterRep(Data,Lhat(p),Hist);
+    [C,H]=clusterRep(Data,Lhat,Hist);
 
-    [C,H]=clusterRep(Data,Lhat(p),Hist);
-
-    MutualDist=inf*ones(1,pnum);  AssignVec2=Lhat;
+    MutualDist=inf*ones(1,pnum);  %AssignVec2=Lhat;
     for k=1:K
         d_vis=sqrt(  abs( sum(Data.^2)-2*C(:,:,k)'*Data+C(:,:,k)'*C(:,:,k) )  );
         d_hist=FastEMD(squeeze(Centers),H(k,:),squeeze(Centers),Hist);
@@ -40,8 +45,8 @@ for iter=1:1
         tempDist=d_vis+Parameter.Spatil.lambda*d_hist;
 
         MutualDist(tempDist<MutualDist)=tempDist(tempDist<MutualDist);
-        AssignVec2(tempDist<MutualDist)=k;
+        Lhat(tempDist<MutualDist)=k;
     end
 end
-
+AssignVec2=Lhat;
 end

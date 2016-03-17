@@ -5,7 +5,7 @@ function AssignVec2=CoMeans(Data,AssignVec,Centers)
 % space.
 % this is consistent with Tokt 1st Scheme of minimizing the functional
 
-SpatialRefernce='CenterPixel';
+SpatialRefernce='MessagePass';
 
 global Parameter Analysis
 K=size(Centers,3);
@@ -25,10 +25,9 @@ m=Analysis.LabelsSize(1)    ;n=Analysis.LabelsSize(2);
 %Analysis.LabelsSize=Analysis.LabelsSize+(NN-1); %restore values to origin
 
 samp=randperm(size(S,1),3);
-ratio=0; CC_Hold=inf;
-for iter=1:6
-    disp (strcat('current ratio: ',num2str(ratio)));
-%     if iter>1; SpatialRefernce='CenterPixel';end
+ratio=0;         CC_Hold=CC_Entropy(Lhat,K,m,n);
+for iter=1:3
+    disp (strcat('current ratio: ',num2str(ratio),', with ', num2str( length (unique(Lhat)) ) ,' unique Centers'  ));
     AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
     AssignImg=padarray(AssignImg,[padding,padding],-1);
 
@@ -71,9 +70,9 @@ for iter=1:6
         Debug(CCthr,Lhat,Pr,iter,S,E_h,L,samp);end
 
 %    fixed  Centers
-   [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);
-   Centers=cat(3,Centers,inf*ones(wsize^2,1,K-size(Centers,3)));      % To avoid case of degenarated Centers
-   [S]=affinity (Data, Centers,0,true)';
+% %    [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);
+% %    Centers=cat(3,Centers,inf*ones(wsize^2,1,K-size(Centers,3)));      % To avoid case of degenarated Centers
+% %    [S]=affinity (Data, Centers,0,true)';
 end
 
 AssignVec2=Lhat;
@@ -153,7 +152,24 @@ xlabel(strcat(num2str(length(unique(Lhat))) ,' diffrent labels'))
 
 end
 
-function H=CC_Entropy(CoOcN)
+function H=CC_Entropy(CoOcN,K,m,n)
+global Parameter
+
+if isvector(CoOcN)         %case this is AssignVec and not CoOc
+    wsize=sqrt(Parameter.wsize2); NN=Parameter.Spatil.NN; padding=floor(NN/2);
+    AssignImg=col2im(CoOcN,[wsize,wsize],[Parameter.row,Parameter.col]);
+    AssignImg=padarray(AssignImg,[padding,padding],-1);
+
+    Neigbour=im2col(AssignImg,[NN,NN],'sliding');
+    Neigbour(ceil(NN^2/2),:)=[];
+    H=histc(Neigbour,1:K,1)';
+    
+    Indicator=sparse(CoOcN,1:m*n,ones(1,m*n),K,m*n);
+    CC=Indicator*H;
+    CCNorm=sum(CC,2);
+    CoOcN=CC./CCNorm(:,ones(1,K),:); CoOcN(CC==0)=0; %to avoid 0/0=nan
+end
+
 LogCoOc=log2(CoOcN);
 LogCoOc(CoOcN==0)=0;  % no nan resulting from inf*0;
 H_row=-sum( CoOcN.*LogCoOc,2 );

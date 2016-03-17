@@ -2,7 +2,7 @@
 clearvars ContextPsnr Psnr CentersCount
 load Database; %Images = createImages();
 Image=barbara;
-description='collecting data NN=11;Thr=0.005 NON Moving Centers ';
+description='collecting data CoMeans(CenterPixel) ';
 %% --------------------------- PARAMETERS ------------------------------
 
 global Parameter Analysis
@@ -12,11 +12,11 @@ metric ='euclidean';        %distance function can be 'euclidean','mahalanobis'
                             %'varing_cluster_size'                            
 
 % ---- arrays ----
-sigma_array=[10,20,30,40,60,80];
+sigma_array=[10,20,30,40,50,60,80];
 wsize_array=[5,7,9];
 normalize_array=[0];          %normalize 0-do nothing ; 1-only bias; 2- bias and gain
-lambda_array=[0.001,0.005,0.01,0.05];%,0.03,0.05,0.1,.3,0.5,1];
-NN_array=[3,5,7,9,11];
+lambda_array=[0.01,0.05,0.1];%,0.3,0.5,1];
+NN_array=[5,7,9];
 CoOcThr_array=[0.005,0.0001];
 
 Parameter=struct('description',description,'row',size(Image,1),'col',size(Image,2),...
@@ -75,21 +75,30 @@ for sigma=sigma_array
                  Parameter.Spatil.NN=NN;
             for l=1:length(lambda_array)
                 Parameter.Spatil.lambda=lambda_array(l);
+                startcontext=toc;
 close all
 if ischar(Parameter.Context)
     [AssignVec2]=SpatialContext (Patches,AssignVec,Centers);
-    contexttime=toc-cleaningtime-itertime;
+    contexttime=toc-startcontext;
+%     contexttime=toc-cleaningtime-itertime;
     [Context_Output]=removenoise(double(Image),Noise,AssignVec2);
     result2=psnr(Context_Output,double(Image),255);
 
     ContextPsnr.(['Lambda',num2str(l)]).(['NN',num2str(NN)]).(['CoOcThr',num2str(thr)])...
         .(['normalize',num2str(normalize)]).(['wsize',num2str(wsize)]).(['sigma',num2str(sigma)])=result2;    
    
-    disp(['  #Centers    psnr    Context    noise    ',Method,'    normalize',' Lambda','  context(s)'])
-    disp([round(size(Centers,3)), result,result2, round(sigma),...
-        Parameter.values.(Method),Parameter.normalize,Parameter.Spatil.lambda ,round(contexttime)])
+%     disp(['  #Centers    psnr    Context    noise    ',Method,'    normalize',' Lambda','  context(s)'])
+%     disp([round(size(Centers,3)), result,result2, round(sigma),...
+%         Parameter.values.(Method),Parameter.normalize,Parameter.Spatil.lambda ,round(contexttime)])
+    fprintf(['#Centers    psnr    Context    noise    ',Parameter.Context,'-Lambda  context(s)  K2   NN   CC_{Thr}\n',...
+        ' %3u       %2.3f   %2.3f     %3u      %G     %3G   %u    %u   %1.3G    %2E\n'],...
+        round(size(Centers,3)), result,result2, round(sigma),Parameter.Spatil.lambda,...
+        round(contexttime),length (unique(AssignVec2)),NN,Parameter.Spatil.CoOcThr)
+%     fprintf('There are %4.0u unique Clusters. The Context time is: %3.0G',length (unique(AssignVec2)),contexttime);
 
     PrintDnoise ({Output,Context_Output},{result,result2},AssignVec,AssignVec2)
+    
+    
     
 else
     disp(['  #Centers    psnr    noise    ',Method,'    normalize',' cluster(s)'])
@@ -108,11 +117,11 @@ Psnr.(['normalize',num2str(normalize)]).(['wsize',num2str(wsize)])...
             end % Lambda
             end % NN
             end % CoOcThr
-        end
-    end
-end
+        end     %Normalize
+    end         %Wsize
+end             %sigma
  %% save info
-partial_Data=struct('psnr',Psnr,'ContextPsnr',ContextPsnr,'Parameters',Parameter);
+full_Data=struct('psnr',Psnr,'ContextPsnr',ContextPsnr,'Parameters',Parameter);
 save (strcat(Parameter.location,'\Results/',date,'/','full_Data.mat'), 'full_Data', '-v7.3')
-
+full_Data
 rmpath(NewPath);
