@@ -23,7 +23,7 @@ Parameter.Spectral=struct('clustrsNUM',InitClustersNUM,'dictsize',dictsize,...
     'sparsity',sparsity,'HardThr',HardThr,'Fast',true);
 
 % **************     Context clustring Parameters     ****************
-Parameter.Spatil.spatialdist='decomposition';        Parameter.Spatil.lambda=0.05;
+Parameter.Spatil.spatialdist='decomposition';        Parameter.Spatil.lambda=1.5;
 %'landmarks' / 'decomposition'  /  'simplenoramlize' /'none'
 Parameter.Spatil.sigma=20;   Parameter.Spatil.NN=7;      Parameter.Spatil.CoOcThr='unused';
 Parameter.location='C:/Users/Yair/Dropbox/Thesis code';

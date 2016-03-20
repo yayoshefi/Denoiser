@@ -2,7 +2,7 @@
 clearvars ContextPsnr Psnr CentersCount
 load Database; %Images = createImages();
 Image=barbara;
-description='collecting data CoMeans(CenterPixel) ';
+description='Checking lamba for mutual distance ';
 %% --------------------------- PARAMETERS ------------------------------
 
 global Parameter Analysis
@@ -12,12 +12,12 @@ metric ='euclidean';        %distance function can be 'euclidean','mahalanobis'
                             %'varing_cluster_size'                            
 
 % ---- arrays ----
-sigma_array=[10,20,30,40,50,60,80];
-wsize_array=[5,7,9];
+sigma_array=[20,40,60];
+wsize_array=[7,9];
 normalize_array=[0];          %normalize 0-do nothing ; 1-only bias; 2- bias and gain
-lambda_array=[0.01,0.05,0.1];%,0.3,0.5,1];
-NN_array=[5,7,9];
-CoOcThr_array=[0.005,0.0001];
+lambda_array=[0.5,0.8,1.2];%[0.01,0.05,0.1];
+NN_array=[7];
+CoOcThr_array=nan;%[0.005,0.0001];
 
 Parameter=struct('description',description,'row',size(Image,1),'col',size(Image,2),...
     'Method',Method,'metric',metric);
@@ -91,9 +91,9 @@ if ischar(Parameter.Context)
 %     disp([round(size(Centers,3)), result,result2, round(sigma),...
 %         Parameter.values.(Method),Parameter.normalize,Parameter.Spatil.lambda ,round(contexttime)])
     fprintf(['#Centers    psnr    Context    noise    ',Parameter.Context,'-Lambda  context(s)  K2   NN   CC_{Thr}\n',...
-        ' %3u       %2.3f   %2.3f     %3u      %G     %1.4G   %u    %u    %2E\n'],...
-        round(size(Centers,3)), result,result2, round(sigma),Parameter.Spatil.lambda,...
-        round(contexttime),length (unique(AssignVec2)),NN,Parameter.Spatil.CoOcThr)
+        ' %3u       %2.3f   %2.3f     %3u            %3G            %4.3G   %u    %u    %2E\n'],...
+        round(size(Centers,3)), result,result2, sigma,Parameter.Spatil.lambda,...
+        contexttime/60,length (unique(AssignVec2)),NN,Parameter.Spatil.CoOcThr)
 %     fprintf('There are %4.0u unique Clusters. The Context time is: %3.0G',length (unique(AssignVec2)),contexttime);
 
     PrintDnoise ({Output,Context_Output},{result,result2},AssignVec,AssignVec2)

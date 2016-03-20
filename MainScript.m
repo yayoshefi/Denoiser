@@ -2,7 +2,7 @@
 % clearvars
 load Database;Images = createImages();
 Image=barbara;
-description='EMD VS FastEMD';
+description='Mutual dist';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 
@@ -98,7 +98,7 @@ fprintf(['#Centers    psnr    noise    ',Method,'    normalize',' cluster(s)',' 
 if ischar(Parameter.Context)
     if ischar(Parameter.Spatil.CoOcThr);Parameter.Spatil.CoOcThr=nan;end
     fprintf(strcat('#Centers    psnr    Context    noise    ,',Parameter.Context,'-Lambda  context(s)  K2    NN    CC_{Thr}\n',...
-        ' %3u       %2.3f   %2.3f     %3u           %G          %G     %u      %u     %3.2E\n'),...
+        ' %3u       %2.3f   %2.3f     %3u           %G            %3G     %u     %u     %3.2E\n'),...
         size(Centers,3), result,result2, sigma,Parameter.Spatil.lambda,...
         contexttime,length (unique(AssignVec2)),Parameter.Spatil.NN,Parameter.Spatil.CoOcThr);
 

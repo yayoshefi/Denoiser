@@ -14,13 +14,11 @@ function [C,H]=clusterRep(Data,AssignVec,Hist)
 %% Visual space
 [Centers,~,AssignVec,~,~]=UpdateCenter(Data,AssignVec,false);
 K=size(Centers,3); pnum=size(Data,2);
-
 %% Histogrma Space
-HistSpace='CC';
+HistSpace='CC'
 switch HistSpace
     case 'CC'
-        H=ShowCoOc(AssignVec,'CoOc');close (gcf);
-
+        H=ShowCoOc(AssignVec,'CoOc');
     case 'FastEMD'
         H=zeros(K,K);
         strt=toc;
