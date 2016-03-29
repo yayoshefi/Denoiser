@@ -25,7 +25,7 @@ m=Analysis.LabelsSize(1)    ;n=Analysis.LabelsSize(2);
 %Analysis.LabelsSize=Analysis.LabelsSize+(NN-1); %restore values to origin
 
 samp=randperm(size(S,1),3);
-ratio=0;            [CC_Hold1]=ShowCoOc(Lhat,false,'Entropy');
+ratio=0;            [CC_Hold]=ShowCoOc(Lhat,false,'Entropy');
                     
 for iter=1:3
     disp (strcat('current ratio: ',num2str(ratio),', with ', num2str( length (unique(Lhat)) ) ,' unique Centers'  ));
