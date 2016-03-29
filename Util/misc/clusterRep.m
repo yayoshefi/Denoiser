@@ -16,12 +16,12 @@ function [C,H]=clusterRep(Data,AssignVec,Hist)
 K=size(Centers,3); pnum=size(Data,2);
 
 %% Histogrma Space
-HistSpace='CC';
+HistSpace='Lb_EMD';
 switch HistSpace
     case 'CC'
         H=ShowCoOc(AssignVec,'CoOc');close (gcf);
 
-    case 'FastEMD'
+    case 'Lb_EMD'
         H=zeros(K,K);
         strt=toc;
         for k=1:K

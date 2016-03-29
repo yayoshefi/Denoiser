@@ -25,10 +25,11 @@ padding=floor(NN/2);
 Lhat=AssignVec; MaxIter=3; figure;
 for iter=1:MaxIter
     AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
-    %% Debug
-    subplot(MaxIter,1,iter);imagesc(AssignImg);colormap (Analysis.ColorMap);
-    axis image off ;title(['iteration ',num2str(iter)]);
-    %%
+    
+    if Analysis.DebuggerMode && ~(mod(iter+1,1));  % Debug
+        subplot(MaxIter,1,iter);imagesc(AssignImg);colormap (Analysis.ColorMap);
+        axis image off ;title(['iteration ',num2str(iter)]);
+    end
     AssignImg=padarray(AssignImg,[padding,padding],-1);
     
     Neigbour=im2col(AssignImg,[NN,NN],'sliding');

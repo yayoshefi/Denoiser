@@ -12,9 +12,8 @@ global Parameter
 row=Parameter.row;      col=Parameter.col;
 wsize=sqrt(Parameter.wsize2);
 K=max(AssignVec);
-clstCnt=histcounts(AssignVec,1:K+1);
-% clstPr_obj=histogram(AssignVec,1:K+1);
-% clstCnt=clstPr_obj.Values;
+clstPr_obj=histogram(AssignVec,1:K+1);
+clstCnt=clstPr_obj.Values;
 
 AssignImg=col2im(AssignVec,[wsize,wsize],[Parameter.row,Parameter.col]);
 [m,n]=size(AssignImg);
