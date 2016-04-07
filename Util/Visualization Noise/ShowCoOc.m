@@ -39,7 +39,8 @@ CoOcN=CoOc./CoOcNorm(:,ones(1,size(CoOc,1)),:);CoOcN(CoOc==0)=0;
 CoOcNprime=diag(1./clstCnt)*Indicator*Hprime;
 %% diffrent types of Co-Occurrencce matrix
 h_aH_b=clstCnt'*clstCnt;
-I=CoOc./h_aH_b;                         %like mutual information
+M=CoOc./h_aH_b;                         %like mutual information
+M=CwithWindow (AssignImg)./h_aH_b;
 P=Indicator*Hprime/sum(clstCnt);        %joint probability
 
 %% outputs options
@@ -61,6 +62,7 @@ if nargin>2
     switch varargin{2}
         case 'CoOc'
             varargout{1}=CoOcN;
+%             varargout{1}=M;
         case 'EpsNorm'
             varargout{1}=epsNorm1; varargout{2}=epsNorm2;
         case 'Entropy'
@@ -92,6 +94,30 @@ if visual; Visualize(CoOcN);end  %output figure
     end
 end
 
+function C= CwithWindow (AssignImg)
+global Parameter
+K=max(AssignImg(:));
+NN=Parameter.Spatil.NN;  %window2
+padding=(sqrt(Parameter.wsize2)-1)/2;
+sigma=1;
+
+C=zeros(K);
+
+Neigbour=im2col(AssignImg,[NN,NN],'sliding')';
+[x,y]=meshgrid(-floor(NN/2):floor(NN/2));
+Window=exp(-sqrt(x.^2+y.^2)/(sigma^2));
+window=fspecial('gaussian',NN);
+
+window=window(:);   %window(floor(NN^2/2))=[];
+L=AssignImg(padding+1:end-padding,padding+1:end-padding);
+L=L(:);
+for a=1:K
+    CenterIsa=Neigbour(L==a,:);
+    for b=1:K
+        C(a,b)=sum((CenterIsa==b)*window);
+    end
+end
+end
 
 % glcm = graycomatrix(AssignImg,'GrayLimits',[1,K],'NumLevels',K,'Offset',[0,1;1,0],'Symmetric',true);
 %CoOc=sum(glcm,3);

@@ -5,7 +5,7 @@ function AssignVec2=CoMeans(Data,AssignVec,Centers)
 % space.
 % this is consistent with Tokt 1st Scheme of minimizing the functional
 
-SpatialRefernce='ML';
+SpatialRefernce='MessagePass';
 
 global Parameter Analysis
 K=size(Centers,3);
