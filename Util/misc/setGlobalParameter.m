@@ -1,7 +1,7 @@
 function setGlobalParameter()
 global Parameter Analysis ORACLE
 %%  ############# Parameter  ##############
-InitClustersNUM=250;        MaxSubSpace=0;      MinimunClusterSize=20;
+InitClustersNUM=7;        MaxSubSpace=0;      MinimunClusterSize=20;
 Debug=false;                 USEORACLE=false;
 SplitType='median'; % 'median' or 'totvar'
 Context='comeans'; % [] or 'spectral' or 'graphcut' 'rl' or 'mrf' 'entropy'
@@ -23,9 +23,9 @@ Parameter.Spectral=struct('clustrsNUM',InitClustersNUM,'dictsize',dictsize,...
     'sparsity',sparsity,'HardThr',HardThr,'Fast',true);
 
 % **************     Context clustring Parameters     ****************
-Parameter.Spatil.spatialdist='decomposition';        Parameter.Spatil.lambda=0.01;
+Parameter.Spatil.spatialdist='decomposition';        Parameter.Spatil.lambda=0.05;
 %'landmarks' / 'decomposition'  /  'simplenoramlize' /'none'
-Parameter.Spatil.sigma=20;   Parameter.Spatil.NN=7;      Parameter.Spatil.CoOcThr='unused';
+Parameter.Spatil.sigma=20;   Parameter.Spatil.NN=3;      Parameter.Spatil.CoOcThr='unused';
 Parameter.location='C:/Users/Yair/Dropbox/Thesis code';
 %%  ############# Analysis  ##############
 if Parameter.ORACLE; if ~exist('ORACLE','var');ORACLE=Analysis.ORACLE;end;end %use last ORACLE Or update

@@ -54,11 +54,14 @@ for iter=1:3
         
 
     end
-    
+%     [I, PixelTotalI]=tf_idf (H);
+%     PixelTotalI=(PixelTotalI<100);
+%     PixelWeightI=PixelTotalI(:,ones(1,K));
     switch SpatialRefernce
         case 'MessagePass'
             HNorm=sum(H,2);
             E_h=DiagonalMult(H,1./HNorm,'l'); %for partial histograms
+%             E_h=E_h.*PixelWeightI;%%
             L=(1-Parameter.Spatil.lambda)*S + Parameter.Spatil.lambda*E_h*CCthr;
         case 'CenterPixel'
             E_h=HistDist (H,CCthr,Centers);
@@ -77,7 +80,7 @@ for iter=1:3
     if Analysis.DebuggerMode && ~(mod(iter+1,1));
         Debug(CCthr,Lhat,Pr,iter,S,E_h,L,samp);end
 
-%    fixed  Centers-> need to comment next 3 rows
+%    fixed  Centers-> need to comment next 3 rows speeds up(no calc affinity)
    [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);
    Centers=cat(3,Centers,inf*ones(wsize^2,1,K-size(Centers,3)));      % To avoid case of degenarated Centers
    [S]=affinity (Data, Centers,0,true)';

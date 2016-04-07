@@ -1,13 +1,14 @@
-function I=tf_idf (H)
+function [I, PixelTotalI]=tf_idf (H)
 
 [n,K]=size (H);
 
 tf=H;
-idf=sum(logical(H),2);
-idf=log(1+idf);
+idf=sum(logical(H),1);
+idf=log(1+n./idf);
 
-I=tf.*idf(:,ones(1,K));
+I=tf.*idf(ones(n,1),:);
 
+PixelTotalI=sum(I,2);
 end
 
 %I_pixel=sum(I,2); 
