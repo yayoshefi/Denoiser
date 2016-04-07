@@ -25,9 +25,11 @@ padding=floor(NN/2);
 Lhat=AssignVec; MaxIter=3; figure;
 for iter=1:MaxIter
     AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
-    %% Debug
-    subplot(MaxIter,1,iter);imagesc(AssignImg);colormap (Analysis.ColorMap);title(['iteration ',num2str(iter)]);
-    %%
+    
+    if Analysis.DebuggerMode && ~(mod(iter+1,1));  % Debug
+        subplot(MaxIter,1,iter);imagesc(AssignImg);colormap (Analysis.ColorMap);
+        axis image off ;title(['iteration ',num2str(iter)]);
+    end
     AssignImg=padarray(AssignImg,[padding,padding],-1);
     
     Neigbour=im2col(AssignImg,[NN,NN],'sliding');
@@ -40,12 +42,12 @@ for iter=1:MaxIter
     MutualDist=inf*ones(1,pnum);  %AssignVec2=Lhat;
     for k=1:K
         d_vis=sqrt(  abs( sum(Data.^2)-2*C(:,:,k)'*Data+C(:,:,k)'*C(:,:,k) )  );
-        d_hist=FastEMD(squeeze(Centers),H(k,:),squeeze(Centers),Hist);
+        d_hist=FastEMD(squeeze(C),H(k,:),squeeze(C),Hist);
         
         tempDist=d_vis+Parameter.Spatil.lambda*d_hist;
-
-        MutualDist(tempDist<MutualDist)=tempDist(tempDist<MutualDist);
-        Lhat(tempDist<MutualDist)=k;
+        index=tempDist<MutualDist;
+        MutualDist(index)=tempDist(index);
+        Lhat(index)=k;
     end
 end
 AssignVec2=Lhat;

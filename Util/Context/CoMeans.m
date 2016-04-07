@@ -25,7 +25,8 @@ m=Analysis.LabelsSize(1)    ;n=Analysis.LabelsSize(2);
 %Analysis.LabelsSize=Analysis.LabelsSize+(NN-1); %restore values to origin
 
 samp=randperm(size(S,1),3);
-ratio=0;         CC_Hold=CC_Entropy(Lhat,K,m,n);
+ratio=0;            [CC_Hold]=ShowCoOc(Lhat,false,'Entropy');
+                    
 for iter=1:3
     disp (strcat('current ratio: ',num2str(ratio),', with ', num2str( length (unique(Lhat)) ) ,' unique Centers'  ));
     AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
@@ -39,14 +40,15 @@ for iter=1:3
         CCthr=Analysis.ORACLE.CoOc;
     else
         if ~isinteger(Parameter.Spatil.CoOcThr);Parameter.Spatil.CoOcThr=0.005;end
-        Indicator=sparse(Lhat,1:m*n,ones(1,m*n),K,m*n);
-        CC=Indicator*H;
-        CCNorm=sum(CC,2);
-        CCN=CC./CCNorm(:,ones(1,K),:); CCN(CC==0)=0; %to avoid 0/0=nan
+%         Indicator=sparse(Lhat,1:m*n,ones(1,m*n),K,m*n);
+%         CC=Indicator*H;
+%         CCNorm=sum(CC,2);
+%         CCN=CC./CCNorm(:,ones(1,K),:); CCN(CC==0)=0; %to avoid 0/0=nan
+        [CC]=ShowCoOc(AssignVec,false,'CoOc');
 
-        CCN(CCN<Parameter.Spatil.CoOcThr)=0;
-        CCNorm=sum(CCN,2);
-        CCthr=CCN./CCNorm(:,ones(1,K),:); CCthr(CCN==0)=0;
+        CC(CC<Parameter.Spatil.CoOcThr)=0;
+        CCNorm=sum(CC,2);
+        CCthr=CC./CCNorm(:,ones(1,K),:); CCthr(CC==0)=0;
         
         CC_Hnew=CC_Entropy(CCthr); ratio=CC_Hnew/CC_Hold; CC_Hold=CC_Hnew;
         
@@ -55,24 +57,30 @@ for iter=1:3
     
     switch SpatialRefernce
         case 'MessagePass'
-            E_h=H/(NN^2-1);
+            HNorm=sum(H,2);
+            E_h=DiagonalMult(H,1./HNorm,'l'); %for partial histograms
+            L=(1-Parameter.Spatil.lambda)*S + Parameter.Spatil.lambda*E_h*CCthr;
         case 'CenterPixel'
-            E_h=HistDist (H,CC,Centers);
+            E_h=HistDist (H,CCthr,Centers);
+            L=(1-Parameter.Spatil.lambda)*S + Parameter.Spatil.lambda*E_h*CCthr;
+        case 'ML'
+            HNorm=sum(H,2);
+            E_h=DiagonalMult(H,1./HNorm,'l'); %for partial histograms
+            L=(1-Parameter.Spatil.lambda)*S + Parameter.Spatil.lambda*E_h*CCthr';       %notice to invert CC
     end
             
-    L=(1-Parameter.Spatil.lambda)*S + Parameter.Spatil.lambda*E_h*CCthr;
     % when not caclculating partial histogrmas
     %L=S;
     %L(p,:)=(1-Parameter.Spatil.lambda)*reshape(S(p,:),m*n,K)+Parameter.Spatil.lambda/(NN^2-1)*H*CCthr;
     
     [Pr,Lhat]=max(L,[],2);
-    if Analysis.DebuggerMode && ~(mod(iter+1,2));
+    if Analysis.DebuggerMode && ~(mod(iter+1,1));
         Debug(CCthr,Lhat,Pr,iter,S,E_h,L,samp);end
 
-%    fixed  Centers
-% %    [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);
-% %    Centers=cat(3,Centers,inf*ones(wsize^2,1,K-size(Centers,3)));      % To avoid case of degenarated Centers
-% %    [S]=affinity (Data, Centers,0,true)';
+%    fixed  Centers-> need to comment next 3 rows
+   [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);
+   Centers=cat(3,Centers,inf*ones(wsize^2,1,K-size(Centers,3)));      % To avoid case of degenarated Centers
+   [S]=affinity (Data, Centers,0,true)';
 end
 
 AssignVec2=Lhat;
@@ -141,7 +149,7 @@ subplot(2,2,4);
 modes=sum(CoOc>0,2);
 plot(modes);title (strcat('using Thr: ',num2str(Parameter.Spatil.CoOcThr)));
 axis([1,size(CoOc,1),0,15]);grid on
-xlabel('Labels');ylabel('modes for every cluster')
+xlabel('Labels');ylabel('||_{\epsilon} per Conditonal Pr.')
 
 subplot(2,2,1);
 imagesc(Pr_Img);title ('Probabilty to be in Lhat'); colormap jet

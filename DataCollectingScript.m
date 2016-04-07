@@ -2,7 +2,7 @@
 clearvars ContextPsnr Psnr CentersCount
 load Database; %Images = createImages();
 Image=barbara;
-description='collecting data CoMeans(CenterPixel) ';
+description='Checking Maximum Likelihood ';
 %% --------------------------- PARAMETERS ------------------------------
 
 global Parameter Analysis
@@ -12,10 +12,10 @@ metric ='euclidean';        %distance function can be 'euclidean','mahalanobis'
                             %'varing_cluster_size'                            
 
 % ---- arrays ----
-sigma_array=[10,20,30,40,50,60,80];
+sigma_array=[15,25,50,70];
 wsize_array=[5,7,9];
 normalize_array=[0];          %normalize 0-do nothing ; 1-only bias; 2- bias and gain
-lambda_array=[0.01,0.05,0.1];%,0.3,0.5,1];
+lambda_array=[0.01,0.1,0.5];%[0.01,0.05,0.1];
 NN_array=[5,7,9];
 CoOcThr_array=[0.005,0.0001];
 
@@ -90,10 +90,10 @@ if ischar(Parameter.Context)
 %     disp(['  #Centers    psnr    Context    noise    ',Method,'    normalize',' Lambda','  context(s)'])
 %     disp([round(size(Centers,3)), result,result2, round(sigma),...
 %         Parameter.values.(Method),Parameter.normalize,Parameter.Spatil.lambda ,round(contexttime)])
-    fprintf(['#Centers    psnr    Context    noise    ',Parameter.Context,'-Lambda  context(s)  K2   NN   CC_{Thr}\n',...
-        ' %3u       %2.3f   %2.3f     %3u      %G     %1.4G   %u    %u    %2E\n'],...
-        round(size(Centers,3)), result,result2, round(sigma),Parameter.Spatil.lambda,...
-        round(contexttime),length (unique(AssignVec2)),NN,Parameter.Spatil.CoOcThr)
+    fprintf(['#Centers    psnr    Context    noise    ',Parameter.Context,'-Lambda  context(m)  K2   NN   CC_{Thr}\n',...
+        ' %3u       %2.3f   %2.3f     %3u            %3G           %4.3G   %u    %u    %2.1G\n'],...
+        round(size(Centers,3)), result,result2, sigma,Parameter.Spatil.lambda,...
+        contexttime/60,length (unique(AssignVec2)),NN,Parameter.Spatil.CoOcThr)
 %     fprintf('There are %4.0u unique Clusters. The Context time is: %3.0G',length (unique(AssignVec2)),contexttime);
 
     PrintDnoise ({Output,Context_Output},{result,result2},AssignVec,AssignVec2)

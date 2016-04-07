@@ -2,12 +2,12 @@
 % clearvars
 load Database;Images = createImages();
 Image=barbara;
-description='EMD VS FastEMD';
+description='Maximum Likelihood';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 
 Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
-sigma=40;
+sigma=25;
 wsize=7;
 normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain (-5)- Oracle
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'
@@ -53,9 +53,7 @@ itertime=toc;
 result=psnr(Output,double(Image),255);
 cleaningtime=toc-itertime;
 
-%% -------------------------------------------------------------
 %% ------------------  Context  --------------------------------
-%% -------------------------------------------------------------
 if ischar(Parameter.Context)
 %     if Analysis.UseOracle;Patches=Data;end  %use noisy Image with no normalize
     [AssignVec2]=SpatialContext (Patches,AssignVec,Centers);
@@ -97,10 +95,10 @@ fprintf(['#Centers    psnr    noise    ',Method,'    normalize',' cluster(s)',' 
 
 if ischar(Parameter.Context)
     if ischar(Parameter.Spatil.CoOcThr);Parameter.Spatil.CoOcThr=nan;end
-    fprintf(strcat('#Centers    psnr    Context    noise    ,',Parameter.Context,'-Lambda  context(s)  K2    NN    CC_{Thr}\n',...
-        ' %3u       %2.3f   %2.3f     %3u           %G          %G     %u      %u     %3.2E\n'),...
+    fprintf(strcat('#Centers    psnr    Context    noise    ,',Parameter.Context,'-Lambda  context(m)  K2    NN    CC_{Thr}\n',...
+        ' %3u       %2.3f   %2.3f     %3u           %G            %3G     %u     %u     %3.2E\n'),...
         size(Centers,3), result,result2, sigma,Parameter.Spatil.lambda,...
-        contexttime,length (unique(AssignVec2)),Parameter.Spatil.NN,Parameter.Spatil.CoOcThr);
+        contexttime/60,length (unique(AssignVec2)),Parameter.Spatil.NN,Parameter.Spatil.CoOcThr);
 
 % disp(['  #Centers    psnr    noise    ',Parameter.Context,'    normalize',' context(s)'])
 % disp([length(unique(AssignVec2)), result2, round(sigma), Parameter.Spatil.lambda ,...

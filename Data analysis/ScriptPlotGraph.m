@@ -2,10 +2,10 @@
 
 % change if necessary: struct name,strctfields,strctvalues
 strctfields={'Lambda'   ,'NN'   ,'CoOcThr'  ,'normalize'    ,'wsize'};
-strctvalues={ 1         ,3      ,2          ,0              ,5      }; %defualt stats
+strctvalues={ 1         ,7      ,1          ,0              ,9      }; %defualt stats
 
 variable1='Lambda'; 
-Var1_array=[3];
+Var1_array=[1,2];
 LogicVar1=ismember(strctfields,variable1);
 
 
@@ -14,7 +14,7 @@ for i=1:length(Var1_array)
 strctvalues{LogicVar1}=Var1_array(i);
 
 variable2='NN';         %can compare multiplie variables
-Var2_array=[5,7,9];
+Var2_array=[7,9];
 LogicVar2=ismember(strctfields,variable2);
 strctvalues{LogicVar2}=Var2_array;
 
@@ -39,12 +39,12 @@ end
 
 [data_reference]=StructPsnr(full_Data.psnr,{'normalize','wsize'},strctvalues(4:5),sigma_array);
 
-figure;plot (sigma_array,data_reference,'-.+k',sigma_array,data_context);
+figure;plot (sigma_array,data_reference,'-.+k',sigma_array,data_context');
 title('psnr rates for context clustering');legend('kmeans only',legendstring{:});
 xlabel({cell2mat(strctfields);num2str(cell2mat(strctvalues))}); %FIX
 
 gap=data_context-data_reference(ones(size(data_context,1),1),:);
-figure;plot (sigma_array,gap);grid
+figure;plot (sigma_array,gap,'-*');grid
 title('diff psnr rates between context clustering and only visual clustering');legend(legendstring{:});
 
 clearvars LogicVar1 LogicVar2 data_compare
