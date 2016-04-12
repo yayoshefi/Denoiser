@@ -56,6 +56,8 @@ for k=K:-1:1
         Eper=E/E(end);
         if clstsize<2
             E80(k)=0;
+        elseif isequal(cluster_0,zeros(size(cluster_0)))
+            E80(k)=0;   %Check..
         else
             E80(k)=find(Eper>0.8,1);
         end
