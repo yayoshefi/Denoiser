@@ -58,20 +58,16 @@ if nargin>2
 end
 
 if Analysis.Save
-    str=strcat(Parameter.description,Parameter.Method,'_metric_',...
-        Parameter.metric,'_Context_',Parameter.Context,...
-    '_',num2str(Parameter.Spatil.lambda,'%G'),'_normalize',num2str(Parameter.normalize),...
-    '_sigma',num2str(Parameter.sigma));
+    prefix();
+    mkdir( strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix) );
     
-    mkdir( strcat(Parameter.location,'\Results\',date,'\',str) );
-    
-    saveas(h1,strcat(Parameter.location,'\Results\',date,'\',str,'\',h1Num,'_D-noisedImages.jpg'))
+    saveas(h1,strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix,'\',h1Num,Analysis.ShortPrefix,'_D-noisedImages.jpg'))
     if exist('h2','var')         % print Lables if there is
-        saveas(h2,strcat(Parameter.location,'\Results\',date,'\',str,'\',h2Num,'_Lables.jpg'))
+        saveas(h2,strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix,'\',h2Num,Analysis.ShortPrefix,'_Lables.jpg'))
     end
 
     % write parameters to text file
-    fileID = fopen(strcat(Parameter.location,'\Results\',date(),'\',str,'\','Parameter.txt'),'w');
+    fileID = fopen(strcat(Parameter.location,'\Results\',date(),'\',Analysis.DirSuffix,'\','Params_',Analysis.ShortPrefix,'.txt'),'w');
     fprintf(fileID,ParameterText(Parameter));
     fclose(fileID);
 end
@@ -93,6 +89,20 @@ for i=1:length(values)
         
     end
 end
+end
+
+function []= prefix()
+global Parameter Analysis
+% in PrintDnoise there is a subfolder for diffrent noise
+Analysis.DirSuffix=strcat('sigma',num2str(Parameter.sigma),'\',Parameter.description,'Window',num2str(sqrt(Parameter.wsize2)),...
+    '_Context_',Parameter.Context,...
+    '_',num2str(Parameter.Spatil.lambda,'%G'),'NN_',num2str(Parameter.Spatil.NN),...
+    'CoOcThr',num2str(Parameter.Spatil.CoOcThr,'%G'),...
+    Parameter.Method,...
+    '_norm',num2str(Parameter.normalize),'_metric_',Parameter.metric);
+
+Analysis.ShortPrefix=strcat('W1-',num2str(sqrt(Parameter.wsize2)),'_Context:',Parameter.Context,...
+    '-',num2str(Parameter.Spatil.lambda,'%G'),'_NN-',num2str(Parameter.Spatil.NN),';');
 end
 
 

@@ -38,10 +38,10 @@ CoOcN=CoOc./CoOcNorm(:,ones(1,size(CoOc,1)),:);CoOcN(CoOc==0)=0;
 
 CoOcNprime=diag(1./clstCnt)*Indicator*Hprime;
 %% diffrent types of Co-Occurrencce matrix
-h_aH_b=clstCnt'*clstCnt;
-M=CoOc./h_aH_b;                         %like mutual information
-M=CwithWindow (AssignImg)./h_aH_b;
-P=Indicator*Hprime/sum(clstCnt);        %joint probability
+% h_aH_b=clstCnt'*clstCnt;
+% M=CoOc./h_aH_b;                         %like mutual information
+% M=CwithWindow (AssignImg)./h_aH_b;
+% P=Indicator*Hprime/sum(clstCnt);        %joint probability
 
 %% outputs options
 alpha1=0.005; alpha2=0.02; alpha3=0.0001; 

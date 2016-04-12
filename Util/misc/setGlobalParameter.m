@@ -1,7 +1,7 @@
 function setGlobalParameter()
 global Parameter Analysis ORACLE
 %%  ############# Parameter  ##############
-InitClustersNUM=7;        MaxSubSpace=0;      MinimunClusterSize=20;
+InitClustersNUM=10;        MaxSubSpace=0;      MinimunClusterSize=20;
 Debug=false;                 USEORACLE=false;
 SplitType='median'; % 'median' or 'totvar'
 Context='comeans'; % [] or 'spectral' or 'graphcut' 'rl' or 'mrf' 'entropy'

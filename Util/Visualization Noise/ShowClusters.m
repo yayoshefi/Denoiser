@@ -20,10 +20,9 @@ p=logical(padarray(ones(m-NN+1,n-NN+1),[floor(NN/2),floor(NN/2)]));
 % use p to convert all pathes Images to only inner Image (after NN)
 
 % Initialization
-str=strcat(Parameter.description,Parameter.Method,'_metric_',Parameter.metric,...
-    '_Context_',Parameter.Context,'_',num2str(Parameter.Spatil.lambda,'%G'),...
-    '_normalize',num2str(Parameter.normalize),'_sigma',num2str(Parameter.sigma));
-if Analysis.Save;  mkdir( strcat(Parameter.location,'\Results\',date,'\',str) );  end
+prefix();
+
+if Analysis.Save;  mkdir( strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix) );  end
 
 if ismatrix(Noise)
     Data=im2col(double(Image)+Noise,[wsize,wsize],'sliding');
@@ -128,7 +127,8 @@ title('Clusters Histogram')
 
 
 if Analysis.Save
-    saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',str,'\',num2str(Analysis.Handles.Lables),'_Lables Analysis.jpg'))
+    saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix,...
+        '\',num2str(Analysis.Handles.Lables),Analysis.ShortPrefix,'_Lables Analysis.jpg'))
 end
 if verLessThan('matlab','8.4');     curr=gcf;
 else                                curr=get(gcf,'Number'); end
@@ -216,7 +216,8 @@ if ~Analysis.Fast
     colorbar
 end
 if Analysis.Save
-    saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',str,'\',num2str(Analysis.Handles.Clusters),'_Cluster Properties_.jpg'))
+    saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix,...
+        '\',num2str(Analysis.Handles.Clusters),Analysis.ShortPrefix,'_Cluster Properties_.jpg'))
 end
 if verLessThan('matlab','8.4');     curr=gcf;
 else                                curr=get(gcf,'Number'); end
@@ -315,7 +316,8 @@ ylabel('density _{(#patches in Cluster)} ')
 xlabel('[patch SNR');
 
 if Analysis.Save
-    saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',str,'\',num2str(Analysis.Handles.Patch),'_Plots Analysis_.jpg'))
+    saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix,...
+        '\',num2str(Analysis.Handles.Patch),Analysis.ShortPrefix,'_Plots Analysis_.jpg'))
 end
 if verLessThan('matlab','8.4');     curr=gcf;
 else                                curr=get(gcf,'Number'); end
@@ -377,7 +379,8 @@ axis image ;colorbar
 title ('DC Change(absolute value) After Clean');
 
 if Analysis.Save
-    saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',str,'\',num2str(Analysis.Handles.Cleaning),'_Cleaning Analysis_.jpg'))
+    saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix,...
+        '\',num2str(Analysis.Handles.Cleaning),Analysis.ShortPrefix,'_Cleaning Analysis_.jpg'))
 end
 end
 
@@ -423,3 +426,18 @@ for i=1:length(binranges)-1
     
 end
 end
+
+function []= prefix()
+global Parameter Analysis
+% in PrintDnoise there is a subfolder for diffrent noise
+Analysis.DirSuffix=strcat('sigma',num2str(Parameter.sigma),'\',Parameter.description,'Window',num2str(sqrt(Parameter.wsize2)),...
+    '_Context_',Parameter.Context,...
+    '_',num2str(Parameter.Spatil.lambda,'%G'),'NN_',num2str(Parameter.Spatil.NN),...
+    'CoOcThr',num2str(Parameter.Spatil.CoOcThr,'%G'),...
+    Parameter.Method,...
+    '_norm',num2str(Parameter.normalize),'_metric_',Parameter.metric);
+
+Analysis.ShortPrefix=strcat('W1-',num2str(sqrt(Parameter.wsize2)),'_Context:',Parameter.Context,...
+    '-',num2str(Parameter.Spatil.lambda,'%G'),'_NN-',num2str(Parameter.Spatil.NN),';');
+end
+

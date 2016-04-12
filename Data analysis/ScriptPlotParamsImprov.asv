@@ -3,9 +3,8 @@ global Analysis
 clearvars data_lambda data_NN data_reference
 % change if necessary: struct name,strctfields,strctvalues
 
-% Params=Analysis.Arrays;
 Params=Arrays;
-ToPlot=[4];
+ToPlot=[3];
 
 Params.Lambda=1:length(Params.Lambda);
 Params.CoOcThr=1:length(Params.CoOcThr);
@@ -41,7 +40,6 @@ ImproveLambda = shiftdim(data_lambda,2)-repelem(data_reference,n,l,1); %dim1=NN 
 ImproveNN     = shiftdim(data_NN,2)-repelem(data_reference,l,n,1);
 
 ImproveLambda(isnan(ImproveLambda))=0;
-ImproveNN(isnan(ImproveNN))=0;
 
 legend_lambda={};
 for ind=1:(w*n)
@@ -57,14 +55,11 @@ for f=ToPlot
     figure;
     subplot(2,1,1);
     plot(1:l,ImproveLambda(:,:,f)); title(strcat('\color{red} sigma=',num2str(sigma_array(f))))
-    line(1:l,0,'LineStyle','-.','Color','black')
     ylabel('Psnr improve Vs. \lambda');
     xlabel('\lambda')
     legend(legend_lambda)
     subplot (2,1,2)
     plot(1:n,ImproveNN(:,:,f))
-    line(1:n,0,'LineStyle','-.','Color','black')
-
     ylabel('Psnr improve Vs. NN');
     xlabel('NN')
     legend(legend_NN)
@@ -121,4 +116,4 @@ xlabel(variable2); %FIX
 % figure;plot (sigma_array,gap);grid
 % title('diff psnr rates between context clustering and only visual clustering');legend(legendstring{:});
 %}
-clearvars data_NN data_lambda curr
+clearvars LogicVar1 LogicVar2 data_compare
