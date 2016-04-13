@@ -26,15 +26,19 @@ we wanted to find a better way of deciding whether $P_{(i)}\in cluster J$ based 
 we surmise that the labels Co-Occurrence matrix (denote as: CC or CoOc) should be sparse, that is min $||CoOc||_0$. based on that assumption we will calculate an integrated probability function $\Pr \{P_{(i)}\in cluster J\}$.
 
 \section{Motivation}
-Clusters based Denoising methods are based on the correctness of the Labeling.
-We can think of the clustering made on a zero noise image as the Oracle to compare to. that is we can measure how correct is a certain labeling in reference to Oracle Labeling.
+Clusters based Denoising methods(we used: Shrinkage to the  cluster decomposition) are based on the accuracy of the Labeling.
+We can think of the clustering given to us by some Oracle to a zero noise image. This Oracle can be used for comparison to measure labeling accuracy. 
 
 Ways to calculate distances between labeling:
 \begin{enumerate}
 	\item $ \sum_{i=1}^{n} [Oracle_{(i)}\ne\hat{L}_{(i)})]$  - the distance is the amount of mis-labeling
-	\item $ \sum_{i=1}^{n} D_K(Oracle_{(i)};\hat{L}_{(i)}) $ where $ D_K(M;L) $ is the distance between label M in the Oracle and Label L in $ \hat{L} $
+	\item $ \sum_{i=1}^{n} D_K(Oracle_{(i)};\hat{L}_{(i)}) $ where $ D_K(M;L) $ is the ground distance between cluster center M in the Oracle and cluster center L in $ \hat{L} $
 \end{enumerate}
-Our goal is to create a labeling method that will converge to the Oracle, we describe a way of convergence based on statistics of the labeled image.
+
+In the case of noisy image, the clustering problem becomes harder. (some problems include over-fitting the noise, loss of relevant information...[Irani]).
+In the noisy case, although the each cluster have noisy data points, the best denoising image MSE is achieved by using the Oracle labeling.
+
+Our goal is to create a labeling method for noisy images that will converge to the Oracle, we describe a way of convergence based on statistics of the labeled image.
 
 \section{Background}
 Given an image I with n pixels. We will use, $\hat L$ :(1,..,n)$\rightarrow$ (1,..,K) , assignment function from pixel i$\in(1..n)$ to label J$\in(1..K)$\\

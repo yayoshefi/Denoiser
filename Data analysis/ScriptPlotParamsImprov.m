@@ -3,10 +3,13 @@ global Analysis
 clearvars data_lambda data_NN data_reference
 % change if necessary: struct name,strctfields,strctvalues
 
-% Params=Analysis.Arrays;
-Params=Arrays;
-ToPlot=[4];
-
+%%
+Params=Analysis.Arrays;
+% Params=Arrays;
+%                   use Arrays- when only 1 parameter need to compare, edit
+%                   the Array sructure and not the original
+ToPlot=1:length(Params.sigma);
+%%
 Params.Lambda=1:length(Params.Lambda);
 Params.CoOcThr=1:length(Params.CoOcThr);
 sigma_array=Params.sigma;
@@ -51,19 +54,19 @@ end
 legend_NN={};
 for ind=1:(w*l)
     [lam,w1]=ind2sub([l,w],ind);
-    legend_NN={legend_NN{:},strcat('\lambda:',num2str(Params.Lambda(lam)),'; W_1:',num2str(Arrays.wsize(w1)))};
+    legend_NN={legend_NN{:},strcat('\lambda:',num2str(Analysis.Arrays.Lambda(lam)),'; W_1:',num2str(Arrays.wsize(w1)))};
 end
 for f=ToPlot
     figure;
     subplot(2,1,1);
-    plot(1:l,ImproveLambda(:,:,f)); title(strcat('\color{red} sigma=',num2str(sigma_array(f))))
-    line(1:l,0,'LineStyle','-.','Color','black')
+    plot(Analysis.Arrays.Lambda(1:l),ImproveLambda(:,:,f),'^-','MarkerSize',4); title(strcat('\color{red} sigma=',num2str(sigma_array(f))))
+    line(Analysis.Arrays.Lambda(1:l),0,'LineStyle','-.','Color','black')
     ylabel('Psnr improve Vs. \lambda');
     xlabel('\lambda')
     legend(legend_lambda)
     subplot (2,1,2)
-    plot(1:n,ImproveNN(:,:,f))
-    line(1:n,0,'LineStyle','-.','Color','black')
+    plot(Analysis.Arrays.NN(1:n),ImproveNN(:,:,f),'*-','MarkerSize',4)
+    line(Analysis.Arrays.NN(1:n),0,'LineStyle','-.','Color','black')
 
     ylabel('Psnr improve Vs. NN');
     xlabel('NN')
