@@ -16,21 +16,26 @@ else
 end
 
 imshow(Output{1},[]); title(['psnr: ',num2str(result{1})],'Color','r');
-ylabel (['# ',num2str(Analysis.K),' clusters'])
-xlabel({['Method used: ',Method,' main parameter ',num2str(Parameter.values.(Method)),...
-    ' normalize parameter ',num2str(Parameter.normalize)],...
-    ['windows size is: ',num2str(Parameter.wsize2^0.5),' noise std is: ',...
-    num2str(Parameter.sigma)]});
+% ylabel (['# ',num2str(Analysis.K),' clusters'])
+xlabel({[Method,' main parameter ',num2str(Parameter.values.(Method))],...
+    [' normalize parameter ',num2str(Parameter.normalize)]});
 
 if i>1
-subplot (1,i,i);
+ax_psnr2=subplot (1,i,i);
 imshow(Output{2},[]); title(['psnr: ',num2str(result{2})],'Color','b');
-ylabel (['Context, using  ',num2str(Parameter.Spectral.clustrsNUM),' clusters'])
-xlabel({['Method used: ',Parameter.Context,' Context lambda: ',num2str(Parameter.Spatil.lambda,'%G')]...
-    ,['windows size is: ',num2str(Parameter.wsize2^0.5),' noise std is: ',num2str(Parameter.sigma) ]})%,...
+% ylabel (['Context, using  ',num2str(Parameter.Spectral.clustrsNUM),' clusters'])
+xlabel({['Context: ',Parameter.Context,num2str(Parameter.Spectral.clustrsNUM),' clusters']})
+%     ['Method used: ',Parameter.Context,' Context lambda: ',num2str(Parameter.Spatil.lambda,'%G')]...
+%     ,['windows size is: ',num2str(Parameter.wsize2^0.5),' noise std is: ',num2str(Parameter.sigma) ]})%,...
 %     ['lambda: ',num2str(lambda)]});
 end
-
+dim = [0.01 0.65 0.3 0.3];
+str={['\bf Context: ',Parameter.Context],...
+    ['\rm \lambda: ',num2str(Parameter.Spatil.lambda,'%G'),' NN:',num2str(Parameter.Spatil.NN)]...
+    ,['|CC|_{\epsilon}   \epsilon=',num2str(Parameter.Spatil.CoOcThr,'%G')],...
+    ['W_1: ',num2str(Parameter.wsize2^0.5),'   \sigma: ',num2str(Parameter.sigma)],...
+    'reserved..'};
+annotation('textbox',dim,'String',str,'FitBoxToText','on','LineStyle','none');
 
 
 if nargin>2
@@ -48,13 +53,17 @@ if nargin>2
     
     Lables1=col2im(varargin{1},[wsize,wsize],[r1,c1],'sliding');
     Lables2=col2im(varargin{2},[wsize,wsize],[r2,c2],'sliding');
-    subplot(1,i,1); colormap jet
-    imagesc(Lables1)
+    subplot(1,i,1); 
+    imshow(Lables1,[])
+    xlabel(Method);
     if i>1
     subplot(1,i,2);
-    imagesc(Lables2)
+    imshow(Lables2,[])
+    xlabel(['Context: ',Parameter.Context])
+    xlabel(ax_psnr2,strcat('Context: ',Parameter.Context,num2str( length(unique(Lables2(:))) ),' clusters'))
     end
-
+    colormap (Analysis.ColorMap);
+annotation('textbox',dim,'String',str,'FitBoxToText','on','LineStyle','none');
 end
 
 if Analysis.Save
@@ -101,7 +110,7 @@ Analysis.DirSuffix=strcat('sigma',num2str(Parameter.sigma),'\',Parameter.descrip
     Parameter.Method,...
     '_norm',num2str(Parameter.normalize),'_metric_',Parameter.metric);
 
-Analysis.ShortPrefix=strcat('W1-',num2str(sqrt(Parameter.wsize2)),'_Context:',Parameter.Context,...
+Analysis.ShortPrefix=strcat('W1-',num2str(sqrt(Parameter.wsize2)),'_Context-',Parameter.Context,...
     '-',num2str(Parameter.Spatil.lambda,'%G'),'_NN-',num2str(Parameter.Spatil.NN),';');
 end
 

@@ -26,8 +26,9 @@ m=Analysis.LabelsSize(1)    ;n=Analysis.LabelsSize(2);
 
 samp=randperm(size(S,1),3);
 ratio=0;            [CC_Hold]=ShowCoOc(Lhat,false,'Entropy');
-                    
-for iter=1:3
+
+Parameter.Spatil.MaxIter=3;                    
+for iter=1:Parameter.Spatil.MaxIter
     disp (strcat('current ratio: ',num2str(ratio),', with ', num2str( length (unique(Lhat)) ) ,' unique Centers'  ));
     AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
     AssignImg=padarray(AssignImg,[padding,padding],-1);
@@ -77,7 +78,7 @@ for iter=1:3
     %L(p,:)=(1-Parameter.Spatil.lambda)*reshape(S(p,:),m*n,K)+Parameter.Spatil.lambda/(NN^2-1)*H*CCthr;
     
     [Pr,Lhat]=max(L,[],2);
-    if Analysis.DebuggerMode && ~(mod(iter+1,1));
+    if Analysis.DebuggerMode && ~(mod(iter+1,3));
         Debug(CCthr,Lhat,Pr,iter,S,E_h,L,samp);end
 
 %    fixed  Centers-> need to comment next 3 rows speeds up(no calc affinity)
@@ -138,6 +139,7 @@ wsize=sqrt(Parameter.wsize2);
 Pr_Img=col2im(Pr,[wsize,wsize],[Parameter.row,Parameter.col]);
 tmp_Labels=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
 
+[samp_row,samp_col]=ind2sub(size(tmp_Labels),samp);
 figure('Name',strcat('temporal image properties ',num2str(iter), 'iteration'));
 subplot(2,2,3);
 imagesc(log(CoOc+1));colormap jet; title ('Co-Occurence matrix');
