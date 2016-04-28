@@ -1,4 +1,16 @@
 \documentclass{article}
+
+\usepackage{amsmath,amsthm,amsfonts,graphicx,epsfig}
+\usepackage[justification=justified,singlelinecheck=false,nooneline,font={footnotesize}]{caption}
+\usepackage[font={footnotesize }]{subcaption}
+\usepackage[sort&compress]{natbib}
+\usepackage{geometry}
+\usepackage{epstopdf}  %for use with pdflatex
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{colortbl}
+\def\bibfont{\footnotesize}
+\usepackage{float}
+
 \usepackage{amsmath,mathtools}
 \usepackage{amssymb}
 \usepackage{graphicx}
@@ -10,6 +22,7 @@
 \usepackage{color}
 \definecolor{lightyellow}{RGB}{255,255,160}
 \usepackage{subcaption}
+%\usepackage{scicite}
 \DeclareMathOperator*{\argmax}{arg\,max}
 
 \title{Co-Means, Clustering both in visual and histogram space}
@@ -19,7 +32,7 @@
 \maketitle
 
 \section{Introduction}
-Many denoising methods use image patches comparison, either for point operation[BM3D], or finding nearest neighbors patches in the image, for clusters operation [Non Local means ].
+Many denoising methods use image patches comparison, either for point operation~\cite{BM3Dipol}, or finding nearest neighbors patches in the image, for clusters operation~\cite{nonlocalmeans}.
 
 We are looking for a better way of choosing those patches that indeed came from similar Distributions [natural Image Models] and form a cluster from them.
 
@@ -32,16 +45,17 @@ We introduce 'Co-Means' clustering which is based on "centers" in two image feat
 
 
 \section{Motivation}
-Clusters based De-noising methods are based on the correctness of the Labeling.
-We can think of this clustering given to us by some Oracle to a zero noise image as ground truth. that is we can measure the accuracy of a certain labeling in reference to Oracle Labeling.
+Clusters based Denoising methods(we used: Shrinkage to the  cluster decomposition) are based on the accuracy of the Labeling.
+We can think of the clustering given to us by some Oracle to a zero noise image as griund truth. This Oracle can be used for comparison to measure labeling accuracy. 
+
 
 Ways to calculate distances between labeling:
 \begin{enumerate}
 	\item $ \sum_{i=1}^{n} [Oracle_{(i)}\ne\hat{L}_{(i)})]$  - the distance is the amount of mis-labeling
-	\item $ \sum_{i=1}^{n} D_K(Oracle_{(i)};\hat{L}_{(i)}) $ where $ D_K(M;L) $ is the distance between label M in the Oracle and Label L in $ \hat{L} $
+	\item $ \sum_{i=1}^{n} D_K(Oracle_{(i)};\hat{L}_{(i)}) $ where $ D_K(M;L) $ is the ground distance between the M cluster center in the Oracle and cluster L center in $ \hat{L} $
 \end{enumerate}
 
-In the case of noisy image, the clustering problem becomes harder(some problems include over-fitting the noise, loss of relevant structure information...[Irani]). In the noisy case, although each cluster contians noisy data points, the best denoised image, in MSE sense is achieved by using the Oracle labeling. That is because we assume a zero mean noise, and the center of the cluster should still be accurate.
+In the case of noisy image, the clustering problem becomes harder(some problems include over-fitting the noise, loss of relevant structure information...~\cite{IraniInterExt}). In the noisy case, although each cluster contians noisy data points, the best denoised image, in MSE sense is achieved by using the Oracle labeling. That is because we assume a zero mean noise, and the center of the cluster should still be accurate.
 Our goal is to create a labeling method for noisy images that will converge to the Oracle, we describe a way of convergence based on statistics of the labeled image.
 
 \section{Background}
@@ -225,6 +239,13 @@ The second can be thought as 'Mutual Information' variant which tells us how muc
 \begin{equation}
 M(K;J)=\dfrac{P(K|J)}{|K|}
 \end{equation} 
+
+
+
+\bibliography{bibCoMeans}
+
+\bibliographystyle{unsrt}
+
 
 \end{document}
 
