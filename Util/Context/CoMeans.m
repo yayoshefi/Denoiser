@@ -45,15 +45,13 @@ for iter=1:Parameter.Spatil.MaxIter
 %         CC=Indicator*H;
 %         CCNorm=sum(CC,2);
 %         CCN=CC./CCNorm(:,ones(1,K),:); CCN(CC==0)=0; %to avoid 0/0=nan
-        [CC]=ShowCoOc(AssignVec,false,'CoOc');
+        [CC]=ShowCoOc(Lhat,false,'CoOc');
 
         CC(CC<Parameter.Spatil.CoOcThr)=0;
         CCNorm=sum(CC,2);
         CCthr=CC./CCNorm(:,ones(1,K),:); CCthr(CC==0)=0;
         
         CC_Hnew=CC_Entropy(CCthr); ratio=CC_Hnew/CC_Hold; CC_Hold=CC_Hnew;
-        
-
     end
 %     [I, PixelTotalI]=tf_idf (H);
 %     PixelTotalI=(PixelTotalI<100);
