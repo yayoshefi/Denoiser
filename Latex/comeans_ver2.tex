@@ -1,6 +1,6 @@
 \documentclass{article}
 
-\usepackage{amsmath,amsthm,amsfonts,graphicx,epsfig}
+\usepackage{amsmath,amsthm,mathtools,amsfonts,graphicx,epsfig}
 \usepackage[justification=justified,singlelinecheck=false,nooneline,font={footnotesize}]{caption}
 \usepackage[font={footnotesize }]{subcaption}
 \usepackage[sort&compress]{natbib}
@@ -11,7 +11,7 @@
 \def\bibfont{\footnotesize}
 \usepackage{float}
 
-\usepackage{amsmath,mathtools}
+%\usepackage{amsmath,mathtools}
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{algorithm}
@@ -21,6 +21,7 @@
 \usepackage{multicol}
 \usepackage{color}
 \definecolor{lightyellow}{RGB}{255,255,160}
+\definecolor{lightred}{RGB}{255,119,119}
 \usepackage{subcaption}
 %\usepackage{scicite}
 \DeclareMathOperator*{\argmax}{arg\,max}
@@ -86,7 +87,7 @@ e.g.
 \begin{multicols}{3}
 \begin{tabular}{|c|c|c|}\hline
 1&5&1\\	\hline
-5&\colorbox{yellow}{3}&5\\ \hline
+5&\colorbox{lightred}{3}&5\\ \hline
 9&8&9\\ \hline
 \end{tabular}
 
@@ -96,19 +97,23 @@ e.g.
 \includegraphics[width=0.9\linewidth]{histogram.png}
 \end{multicols}
 We denote $ H_{(i)} $ for the Histogram of pixel i in labels space, $ H_{(i)} $  is normalized to 1 (s.t. in the example $ H_{(i)} = \dfrac{\text{H*[i]}}{8}$ )\footnote{generally $\dfrac{\text{H*[i]}}{W_2^2-1}$ }\\
-We will also use  $ H_{(i)}(J) $- the J coordinate in $ H_{(i)} $.
+We will also use  $ H_{(i)}(J) $- the J coordinate in $ H_{(i)} \quad $. $ H_{(i)}(J)=\Pr \{\widehat{L}_{\mathcal{N}(i)}=J \} $
 \begin{equation*}
 \color{red} H_{(i)}\in \mathbb{Z}^K 
 \end{equation*}
 \subsection{Co-Occurrence}
-We use the labels statistics to compute the conditional probability.
+We use the labels statistics to compute the conditional probability between two labels.
 $$ \color{red}
- P(K|J)=P _j(K) \ \ s.t. \begin{cases}
+ P(K|J)=\Pr\{ \widehat{L}_{(\mathcal{N}(i))}=K|\widehat{L}_{(i)}=J \}=	\sum_{j}P _j(K) \ \ s.t. \begin{cases}
 &j \in {\mathcal{N}(i)}\\
-&\hat{L}(i)=J
+&\widehat{L}(i)=J
 \end{cases}  $$
 where $ \mathcal{N}(i) $ is the neighbors of pixel i in $ W_2 $ window.
-In words we can say this is the probability to witness label K in $ W_2 $ window around a know pixel labeled J.
+In words we can say this is the probability to witness label K in $ W_2 $ window around a know pixel labeled J.\\
+A more formal definition should be:  $ P(K|J)=\sum_{i} P _j(K) \ \ s.t. \begin{cases}
+&j \in {\mathcal{N}(i)}\\
+&\widehat{L}(i)=J
+\end{cases}  $
 
 We arrange $ P(K|J) $ to form a Co-Occurrence matrix, such that each row in the matrix represent $ P(K|J) $
 
@@ -144,7 +149,6 @@ In a result we get an update for $ \Pr [i \in cluster K] $. Based on the new pos
 $$ \hat{L}=\argmax _{\hat{L}} \sum_{i}^{}P_i(\hat{L}(i)) $$
 
 The procedure is given in algorithm \eqref{alg:Jointprobability} also shown in figure \ref{fig:Scheme}
-\newpage
 
 \begin{algorithm}[!h] 
 	\caption{Joint probability algorithm}\label{alg:Jointprobability}
@@ -163,6 +167,7 @@ The procedure is given in algorithm \eqref{alg:Jointprobability} also shown in f
 		
 	\end{algorithmic}
 \end{algorithm}
+
 \footnotetext{$\text{INDICATOR}[i,J]:=\begin{cases}
 	1, &\text{ if }\hat L(i)=J\\
 	0, &\text{ else}

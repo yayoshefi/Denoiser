@@ -40,7 +40,7 @@ for iter=1:Parameter.Spatil.MaxIter
     if Parameter.ORACLE
         CCthr=Analysis.ORACLE.CoOc;
     else
-        if ~isinteger(Parameter.Spatil.CoOcThr);Parameter.Spatil.CoOcThr=0.005;end
+        if ~isnumeric(Parameter.Spatil.CoOcThr);Parameter.Spatil.CoOcThr=0.005;end
 %         Indicator=sparse(Lhat,1:m*n,ones(1,m*n),K,m*n);
 %         CC=Indicator*H;
 %         CCNorm=sum(CC,2);
@@ -49,13 +49,18 @@ for iter=1:Parameter.Spatil.MaxIter
 
         CC(CC<Parameter.Spatil.CoOcThr)=0;
         CCNorm=sum(CC,2);
-        CCthr=CC./CCNorm(:,ones(1,K),:); CCthr(CC==0)=0;
+        try
+            CCthr=CC./CCNorm(:,ones(1,length(CCNorm)),:); CCthr(CC==0)=0;
+        catch 
+            warning('something went wrong, please fix it')
+        end
         
         CC_Hnew=CC_Entropy(CCthr); ratio=CC_Hnew/CC_Hold; CC_Hold=CC_Hnew;
     end
 %     [I, PixelTotalI]=tf_idf (H);
 %     PixelTotalI=(PixelTotalI<100);
 %     PixelWeightI=PixelTotalI(:,ones(1,K));
+    try
     switch SpatialRefernce
         case 'MessagePass'
             HNorm=sum(H,2);
@@ -70,6 +75,10 @@ for iter=1:Parameter.Spatil.MaxIter
             E_h=DiagonalMult(H,1./HNorm,'l'); %for partial histograms
             L=(1-Parameter.Spatil.lambda)*S + Parameter.Spatil.lambda*E_h*CCthr';       %notice to invert CC
     end
+    catch 
+        warning('something went wrong, please fix it')
+    end
+    
             
     % when not caclculating partial histogrmas
     %L=S;

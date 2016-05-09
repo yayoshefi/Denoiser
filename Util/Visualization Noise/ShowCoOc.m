@@ -8,10 +8,10 @@ function [varargout]=ShowCoOc(AssignVec,varargin)
 % Co-Occurence matrix and some more properties.
 % in case visual is -[], the default value is true.
 %
-global Parameter
+global Parameter Analysis
 row=Parameter.row;      col=Parameter.col;
 wsize=sqrt(Parameter.wsize2);
-K=max(AssignVec);
+K=Analysis.K;%max(AssignVec)
 clstCnt=histcounts(AssignVec,1:K+1);
 % clstPr_obj=histogram(AssignVec,1:K+1);
 % clstCnt=clstPr_obj.Values;
