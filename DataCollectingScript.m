@@ -1,8 +1,8 @@
 %%---------------- Data Collecting-------------------Git Version
 clearvars ContextPsnr Psnr CentersCount Labeling
-load Database.mat;load Sport+_DB.mat; %Images = createImages();
-Image=lena;      clearvars -except Image
-description='lena DB ';
+load Database.mat;load Sport+_DB.mat; Images = createImages();
+Image=Images{3};      clearvars -except Image
+description='Mondrian DB  ';
 %% --------------------------- PARAMETERS ------------------------------
 
 global Parameter Analysis
@@ -13,11 +13,11 @@ metric ='euclidean';        %distance function can be 'euclidean','mahalanobis'
 
 % ---- arrays ----
 sigma_array=[0,15,25,50,70];
-wsize_array=[3,5,7,9,11];
+wsize_array=[1,3,5,7];
 normalize_array=[0];          %normalize 0-do nothing ; 1-only bias; 2- bias and gain
-lambda_array=[0.1,0.3,0.5,0.75,0.9];%[0.01,0.05,0.1];
-NN_array=[5,7,9,11];
-CoOcThr_array=[0.005,0.0001];
+lambda_array=[0.01,0.05,0.1,0.3,0.5,0.75,0.9,0.99];%[0.01,0.05,0.1];
+NN_array=[3,5,7];
+CoOcThr_array=[0.0005,0.0001];
 
 Arrays=struct('Lambda',lambda_array,'NN',NN_array,'CoOcThr',CoOcThr_array,...
     'normalize',normalize_array,'wsize',wsize_array,'sigma',sigma_array);

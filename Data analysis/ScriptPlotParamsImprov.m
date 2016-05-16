@@ -17,7 +17,8 @@ Params=rmfield(Params,'sigma');
 fields = fieldnames(Params);
 
 %non relevent
-Params.CoOcThr=Params.CoOcThr(1);   Params.normalize=Params.normalize(1);
+Thr_index=1;
+Params.CoOcThr=Params.CoOcThr(Thr_index);   Params.normalize=Params.normalize(1);
 
 
 for w=1:length(Params.wsize)
@@ -59,69 +60,21 @@ end
 for f=ToPlot
     figure;
     subplot(2,1,1);
-    plot(Analysis.Arrays.Lambda(1:l),ImproveLambda(:,:,f),'^-','MarkerSize',4); title(strcat('\color{red} sigma=',num2str(sigma_array(f))))
+    plot(Analysis.Arrays.Lambda(1:l),ImproveLambda(:,:,f),'^-','MarkerSize',4); 
+    title( strcat('\color{red} noise \sigma= ',num2str(sigma_array(f)),...
+        '; CoOc Thr= ',num2str( Analysis.Arrays.CoOcThr(Thr_index)  ) )   )
     line(Analysis.Arrays.Lambda(1:l),0,'LineStyle','-.','Color','black')
     ylabel('Psnr improve Vs. \lambda');
     xlabel('\lambda')
-    legend(legend_lambda)
+    legend(legend_lambda,'Location','northeastoutside')
     subplot (2,1,2)
     plot(Analysis.Arrays.NN(1:n),ImproveNN(:,:,f),'*-','MarkerSize',4)
     line(Analysis.Arrays.NN(1:n),0,'LineStyle','-.','Color','black')
 
     ylabel('Psnr improve Vs. NN');
     xlabel('NN')
-    legend(legend_NN)
+    legend(legend_NN,'Location','northeastoutside')
 end
 
 
-%{
-strctfields={'Lambda'   ,'NN'   ,'CoOcThr'  ,'normalize'    ,'wsize'};
-strctvalues={ 1         ,3      ,2          ,0              ,5      }; %defualt stats
-
-variable1='NN'; 
-Var1_array=[3];
-LogicVar1=ismember(strctfields,variable1);
-
-
-data_context=[];    legendstring={};
-for i=1:length(Var1_array)
-strctvalues{LogicVar1}=Var1_array(i);
-
-variable2='Lambda';         %can compare multiplie variables
-Var2_array=[1,2,3];
-LogicVar2=ismember(strctfields,variable2);
-strctvalues{LogicVar2}=Var2_array;
-
-[data_compare]=StructPsnr(full_Data.ContextPsnr,strctfields,strctvalues,sigma_array,variable2);
-data_context=[data_context;data_compare];
-
-%setting legend
-    for m=Var2_array
-        if strcmp(variable1,'Lambda')
-            legendstring={legendstring{:},strcat(variable1,'='...
-                ,num2str(lambda_array(Var1_array(i))),';',variable2,'=',num2str(m))};
-        elseif variable2=='Lambda'
-            legendstring={legendstring{:},strcat(variable1,'='...
-                ,num2str(Var1_array(i)),';',variable2,'=',num2str(lambda_array(m)))};
-        else
-            legendstring={legendstring{:},strcat(variable1,'='...
-                ,num2str(Var1_array(i)),';',variable2,'=',num2str(m))};
-        end
-
-    end
-end
-[data_reference]=StructPsnr(full_Data.psnr,{'normalize','wsize'},strctvalues(4:5),sigma_array);
-
-values=[data_reference',data_context'];
-values=values-data_reference(ones(size(values,2),1),:)';
-
-
-figure;plot ([0,Var2_array],values,'-   *');
-title('improvment Vs \lambda');%legend('kmeans only',legendstring{:});
-xlabel(variable2); %FIX
-
-% gap=data_context-data_reference(ones(size(data_context,1),1),:);
-% figure;plot (sigma_array,gap);grid
-% title('diff psnr rates between context clustering and only visual clustering');legend(legendstring{:});
-%}
 clearvars data_NN data_lambda curr

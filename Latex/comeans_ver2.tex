@@ -37,7 +37,7 @@ Many denoising methods use image patches comparison, either for point operation~
 
 We are looking for a better way of choosing those patches that indeed came from similar Distributions [natural Image Models] and form a cluster from them.
 
-In order to cluster the data, we want to find a way to estimate $ \Pr\{P_{(i)}\in cluster J \}$, and decide a herd assignment function $ \hat{L} $, that maps each pixel in the image to his cluster label:
+In order to cluster the data, we want to find a way to estimate $ \Pr\{W_{(i)}\in cluster J \}$, and decide a hard assignment function $ \widehat{L} $, that maps each pixel in the image to his cluster label:
 \begin{equation}
 \hat L :(1,..,n)\rightarrow (1,..,K)
 \end{equation}
@@ -46,8 +46,8 @@ We introduce 'Co-Means' clustering which is based on "centers" in two image feat
 
 
 \section{Motivation}
-Clusters based Denoising methods(we used: Shrinkage to the  cluster decomposition) are based on the accuracy of the Labeling.
-We can think of the clustering given to us by some Oracle to a zero noise image as griund truth. This Oracle can be used for comparison to measure labeling accuracy. 
+Clusters based Denoising methods(we used: Shrinkage to the  cluster PCA decomposition) are based on the accuracy of the Labeling.
+We can think of the clustering given to us by some Oracle to a zero noise image as ground truth. This Oracle can be used for comparison to measure labeling accuracy. 
 
 
 Ways to calculate distances between labeling:
@@ -60,25 +60,30 @@ In the case of noisy image, the clustering problem becomes harder(some problems 
 Our goal is to create a labeling method for noisy images that will converge to the Oracle, we describe a way of convergence based on statistics of the labeled image.
 
 \section{Background}
-Given an image I with n pixels. We will use, $\hat L$ :(1,..,n)$\rightarrow$ (1,..,K) , assignment function from pixel i$\in(1..n)$ to label J$\in(1..K)$\\
+Given an image I with n pixels. We will use, $\widehat L$ :(1,..,n)$\rightarrow$ (1,..,K) , assignment function from pixel i$\in(1..n)$ to label $J\in(1..K)$\\
 We will use two image features spaces:
 
 \subsection{Visual space}
 The feature representing pixel i in visual space will be column stacking of the window patch of size $W_1\times W_1$ around it.
 \begin{align*}
-& W_{(i)}= I(_{i-\frac{W_1-1}{2}:i+\frac{W_1-1}{2},i-\frac{W_1-1}{2}:i+\frac{W_1-1}{2}}) \\
+& W_{(i)}= I(_{i\pm\frac{(W_1-1)}{2},i\pm\frac{(W_1-1)}{2}}) \\
  &W_{(i)}\in \mathbb{R}^{W_{1}^{2}}
 \end{align*}
-Center J in visual space will be:  $C_{(J)}=\dfrac{1}{|J|} \Sigma_{\hat{L} (i)=J}P_{(i)}$ i.e., the center of cluster J is the mean of all pixels that are in the cluster ($i\in$ cluster J)\footnote{we use small letters to denote a pixel and Large letters for cluster labels}.
+Center $ J $ in visual space will be:  $C_{J}=\dfrac{1}{|J|} \Sigma_{\hat{L} (i)=J}W_{(i)}$ i.e., the center of cluster J is the mean of all pixels that are in the cluster ($i\in cluster J$)\footnote{we use small letters to denote a pixel and Large letters for cluster labels}.
 
 We will denote:
 \begin{equation}
 \color{red}
-P_{i}(J) =\dfrac{1}{Z}exp^{(\dfrac{-dist(P_{(i)} ),C_J)}{\sigma_s〗^2})}〗\label{eq:pixelPr}
+P_{i}(J) =\dfrac{1}{Z}exp^{(\dfrac{-dist(W_{(i)} ),C_J)}{\sigma_s〗^2})}〗\label{eq:pixelPr}
 \end{equation} 
-The probability that pixel i$\in cluster J$,
+The probability that pixel i$\in cluster~J$,
 where $ dist(\cdot,\cdot) $ is the Euclidean distance.(sometimes we will refer as P[i,J] or $ \Pr\{i,J\} $ for matrix notation)
 
+We will also use:
+\begin{equation}
+P(J)=\frac {|J\vert}{n}
+\end{equation} 
+For the non local label probability.
 \subsection{Labels histogram space}
 For this space, first we will look at an Image that instead of intensity, each pixel value is its cluster label, given by $\hat L$\footnote{Labels is categorical data with no respect to size $ J>K $}.
 
@@ -94,28 +99,31 @@ e.g.
 \begin{flushright}
 	H*[i]=
 \end{flushright}	
-\includegraphics[width=0.9\linewidth]{histogram.png}
+\includegraphics[width=1.2\linewidth]{histogram.png}
 \end{multicols}
 We denote $ H_{(i)} $ for the Histogram of pixel i in labels space, $ H_{(i)} $  is normalized to 1 (s.t. in the example $ H_{(i)} = \dfrac{\text{H*[i]}}{8}$ )\footnote{generally $\dfrac{\text{H*[i]}}{W_2^2-1}$ }\\
 We will also use  $ H_{(i)}(J) $- the J coordinate in $ H_{(i)} \quad $. $ H_{(i)}(J)=\Pr \{\widehat{L}_{\mathcal{N}(i)}=J \} $
 \begin{equation*}
 \color{red} H_{(i)}\in \mathbb{Z}^K 
 \end{equation*}
+
 \subsection{Co-Occurrence}
-We use the labels statistics to compute the conditional probability between two labels.
+We use the labels statistics, to compute the conditional probability that two labels are adjacent.
 $$ \color{red}
- P(K|J)=\Pr\{ \widehat{L}_{(\mathcal{N}(i))}=K|\widehat{L}_{(i)}=J \}=	\sum_{j}P _j(K) \ \ s.t. \begin{cases}
-&j \in {\mathcal{N}(i)}\\
-&\widehat{L}(i)=J
-\end{cases}  $$
+ P(K|J)=\Pr\{ \widehat{L}_{(\mathcal{N}(i))}=K|\widehat{L}_{(i)}=J \}
+% =	\sum_{j}P _j(K) \ \ s.t. \begin{cases}
+%&j \in {\mathcal{N}(i)}\\
+%&\widehat{L}(i)=J
+%\end{cases}  
+$$
 where $ \mathcal{N}(i) $ is the neighbors of pixel i in $ W_2 $ window.
 In words we can say this is the probability to witness label K in $ W_2 $ window around a know pixel labeled J.\\
-A more formal definition should be:  $ P(K|J)=\sum_{i} P _j(K) \ \ s.t. \begin{cases}
+A more formal definition should be:  $ P(K|J)=\dfrac{\sum_{i} P _j(K)}{P(J)} \ \ s.t. \begin{cases}
 &j \in {\mathcal{N}(i)}\\
 &\widehat{L}(i)=J
 \end{cases}  $
 
-We arrange $ P(K|J) $ to form a Co-Occurrence matrix, such that each row in the matrix represent $ P(K|J) $
+We arrange $ P(K|J) $ to form a Co-Occurrence matrix, such that the element in the J-th row K-th column is: $ P(K|J) $
 
 \begin{align}
 &CC_J= P(K|J)\label{eq:CoOc}\\
@@ -132,21 +140,21 @@ P(J)&=\dfrac{\vert J\vert}{n} \nonumber
 \end{align}
 
 
-we surmise that the labels Co-Occurrence matrix should be sparse, that is min $||CoOc||_0$. based on that assumption we will calculate an integrated probability function $\Pr \{P_{(i)}\in cluster J\}$ and show that this regularization derives better assignment. (\colorbox{lightyellow}{unproved yet})
+we surmise that the labels Co-Occurrence matrix should be sparse\footnote{practiclly using $ \epsilon-norm $}, that is min $||CC||_0$. based on that assumption we will calculate an integrated probability function $\Pr \{W_{(i)}\in cluster J\}$ and show that this regularization derives better assignment. (\colorbox{lightyellow}{unproved yet})
 
 
 \section{Objective Function}
-We would like to update equation \eqref{eq:pixelPr} $ P_{i}(J) $ to relate to a data term $ dist(P_{(i)} ),C_J) $ and regularization in the label space.
-We would like to converge to the Oracle CC (which we suppose to be sparse) and not directly to the unknown Oracle.
+We would like to update equation \eqref{eq:pixelPr} $ P_{i}(J) $ to relate to a data term $ dist(W_{(i)} ),C_J) $ and regularization in the label space.
+We would like to converge to the Oracle CC (which we suppose to be sparse) and not directly to the unknown Oracle label function.
 
 \subsection{Joint Probability- Message Passing}
 We can think on message passing from all of $\mathcal{N}(i)$ neighbors of pixel i, each neighbor thinks its surrounding should be like his Co-Oc.
 \begin{equation}
 \color{red}
-\widetilde{P}_i(K) \leftarrow P_i(K) + \sum_{j\in N(i)}^{} P(K|\hat{L}(j)=J)\cdot \Pr\{j\}
+\widetilde{P}_i(K) \leftarrow P_i(K) + \lambda\sum_{j\in N(i)}^{} P(K|\widehat{L}(j)=J)\cdot P_{j}(J)
 \end{equation}
 In a result we get an update for $ \Pr [i \in cluster K] $. Based on the new posterior probability we would like to find the maximum likelihood estimator, so the $ \hat{L}_{ML} $ is given by:
-$$ \hat{L}=\argmax _{\hat{L}} \sum_{i}^{}P_i(\hat{L}(i)) $$
+$$ \hat{L}=\argmax _{\hat{L}} \sum_{i}^{}P_i(\widehat{L}(i)) $$
 
 The procedure is given in algorithm \eqref{alg:Jointprobability} also shown in figure \ref{fig:Scheme}
 
@@ -155,11 +163,11 @@ The procedure is given in algorithm \eqref{alg:Jointprobability} also shown in f
 	\begin{algorithmic}
 		\State Initialize $\hat L$ using K-means on visual space
 		\Loop
-		\State update centers $C_{(J)}=\dfrac{1}{|J|} \sum_{\hat{L}(i)=J}^{}P_{(i)}$
+		\State update centers $C_{(J)}=\dfrac{1}{|J|} \sum_{\widehat{L}(i)=J}^{}P_{(i)}$
 		\State calculate the matrices $ H_{(i)}(J),P_{(i)}(J) $
 		\State Calculate the Co-Occurrence matrix  $ CC\gets INDICATOR\footnotemark\times H $
 		\State hard threshold shrinkage $ CC(CC<Thr)\gets 0 $ \Comment{will be discussed}
-		\State update: $ \widetilde{P}_i \leftarrow (1-\lambda)P_i + \lambda\sum_{j\in N(i)}^{} P(K|\hat{L}(j)=J)\cdot \Pr\{j\} $
+		\State update: $ \widetilde{P}_i \leftarrow (1-\lambda)P_i + \lambda\sum_{j\in N(i)}^{} P(K|\hat{L}(j)=J)\cdot P_{j}(J) $
 		%		$ L=(1-\lambda )\times S + \frac{\lambda }{W_2^2-1} \times H\times CC $
 		\State $ \hat{L}(i)=\argmax _L(  P_i(L(i))  ) $
 		\EndLoop
@@ -191,7 +199,7 @@ A simple empirical test can show that natural images contain a sparse Co-Occurre
 
 We can see this, as a minimization problem:
 \begin{equation}
-\min\sum_i dist(W_{(i)},C_{\hat L_(i)})+\lambda\lVert CC\rVert_0 \label{eq:minimizer}\\
+\min\sum_i dist(W_{(i)},C_{\widehat L_(i)})+\lambda\lVert CC\rVert_0 \label{eq:minimizer}\\
 \end{equation}
 minimizing the distance is equivallent to maximaizing the probability\\
 in diffrent notation:
@@ -205,6 +213,38 @@ in diffrent notation:
 
 i.e. we want small distance between $W_{(i)}$ and $C_{(J)}$, and also minimizing the Co-Occurrence matrix to be sparse such that it will encourage neighborhoods (textures like) containing fewer labels
 
+\section{Others Co-Occurrences}
+
+Our basic Co-Occurrence form is show at \eqref{eq:CoOc}, we showed an update rule for each pixel based on passing information from his surrounding.
+An other alternative method is calculating the Maximum Likelihood for the center pixel. maximizing The probability of the histogram given a certain label for the center pixel.
+\begin{align}
+\widehat{L}(i)&=\argmax_K \Pr \{H_{(i)}|\widehat{L}(i)=K \}\\
+&=\sum_{j\in\mathcal{N}(i)}^{} \Pr \{\widehat{L}(j)|\widehat{L}(i)=K \}\cdot \Pr \{j\}\nonumber
+\end{align}
+This result a simple correlation distance between the neighborhood histogram $ H_{(i)} $ and the typical histogram for label K $ CC_k $.
+As we mentioned before the CC matrix is not symmetric, hence the use of those two method to update $ P_{i} $ will result different estimators.
+In \eqref{eq:CoOc} we showed how to build the CC matrix from a hard assignment, one can also use soft assignment, which is:
+\begin{equation}
+P(k|J)=\frac{\sum_{i}H_{(i)}(K)\cdot P_i(J)}{\sum_{i} p_i(k)}
+\end{equation} 
+
+Another problem of the conditional CC is that label with low frequency will tend to disappear after some regularization. The reason is that we prefer to use a low amount of label to describe a texture and adding a low frequent label we drag a high penalty to this.
+
+We can normalize our Co-Occurrence matrix to take into account the frequncy the label.
+The first way was showed in \eqref{eq:jointprob} is the joint probability of two label to co occur in the same window.
+The second can be thought as 'Mutual Information' variant which tells us how much the two label co occurring is unique.
+\begin{equation}
+M(K;J)=\dfrac{P(K|J)}{|K|}
+\end{equation} 
+
+
+
+\bibliography{bibCoMeans}
+
+\bibliographystyle{unsrt}
+
+\newpage
+\section{\underline{Trunk section}}
 \subsection{Mutual distance}
 Another way of looking at our objective function, is by trying to minimize a mutual distance in both feature spaces, together with finding the best clustering.
 \begin{equation}
@@ -224,32 +264,6 @@ we will define $ dist_v $- as a simple $ l_2\,norm $, and $ dist_H $-as an EMD (
 Only for joint probability:
 
 Both Centers choose and labeling are just like k-means convergence proof, if there is a distance function for histogram space then in the same way we know that we choose the best 
-
-\section{Others Co-Occurrences}
-
-Our basic Co-Occurrence form is show at \eqref{eq:CoOc}, we showed an update rule for each pixel based on passing information from his surrounding.
-An other alternative method is calculating the Maximum Likelihood for the center pixel. maximizing The probability of the histogram given a certain label for the center pixel.
-\begin{align}
-\hat{L}(i)&=\argmax_K \Pr \{H_{(i)}|\hat{L}(i)=K \}\\
-&=\sum_{j\in\mathcal{N}(i)}^{} \Pr \{\hat{L}(j)|\hat{L}(i)=K \}\cdot \Pr \{j\}\nonumber
-\end{align}
-This result a simple correlation distance between the neighborhood histogram $ H_{(i)} $ and the typical histogram for label K $ CC_k $.
-As we mentioned before the CC matrix is not symmetric, hence the use of those two method to update $ P_{(i)} $ will result different estimators.
-
-Another problem of the conditional CC is that label with low frequency will tend to disappear after some regularization. The reason is that we prefer to use a low amount of label to describe a texture and adding a low frequent label we drag a high penalty to this.
-
-We can normalize our Co-Occurrence matrix to take into account the frequncy the label.
-The first way was showed in \eqref{eq:jointprob} is the joint probability of two label to co occur in the same window.
-The second can be thought as 'Mutual Information' variant which tells us how much the two label co occurring is unique.
-\begin{equation}
-M(K;J)=\dfrac{P(K|J)}{|K|}
-\end{equation} 
-
-
-
-\bibliography{bibCoMeans}
-
-\bibliographystyle{unsrt}
 
 
 \end{document}
