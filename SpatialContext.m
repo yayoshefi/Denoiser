@@ -41,6 +41,7 @@ end
      AssignVec2=AssignVec;
 
  end
+ Analysis.K2=length(unique(AssignVec2));
 end
 
 function [hC vC] = SpatialCues(im)

@@ -46,6 +46,6 @@ if nargout>2
     varargout{1}=Energy;
     varargout{2}=Basis;
 end
-Analysis.K=size(Centers,3);
-
+% Analysis.K=size(Centers,3);
+Analysis.K=length(unique(AssignVec));
 end

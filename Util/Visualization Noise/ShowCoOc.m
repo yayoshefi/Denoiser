@@ -82,7 +82,7 @@ if visual; Visualize(CoOcN);end  %output figure
     subplot(2,2,2);
     modes=sum(CoOcN>0,2);
     plot(modes);title (strcat('using Thr: ','none'));       %num2str(Parameter.Spatil.CoOcThr)));
-    grid on; ylabel('||CC_{K,l}||_{\epsilon')
+    grid on; ylabel('||CC_{K,l}||_{\epsilon}')
     xlabel({'Labels K',...
         strcat('\color{blue} \epsilon=',num2str(alpha1),'; |Co-Oc|_{\epsilon} : ',num2str(epsNorm1)),...
         strcat('\color{magenta} \epsilon=',num2str(alpha2),'; |Co-Oc|_{\epsilon} : ',num2str(epsNorm2))});
@@ -90,7 +90,7 @@ if visual; Visualize(CoOcN);end  %output figure
     subplot(2,2,[3,4]);
     bar( 1:K ,CoOcN(round(K/2),:) )
     title ( strcat('Co-Occurrence prob. for label ', num2str( round(K/2) )) );
-    xlabel (strcat( 'amount of labels ',num2str(K) ));axis ([1,K,0,1]); grid minor        
+    xlabel ({strcat( 'amount of labels ',num2str(K) ),strcat( 'active context clusters ',num2str(Analysis.K2) )});axis ([1,K,0,1]); grid minor        
     end
 end
 

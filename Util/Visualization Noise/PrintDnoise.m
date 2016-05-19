@@ -24,7 +24,7 @@ if i>1
 ax_psnr2=subplot (1,i,i);
 imshow(Output{2},[]); title(['psnr: ',num2str(result{2})],'Color','b');
 % ylabel (['Context, using  ',num2str(Parameter.Spectral.clustrsNUM),' clusters'])
-xlabel({['Context: ',Parameter.Context,num2str(Parameter.Spectral.clustrsNUM),' clusters']})
+xlabel({['Context: ',Parameter.Context,'. ',num2str( Analysis.K2),' clusters']})
 %     ['Method used: ',Parameter.Context,' Context lambda: ',num2str(Parameter.Spatil.lambda,'%G')]...
 %     ,['windows size is: ',num2str(Parameter.wsize2^0.5),' noise std is: ',num2str(Parameter.sigma) ]})%,...
 %     ['lambda: ',num2str(lambda)]});

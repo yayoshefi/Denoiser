@@ -55,8 +55,7 @@ if length (AssignVec)== (m*n)
 else AssignImg=reshape(AssignVec,[m-2,n-2]);
 end
 imagesc(AssignImg);title ('Image cluster labels assignment');
-colormap(jet);
-
+colormap (Analysis.ColorMap);
 %{
 %% ---------- Scatter plot in feature space ------------
 
@@ -141,7 +140,7 @@ Analysis.Handles.Clusters=figure ('Name','Clusters properties');%,'outerPosition
 if ~verLessThan('matlab','8.4')  % -- Code to run in MATLAB R2014b and later here --
    Analysis.Handles.Clusters = (Analysis.Handles.Clusters.Number);
 end
-colormap 'jet';
+colormap (Analysis.ColorMap);
 
 LabelPatch=im2col(AssignImg,[NN,NN],'sliding');
 Analysis.count=zeros(1,size(LabelPatch,2));
@@ -230,7 +229,7 @@ Analysis.Handles.Patch=figure ('Name','Patch analysis');%,'outerPosition',scrsz)
 if ~verLessThan('matlab','8.4')  % -- Code to run in MATLAB R2014b and later here --
    Analysis.Handles.Patch = (Analysis.Handles.Patch.Number);
 end
-colormap 'jet';
+colormap (Analysis.ColorMap);
 
 %% -------------  Patch Variance (Reference Image)  --------------------
 Img_PatchSNR=col2im(PatchSNR,[wsize,wsize],[Parameter.row,Parameter.col]);
@@ -330,7 +329,7 @@ Analysis.Handles.Cleaning=figure('Name','Cleaning Analysis');%,'outerPosition',s
 if ~verLessThan('matlab','8.4')  % -- Code to run in MATLAB R2014b and later here --
    Analysis.Handles.Cleaning = (Analysis.Handles.Cleaning.Number);
 end
-colormap 'jet';
+colormap (Analysis.ColorMap);
 
 [X_Var,Rmse_Var]=ValueVsData(Analysis.PatchRmse,VarP,linspace(min(VarP),max(VarP),bins+1));
 

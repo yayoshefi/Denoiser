@@ -1,14 +1,14 @@
 %%---------------- Main Script: De noising-------------------GitHub Version
 % clearvars
 load Database;Images = createImages();load Sport+_DB;
-Image=Federer;
-description='iterate CC-problem';
+Image=MultiTexture;              clearvars -except Image ORACLE
+description='experiments';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 
 Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
-sigma=50;
-wsize=3;
+sigma=20;
+wsize=5;
 normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain (-5)- Oracle
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'
                         %'varing_cluster_size'
@@ -35,14 +35,13 @@ X=X-Xmean(ones(wsize^2,1),:);               % X- bias normalize
 Xnorm=(sum(X.^2)).^0.5;
 Xn=X./(Xnorm(ones(wsize^2,1),:)+0.001);     % Xn- gain normalize
 
-% if Analysis.UseOracle;          Patches=im2col(double(Image),[wsize,wsize],'sliding'); %OracleMode
 if Parameter.normalize==2;      Patches=Xn;
 elseif Parameter.normalize==1;  Patches=X; 
 elseif Parameter.normalize==0;  Patches=Data;
 elseif Parameter.normalize==-5; Patches=im2col(double(Image),[wsize,wsize],'sliding'); %OracleMode
 end
 clearvars Xmean Xnorm row col normalize description metric 
-clearvars lena boat house barbara mond mondrian be
+clearvars lena boat house barbara mond mondrian be 
 %% ----------------------- Cluster -----------------------------------
 tic
 [AssignVec, Centers,Energy,Basis]= FindClusters(Patches,'maxsubspace',Parameter.MSS);

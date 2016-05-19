@@ -58,6 +58,11 @@ Ways to calculate distances between labeling:
 
 In the case of noisy image, the clustering problem becomes harder(some problems include over-fitting the noise, loss of relevant structure information...~\cite{IraniInterExt}). In the noisy case, although each cluster contians noisy data points, the best denoised image, in MSE sense is achieved by using the Oracle labeling. That is because we assume a zero mean noise, and the center of the cluster should still be accurate.
 Our goal is to create a labeling method for noisy images that will converge to the Oracle, we describe a way of convergence based on statistics of the labeled image.
+\begin{figure}
+	\includegraphics[width=\linewidth]{{"CC Sparsity"}.jpg}
+	\caption{left image is the oracle CC, middle is an image with noise $ \sigma=50 $. left image is the image after applying co-means. For a clean image we see the labels Co-Occurrence is sparse, also visible the effect of noise the labels Co-Occurrence. Our algorithm attempts to converge to the left CC-matrix}
+\end{figure}
+
 
 \section{Background}
 Given an image I with n pixels. We will use, $\widehat L$ :(1,..,n)$\rightarrow$ (1,..,K) , assignment function from pixel i$\in(1..n)$ to label $J\in(1..K)$\\
