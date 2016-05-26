@@ -4,7 +4,7 @@ global Parameter Analysis
 Method=Parameter.Method;
 i=length(result);
 
-
+%% De-noised images
 h1=figure('name','Main Image after DeNoising');
 subplot (1,i,1);
 if verLessThan('matlab','8.4')
@@ -16,28 +16,25 @@ else
 end
 
 imshow(Output{1},[]); title(['psnr: ',num2str(result{1})],'Color','r');
-% ylabel (['# ',num2str(Analysis.K),' clusters'])
+
 xlabel({[Method,' main parameter ',num2str(Parameter.values.(Method))],...
     [' normalize parameter ',num2str(Parameter.normalize)]});
 
 if i>1
 ax_psnr2=subplot (1,i,i);
 imshow(Output{2},[]); title(['psnr: ',num2str(result{2})],'Color','b');
-% ylabel (['Context, using  ',num2str(Parameter.Spectral.clustrsNUM),' clusters'])
+
 xlabel({['Context: ',Parameter.Context,'. ',num2str( Analysis.K2),' clusters']})
-%     ['Method used: ',Parameter.Context,' Context lambda: ',num2str(Parameter.Spatil.lambda,'%G')]...
-%     ,['windows size is: ',num2str(Parameter.wsize2^0.5),' noise std is: ',num2str(Parameter.sigma) ]})%,...
-%     ['lambda: ',num2str(lambda)]});
+
 end
 dim = [0.01 0.65 0.3 0.3];
-str={['\bf Context: ',Parameter.Context],...
-    ['\rm \lambda: ',num2str(Parameter.Spatil.lambda,'%G'),' NN:',num2str(Parameter.Spatil.NN)]...
-    ,['|CC|_{\epsilon}   \epsilon=',num2str(Parameter.Spatil.CoOcThr,'%G')],...
-    ['W_1: ',num2str(Parameter.wsize2^0.5),'   \sigma: ',num2str(Parameter.sigma)],...
-    'reserved..'};
+str=str2notation();
 annotation('textbox',dim,'String',str,'FitBoxToText','on','LineStyle','none');
+if Parameter.ORACLE
+    annotation ('textbox',[0.4,0.85,0.1,0.1],'Color','b','FaceAlpha',0.2,...
+        'String',strcat('ORACLE-',num2str(Analysis.ORACLE.level)));end
 
-
+%% Labels images
 if nargin>2
     h2=figure('name','Lables');
     if verLessThan('matlab','8.4')
@@ -64,8 +61,10 @@ if nargin>2
     end
     colormap (Analysis.ColorMap);
 annotation('textbox',dim,'String',str,'FitBoxToText','on','LineStyle','none');
+if Parameter.ORACLE
+    annotation ('textbox',[0.5,0.1,0.2,0.2],'String','ORACLE','Color','b','FaceAlpha',0.2);end
 end
-
+%% SAVING DATA
 if Analysis.Save
     prefix();
     mkdir( strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix) );
@@ -100,13 +99,28 @@ for i=1:length(values)
 end
 end
 
+function str=str2notation()
+global Parameter
+switch Parameter.Spatil.CoOc
+    case 'M';   Type='Mutual info';
+    case 'CC';  Type='Conditional';
+    case 'JP';  Type='Joint Prob.';
+end
+str={['\bf Context: ',Parameter.Context],...
+    ['\rm \lambda: ',num2str(Parameter.Spatil.lambda,'%G'),' NN:',num2str(Parameter.Spatil.NN)]...
+    ,[Type,' |CC|_{\epsilon} \epsilon=',num2str(Parameter.Spatil.CoOcThr,'%2.1G')],...
+    ['W_1: ',num2str(Parameter.wsize2^0.5),'   \sigma: ',num2str(Parameter.sigma)],...
+    'reserved..'};
+
+end
+
 function []= prefix()
 global Parameter Analysis
 % in PrintDnoise there is a subfolder for diffrent noise
 Analysis.DirSuffix=strcat('sigma',num2str(Parameter.sigma),'\',Parameter.description,...
     '_Context_',Parameter.Context,...
     '_',num2str(Parameter.Spatil.lambda,'%G'),...
-    'CoOcThr',num2str(Parameter.Spatil.CoOcThr,'%G'),...
+    '_CoOc_',Parameter.Spatil.CoOc,'_Thr',num2str(Parameter.Spatil.CoOcThr,'%G'),...
     Parameter.Method,...
     '_norm',num2str(Parameter.normalize),'_metric_',Parameter.metric);
 

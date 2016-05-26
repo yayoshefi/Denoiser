@@ -16,7 +16,13 @@ dflts =  {0 };
 [wsize2,pnum]=size(Data);
 samp=randperm(pnum,round(Parameter.subsample*pnum));
 SampData=Data(:,samp);
-
+if Parameter.ORACLE
+    if Analysis.ORACLE.level==3
+        AssignVec=Analysis.ORACLE.AssignVec;    Centers=Analysis.ORACLE.Centers;
+    else
+    [AssignVec,~]=Dist2SubSpace(Data,Analysis.ORACLE.Centers,'dim',zeros(1,1,Parameter.values.kmeans));
+    end
+else
 switch Parameter.Method
     case 'Distance'
         [~, Centers,Basis,Energy,E80]= DistanceClustering(SampData,MaxSubSpace);
@@ -40,8 +46,8 @@ switch Parameter.Method
         Centers=0;
         
 end
-
-if nargout>2
+end 
+if nargout>2    % This can ruin the centers when using ORACLE
     [Centers,Basis,AssignVec,Energy,E80]= UpdateCenter(Data,AssignVec,false);
     varargout{1}=Energy;
     varargout{2}=Basis;

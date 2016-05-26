@@ -1,13 +1,13 @@
 %%---------------- Main Script: De noising-------------------GitHub Version
 % clearvars
 load Database;Images = createImages();load Sport+_DB;
-Image=MultiTexture;              clearvars -except Image ORACLE
-description='experiments';
+Image=Bolt;
+description='Choosing CC';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 
 Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
-sigma=20;
+sigma=25;
 wsize=5;
 normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain (-5)- Oracle
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'
@@ -41,7 +41,7 @@ elseif Parameter.normalize==0;  Patches=Data;
 elseif Parameter.normalize==-5; Patches=im2col(double(Image),[wsize,wsize],'sliding'); %OracleMode
 end
 clearvars Xmean Xnorm row col normalize description metric 
-clearvars lena boat house barbara mond mondrian be 
+clearvars lena boat house barbara Synth Synth2 Synth3 MultiTexture MultiTexture2 Mond Images Bolt Drogba Federer Zebra
 %% ----------------------- Cluster -----------------------------------
 tic
 [AssignVec, Centers,Energy,Basis]= FindClusters(Patches,'maxsubspace',Parameter.MSS);
@@ -94,15 +94,16 @@ fprintf(['#Centers    psnr    noise    ',Method,'    normalize',' cluster(s)',' 
 
 if ischar(Parameter.Context)
     if ischar(Parameter.Spatil.CoOcThr);Parameter.Spatil.CoOcThr=nan;end
-    fprintf(strcat('#Centers    psnr    Context    noise    ,',Parameter.Context,'-Lambda  context(m)  K2    NN    CC_{Thr}\n',...
-        ' %3u       %2.3f   %2.3f     %3u           %G            %3.2G     %u     %u     %3.2E\n'),...
+    fprintf(strcat('#Centers    psnr    Context    noise    ,',Parameter.Context,'-Lambda  context(m)  K2    NN    CoOc    CC_{Thr}\n',...
+        ' %3u       %2.3f   %2.3f     %3u           %G            %3.2G     %u     %u     %s     %3.2E\n'),...
         size(Centers,3), result,result2, sigma,Parameter.Spatil.lambda,...
-        contexttime/60,length (unique(AssignVec2)),Parameter.Spatil.NN,Parameter.Spatil.CoOcThr);
+        contexttime/60,length (unique(AssignVec2)),Parameter.Spatil.NN,Parameter.Spatil.CoOc,Parameter.Spatil.CoOcThr);
 
 % disp(['  #Centers    psnr    noise    ',Parameter.Context,'    normalize',' context(s)'])
 % disp([length(unique(AssignVec2)), result2, round(sigma), Parameter.Spatil.lambda ,...
 %     Parameter.normalize ,round(contexttime)])
 
 end
-
-% rmpath(NewPath);
+% if Parameter.normalize== -5
+%     global ORACLE
+%     ORACLE=struct('Centers',Centers,'AssignVec',AssignVec);end

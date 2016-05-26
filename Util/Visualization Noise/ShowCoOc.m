@@ -1,18 +1,26 @@
-function [varargout]=ShowCoOc(AssignVec,varargin)
-%% function [Output]=ShowCoOc(AssignVec,visual,output)
-%
-% output  is an optioal field to secifay what will be the return value of the function
-% Output = 'CoOc' or 'EpsNorm' 'Entropy'
+function [varargout]=ShowCoOc(AssignVec,visual,output,Method)
+%% function [Output]=ShowCoOc(AssignVec,visual,output,Method)
+%   Input:
+%       visual- is a boolean field that enalbels showing the CC
+%       output- 'CoOc'\'EpsNorm'\'Entropy'- chooses what is the output of
+%       the function
+%       Method- choosed between 
+%           'CC' - conditional CC
+%           'M'  - Mutual information 
+%           'JP' - Joint Probabilty
 % 
-% visual is an optional bollean argument which specifays wheter to plot the
-% Co-Occurence matrix and some more properties.
-% in case visual is -[], the default value is true.
-%
+%   Defaluts:
+%       visual is set to true
+%       Output is ste to 'CoOc' and method is 'CC' 
+
 global Parameter Analysis
 row=Parameter.row;      col=Parameter.col;
 wsize=sqrt(Parameter.wsize2);
 K=Analysis.K;%max(AssignVec)
-clstCnt=histcounts(AssignVec,1:K+1);
+if verLessThan('matlab','8.4')
+        clstCnt=histc(AssignVec,1:K);
+else    clstCnt=histcounts(AssignVec,1:K+1);
+end
 % clstPr_obj=histogram(AssignVec,1:K+1);
 % clstCnt=clstPr_obj.Values;
 
@@ -28,49 +36,62 @@ Neigbour(ceil(NN^2/2),:)=[];
 H=histc(Neigbour,1:K,1)';
 HNorm=sum(H,2);
 
-Hprime=DiagonalMult(H,1./HNorm,'l');
-
 Indicator=sparse(AssignVec,1:m*n,ones(1,m*n),K,m*n);
-CoOc=Indicator*H;
+CC=Indicator*H;
+CCNorm=sum(CC,2);
+CCN=CC./CCNorm(:,ones(1,size(CC,1)),:);     CCN(CC==0)=0;
 
-CoOcNorm=sum(CoOc,2);
-CoOcN=CoOc./CoOcNorm(:,ones(1,size(CoOc,1)),:);CoOcN(CoOc==0)=0;
+% second way calculating
+% Hprime=DiagonalMult(H,1./HNorm,'l');
+Hprime=bsxfun(@rdivide,H,HNorm);
+Pr_clst=clstCnt/sum(clstCnt);
+NullClusters=(clstCnt==0);
 
-CoOcNprime=diag(1./clstCnt)*Indicator*Hprime;
+CoOcNprime=diag(1./clstCnt)*Indicator*Hprime;   CoOcNprime(NullClusters,:)=0;
+
 %% diffrent types of Co-Occurrencce matrix
-% h_aH_b=clstCnt'*clstCnt;
-% M=CoOc./h_aH_b;                         %like mutual information
+h_aH_b=clstCnt'*clstCnt;
+M=CC./h_aH_b;                         %like mutual information
 % M=CwithWindow (AssignImg)./h_aH_b;
-% P=Indicator*Hprime/sum(clstCnt);        %joint probability
+M1=CoOcNprime*diag(1./clstCnt);             M1(:,NullClusters)=0;
+P=Indicator*Hprime/sum(clstCnt);        %joint probability
+P1=diag(Pr_clst)*CoOcNprime;
+
+if ~exist('Method','var');Method='CC';end
+switch Method
+    case 'CC'
+        CoOc=CoOcNprime;
+    case 'M'
+        CoOc=M1;
+    case 'JP'
+        CoOc=P1;    
+end
 
 %% outputs options
 alpha1=0.005; alpha2=0.02; alpha3=0.0001; 
-epsNorm1=sum(sum(CoOcN>alpha1));epsNorm2=sum(sum(CoOcN>alpha2)); epsNorm3=sum(sum(CoOcN>alpha3));
+epsNorm1=sum(sum(CoOc>alpha1));epsNorm2=sum(sum(CoOc>alpha2)); epsNorm3=sum(sum(CoOc>alpha3));
 
-LogCoOc=log2(CoOcN);
-LogCoOc(CoOcN==0)=0;  % no nan resulting from inf*0;
-H_row=-sum( CoOcN.*LogCoOc,2 );
+LogCoOc=log2(CoOc);
+LogCoOc(CoOc==0)=0;  % no nan resulting from inf*0;
+H_row=-sum( CoOc.*LogCoOc,2 );
 MatrixEntropy=mean(H_row);
 %%
-visual=true;
-if nargin>1
-    if ~isempty(varargin{1})
-        visual=varargin{1};
-    end
+if ~islogical(visual); visual=true; end
+if nargout>0
+if ~exist('output','var');output='CoOc';end
+switch output
+    case 'CoOc'
+        varargout{1}=CoOc;
+    case 'EpsNorm'
+        varargout{1}=epsNorm1; varargout{2}=epsNorm2;
+    case 'Entropy'
+        varargout{1}=MatrixEntropy;
+    otherwise
+        varargout{1}=CoOc;
 end
-if nargin>2
-    switch varargin{2}
-        case 'CoOc'
-            varargout{1}=CoOcN;
-%             varargout{1}=M;
-        case 'EpsNorm'
-            varargout{1}=epsNorm1; varargout{2}=epsNorm2;
-        case 'Entropy'
-            varargout{1}=MatrixEntropy;
-    end
 end
 
-if visual; Visualize(CoOcN);end  %output figure
+if visual; Visualize(CCN);end  %output figure
 
 
     function []=Visualize(CoOcN)
@@ -90,7 +111,8 @@ if visual; Visualize(CoOcN);end  %output figure
     subplot(2,2,[3,4]);
     bar( 1:K ,CoOcN(round(K/2),:) )
     title ( strcat('Co-Occurrence prob. for label ', num2str( round(K/2) )) );
-    xlabel ({strcat( 'amount of labels ',num2str(K) ),strcat( 'active context clusters ',num2str(Analysis.K2) )});axis ([1,K,0,1]); grid minor        
+    if (isfield(Analysis,'K2')); line2=strcat( 'active context clusters ',num2str(Analysis.K2) );else line2='';end
+    xlabel ({strcat( 'amount of labels ',num2str(K) ),line2});axis ([1,K,0,1]); grid minor        
     end
 end
 
@@ -107,6 +129,8 @@ Neigbour=im2col(AssignImg,[NN,NN],'sliding')';
 [x,y]=meshgrid(-floor(NN/2):floor(NN/2));
 Window=exp(-sqrt(x.^2+y.^2)/(sigma^2));
 window=fspecial('gaussian',NN);
+window=fspecial('average',NN);
+
 
 window=window(:);   %window(floor(NN^2/2))=[];
 L=AssignImg(padding+1:end-padding,padding+1:end-padding);

@@ -25,11 +25,11 @@ m=Analysis.LabelsSize(1)    ;n=Analysis.LabelsSize(2);
 %Analysis.LabelsSize=Analysis.LabelsSize+(NN-1); %restore values to origin
 
 samp=randperm(size(S,1),3);
-ratio=0;            [CC_Hold]=ShowCoOc(Lhat,false,'Entropy');
+ratio=0;            [CC_Hold]=ShowCoOc(Lhat,false,'Entropy',Parameter.Spatil.CoOc);
 
-Parameter.Spatil.MaxIter=5;                    
+Parameter.Spatil.MaxIter=3;                    
 for iter=1:Parameter.Spatil.MaxIter
-    disp (strcat('current ratio: ',num2str(ratio),', with ', num2str( length (unique(Lhat)) ) ,' unique Centers'  ));
+%     disp (strcat('current ratio: ',num2str(ratio),', with ', num2str( length (unique(Lhat)) ) ,' unique Centers'  ));
     AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
     AssignImg=padarray(AssignImg,[padding,padding],-1);
 
@@ -37,30 +37,23 @@ for iter=1:Parameter.Spatil.MaxIter
     Neigbour(ceil(NN^2/2),:)=[];
     H=histc(Neigbour,1:K,1)';
     
-    if Parameter.ORACLE
+    if Parameter.ORACLE && Analysis.ORACLE.level>2
         CCthr=Analysis.ORACLE.CoOc;
     else
         if ~isnumeric(Parameter.Spatil.CoOcThr);Parameter.Spatil.CoOcThr=0.005;end
-%         Indicator=sparse(Lhat,1:m*n,ones(1,m*n),K,m*n);
-%         CC=Indicator*H;
-%         CCNorm=sum(CC,2);
-%         CCN=CC./CCNorm(:,ones(1,K),:); CCN(CC==0)=0; %to avoid 0/0=nan
-        [CC]=ShowCoOc(Lhat,false,'CoOc');
+        [CC]=ShowCoOc(Lhat,false,'CoOc',Parameter.Spatil.CoOc);
 
         CC(CC<Parameter.Spatil.CoOcThr)=0;
         CCNorm=sum(CC,2);
-        try
-            CCthr=CC./CCNorm(:,ones(1,length(CCNorm)),:); CCthr(CC==0)=0;
-        catch 
-            warning('something went wrong, please fix it')
-        end
+        CCthr=CC./CCNorm(:,ones(1,length(CCNorm)),:); CCthr(CC==0)=0;
         
         CC_Hnew=CC_Entropy(CCthr); ratio=CC_Hnew/CC_Hold; CC_Hold=CC_Hnew;
+        fprintf('CC entropy ratio in iter: %u is %1.3f with %u unique clusters\n',iter,ratio,length (unique(Lhat)))
+
     end
 %     [I, PixelTotalI]=tf_idf (H);
 %     PixelTotalI=(PixelTotalI<100);
 %     PixelWeightI=PixelTotalI(:,ones(1,K));
-    try
     switch SpatialRefernce
         case 'MessagePass'
             HNorm=sum(H,2);
@@ -75,10 +68,6 @@ for iter=1:Parameter.Spatil.MaxIter
             E_h=DiagonalMult(H,1./HNorm,'l'); %for partial histograms
             L=(1-Parameter.Spatil.lambda)*S + Parameter.Spatil.lambda*E_h*CCthr';       %notice to invert CC
     end
-    catch 
-        warning('something went wrong, please fix it')
-    end
-    
             
     % when not caclculating partial histogrmas
     %L=S;
@@ -86,7 +75,7 @@ for iter=1:Parameter.Spatil.MaxIter
     
     [Pr,Lhat]=max(L,[],2);
     if Analysis.DebuggerMode && ~(mod(iter+1,3));
-        Debug(CCthr,Lhat,Pr,iter,S,E_h,L,samp);end
+        Debug(CCthr,Lhat,Pr,iter,S,E_h,L,samp,Analysis.Save);end
 
 %    fixed  Centers-> need to comment next 3 rows speeds up(no calc affinity)
    [Centers,~,Lhat,~,~]=UpdateCenter(Data,Lhat,false);
@@ -134,9 +123,12 @@ end
 
 end
 
-function[] = Debug (CoOc,Lhat,Pr,iter,S,E_h,L,samp)
-global Parameter
+function[] = Debug (CoOc,Lhat,Pr,iter,S,E_h,L,samp,SaveOnly)
+global Parameter Analysis
 
+Analysis.iterations(iter).AssignVec2=Lhat;
+Analysis.iterations(iter).CoOc=CoOc;
+if SaveOnly; return;end
 ShowProb (cat(3,S,E_h*CoOc,L),samp);
 subplot(3,1,1);ylabel('Pr. visual');subplot(3,1,2);ylabel('Pr. Hist')
 
@@ -149,7 +141,7 @@ tmp_Labels=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
 [samp_row,samp_col]=ind2sub(size(tmp_Labels),samp);
 figure('Name',strcat('temporal image properties ',num2str(iter), 'iteration'));
 subplot(2,2,3);
-imagesc(log(CoOc+1));colormap jet; title ('Co-Occurence matrix');
+imagesc(log(CoOc+1));colormap (Analysis.ColorMap); title ('Co-Occurence matrix');
 
 LCoOc=log2(CoOc);
 LCoOc(CoOc==0)=0;  % no nan resulting from inf*0;
