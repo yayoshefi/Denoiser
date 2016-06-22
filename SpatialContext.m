@@ -13,8 +13,7 @@ global Parameter Analysis
 
 % ----- Parameters -----
 wsize=sqrt(Parameter.wsize2);
-m=Analysis.LabelsSize(1);
-n=Analysis.LabelsSize(2);
+if ~isfield(Analysis,'samp');   Analysis.samp=randperm(length(AssignVec),3);    end
 
 switch Parameter.Context
     case 'spectral'

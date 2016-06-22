@@ -3,6 +3,7 @@ function setGlobalParameter()
 %   global ORACLE  - so it can be read at this function
 %   ORACLE=struct(Centers,CoOc,AssignVec,level)
 %   ORACLE Level:
+%       0- is only for comparesens
 %       1- is only using centers
 %       2- is using centers an CC
 %       3- is for comparing only and gives the true 0 noise labeling
@@ -20,20 +21,20 @@ function setGlobalParameter()
 %
 global Parameter Analysis ORACLE
 %%  ############# Parameter  ##############
-InitClustersNUM=250;        MaxSubSpace=0;      MinimunClusterSize=20;
-Debug=false;               USEORACLE=false;      ORACLE_level=3;
+InitClustersNUM=150;        MaxSubSpace=0;      MinimunClusterSize=20;
+Debug=true;               USEORACLE=false;      ORACLE_level=0;
 SplitType='median'; % 'median' or 'totvar'
 Context='comeans'; % [] or 'spectral' or 'graphcut' 'rl' or 'mrf' 'entropy'
-                   % 'mutualdist', 'comeans' 
+                   % 'mutualdist', 'comeans'
 % **************     other clustring Parameters     ****************
 Parameter.MSS=MaxSubSpace;          Parameter.minclstsize=MinimunClusterSize;
 Parameter.SplitType=SplitType;      Parameter.Context=Context;
 Parameter.subsample=0.20;           Parameter.ORACLE=USEORACLE;
 
 % **************     Context clustring Parameters     ****************
-Parameter.Spatil.spatialdist='decomposition';        Parameter.Spatil.lambda=0.9;
+Parameter.Spatil.spatialdist='decomposition';        Parameter.Spatil.lambda=0.1;
 %'landmarks' / 'decomposition'  /  'simplenoramlize' /'none'
-Parameter.Spatil.sigma=20;   Parameter.Spatil.NN=5;      Parameter.Spatil.CoOcThr='unused';
+Parameter.Spatil.sigma=20;   Parameter.Spatil.NN=9;      Parameter.Spatil.CoOcThr='unused';
                                                          Parameter.Spatil.CoOc='M';
 Parameter.location='C:/Users/Yair/Dropbox/Thesis code';
 
@@ -48,12 +49,12 @@ Parameter.Spectral=struct('clustrsNUM',InitClustersNUM,'dictsize',dictsize,...
     'sparsity',sparsity,'HardThr',HardThr,'Fast',true);
 
 %%  ############# Analysis  ##############
-if Parameter.ORACLE; if ~isstruct('ORACLE','var');ORACLE=Analysis.ORACLE;end;end %save last ORACLE Or update
+if Parameter.ORACLE; if isstruct('ORACLE');ORACLE=Analysis.ORACLE;end;end %save last ORACLE Or update
 Analysis=struct('Show',true,'Save',true,'figures',1,'Fast',true,'Handles',[]...
     ,'K',0,'DebuggerMode',Debug,'ColorMap','jet','LabelsSize',...
     [Parameter.row-sqrt(Parameter.wsize2)+1,Parameter.col-sqrt(Parameter.wsize2)+1]);
 if Parameter.ORACLE;
-    disp ('You choose to use ORACLE')
+    fprintf ('You choose to use ORACLE with level %u!\n',ORACLE_level)
     Analysis.ORACLE=ORACLE; Analysis.ORACLE.level=ORACLE_level;end
 end
 

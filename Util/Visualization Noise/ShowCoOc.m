@@ -16,7 +16,7 @@ function [varargout]=ShowCoOc(AssignVec,visual,output,Method)
 global Parameter Analysis
 row=Parameter.row;      col=Parameter.col;
 wsize=sqrt(Parameter.wsize2);
-K=Analysis.K;%max(AssignVec)
+K=Analysis.K; %max(AssignVec)
 if verLessThan('matlab','8.4')
         clstCnt=histc(AssignVec,1:K);
 else    clstCnt=histcounts(AssignVec,1:K+1);
@@ -33,36 +33,37 @@ AssignImg=padarray(AssignImg,[padding,padding],-1);
 
 Neigbour=im2col(AssignImg,[NN,NN],'sliding');
 Neigbour(ceil(NN^2/2),:)=[];
-H=histc(Neigbour,1:K,1)';
-HNorm=sum(H,2);
+Hstar=histc(Neigbour,1:K,1)';
+HNorm=sum(Hstar,2);
 
 Indicator=sparse(AssignVec,1:m*n,ones(1,m*n),K,m*n);
-CC=Indicator*H;
-CCNorm=sum(CC,2);
-CCN=CC./CCNorm(:,ones(1,size(CC,1)),:);     CCN(CC==0)=0;
+Cstar=Indicator*Hstar;
+CCNorm=sum(Cstar,2);                %delete 2 rows, not accuarte
+CCN=Cstar./CCNorm(:,ones(1,size(Cstar,1)),:);     CCN(Cstar==0)=0;
 
 % second way calculating
-% Hprime=DiagonalMult(H,1./HNorm,'l');
-Hprime=bsxfun(@rdivide,H,HNorm);
+H= bsxfun(@rdivide,Hstar,HNorm);
+C= Indicator*H;
+
 Pr_clst=clstCnt/sum(clstCnt);
 NullClusters=(clstCnt==0);
 
-CoOcNprime=diag(1./clstCnt)*Indicator*Hprime;   CoOcNprime(NullClusters,:)=0;
+CC=diag(1./clstCnt)*C;   CC(NullClusters,:)=0;
 
 %% diffrent types of Co-Occurrencce matrix
 h_aH_b=clstCnt'*clstCnt;
-M=CC./h_aH_b;                         %like mutual information
+M=Cstar./h_aH_b;                         %like mutual information
 % M=CwithWindow (AssignImg)./h_aH_b;
-M1=CoOcNprime*diag(1./clstCnt);             M1(:,NullClusters)=0;
-P=Indicator*Hprime/sum(clstCnt);        %joint probability
-P1=diag(Pr_clst)*CoOcNprime;
+M1=CC*diag(1./clstCnt);             M1(:,NullClusters)=0;
+P=Indicator*H/sum(clstCnt);        %joint probability
+P1=diag(Pr_clst)*CC;
 
 if ~exist('Method','var');Method='CC';end
 switch Method
     case 'CC'
-        CoOc=CoOcNprime;
+        CoOc=CC;
     case 'M'
-        CoOc=M1;
+        CoOc=log(1+M1);
     case 'JP'
         CoOc=P1;    
 end
@@ -70,7 +71,8 @@ end
 %% outputs options
 alpha1=0.005; alpha2=0.02; alpha3=0.0001; 
 epsNorm1=sum(sum(CoOc>alpha1));epsNorm2=sum(sum(CoOc>alpha2)); epsNorm3=sum(sum(CoOc>alpha3));
-
+% Thr=1.5*min(CoOc(CoOc~=0));
+% CoOc(CoOc<Thr)=0;        %Thresholding
 LogCoOc=log2(CoOc);
 LogCoOc(CoOc==0)=0;  % no nan resulting from inf*0;
 H_row=-sum( CoOc.*LogCoOc,2 );
@@ -91,13 +93,16 @@ switch output
 end
 end
 
-if visual; Visualize(CCN);end  %output figure
+if visual
+    figure('Name', strcat('CoOc-',Method) );colormap 'jet'; 
+    Visualize(CoOc);
+end  %output figure
 
 
     function []=Visualize(CoOcN)
-    figure;colormap 'jet'; 
+    
     subplot(2,2,1); imagesc(log(CoOcN+1));
-    title ('Co-Occurence matrix');
+    title ('Co-Occurence matrix');axis image
     xlabel(['mean Entropy per row: ',num2str(MatrixEntropy)],'Color','red')
 
     subplot(2,2,2);
@@ -110,13 +115,15 @@ if visual; Visualize(CCN);end  %output figure
 
     subplot(2,2,[3,4]);
     bar( 1:K ,CoOcN(round(K/2),:) )
+    ylimit=min(1, 3*max(CoOcN(:)) );
+    axis([1,K,0, ylimit])
     title ( strcat('Co-Occurrence prob. for label ', num2str( round(K/2) )) );
     if (isfield(Analysis,'K2')); line2=strcat( 'active context clusters ',num2str(Analysis.K2) );else line2='';end
     xlabel ({strcat( 'amount of labels ',num2str(K) ),line2});axis ([1,K,0,1]); grid minor        
     end
 end
 
-function C= CwithWindow (AssignImg)
+function C= CwithWindow (AssignImg,Type)
 global Parameter
 K=max(AssignImg(:));
 NN=Parameter.Spatil.NN;  %window2
@@ -126,11 +133,21 @@ sigma=1;
 C=zeros(K);
 
 Neigbour=im2col(AssignImg,[NN,NN],'sliding')';
-[x,y]=meshgrid(-floor(NN/2):floor(NN/2));
-Window=exp(-sqrt(x.^2+y.^2)/(sigma^2));
-window=fspecial('gaussian',NN);
-window=fspecial('average',NN);
 
+if ~exist('Type','var'); Type='rect';end
+switch Type
+    case 'rect'
+        Hstar=histc(Neigbour,1:K,1)';
+        HNorm=sum(Hstar,2);
+        H= bsxfun(@rdivide,Hstar,HNorm);
+        C= Indicator*H;
+        % NOT FUNCTIONAL YET
+        return
+    case 'gauss'
+        [x,y]=meshgrid(-floor(NN/2):floor(NN/2));
+        Window=exp(-sqrt(x.^2+y.^2)/(sigma^2));
+        window=fspecial('gaussian',NN);
+end
 
 window=window(:);   %window(floor(NN^2/2))=[];
 L=AssignImg(padding+1:end-padding,padding+1:end-padding);
@@ -142,6 +159,3 @@ for a=1:K
     end
 end
 end
-
-% glcm = graycomatrix(AssignImg,'GrayLimits',[1,K],'NumLevels',K,'Offset',[0,1;1,0],'Symmetric',true);
-%CoOc=sum(glcm,3);

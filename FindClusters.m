@@ -16,12 +16,10 @@ dflts =  {0 };
 [wsize2,pnum]=size(Data);
 samp=randperm(pnum,round(Parameter.subsample*pnum));
 SampData=Data(:,samp);
-if Parameter.ORACLE
-    if Analysis.ORACLE.level==3
+if (Parameter.ORACLE) && (Analysis.ORACLE.level==3)
         AssignVec=Analysis.ORACLE.AssignVec;    Centers=Analysis.ORACLE.Centers;
-    else
-    [AssignVec,~]=Dist2SubSpace(Data,Analysis.ORACLE.Centers,'dim',zeros(1,1,Parameter.values.kmeans));
-    end
+elseif (Parameter.ORACLE) && (Analysis.ORACLE.level>0)
+    [AssignVec,~]=Dist2SubSpace(Data,Analysis.ORACLE.Centers,'dim',zeros(1,1,size(Analysis.ORACLE.Centers,3)));
 else
 switch Parameter.Method
     case 'Distance'

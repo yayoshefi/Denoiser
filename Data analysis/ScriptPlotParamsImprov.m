@@ -74,6 +74,9 @@ for f=ToPlot
     ylabel('Psnr improve Vs. NN');
     xlabel('NN')
     legend(legend_NN,'Location','northeastoutside')
+    imagName=strcat('Psnr2_params_sigma',num2str(f),'.jpg');
+%     if exist ('Parameter','var')
+%         saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',imagName));end
 end
 
 

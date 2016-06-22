@@ -8,6 +8,7 @@ function ShowClusters (Image,Noise,AssignVec,Centers,varargin)
 % Parameters
 global Parameter Analysis
 scrsz = get(groot,'ScreenSize');
+figsize=[10 10 1350 1350]; %shold be for 4 images of 512
 bins=1000;
 NN=Parameter.Spatil.NN;  %window in Labels Image
 
@@ -43,7 +44,8 @@ end
 %% ########################################################################
 %% ###################   Lables Analysis          #########################
 %% ########################################################################
-Analysis.Handles.Lables=figure('Name','Lables analysis ');%,'outerPosition',scrsz);
+Analysis.Handles.Lables=figure('Name','Lables analysis ','Position',figsize);%,'outerPosition',scrsz);
+
 if ~verLessThan('matlab','8.4')  % -- Code to run in MATLAB R2014b and later here --
    Analysis.Handles.Lables = (Analysis.Handles.Lables.Number);
 end
@@ -55,6 +57,8 @@ if length (AssignVec)== (m*n)
 else AssignImg=reshape(AssignVec,[m-2,n-2]);
 end
 imagesc(AssignImg);title ('Image cluster labels assignment');
+axis image; %daspect([size(AssignImg) 1])
+
 colormap (Analysis.ColorMap);
 %{
 %% ---------- Scatter plot in feature space ------------

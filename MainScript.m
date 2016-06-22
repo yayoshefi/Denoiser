@@ -1,14 +1,13 @@
 %%---------------- Main Script: De noising-------------------GitHub Version
-% clearvars
 load Database;Images = createImages();load Sport+_DB;
 Image=Bolt;
-description='Choosing CC';
+description='free testing';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 
 Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
-sigma=25;
-wsize=5;
+sigma=50;
+wsize=11;
 normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain (-5)- Oracle
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'
                         %'varing_cluster_size'
@@ -88,10 +87,6 @@ fprintf(['#Centers    psnr    noise    ',Method,'    normalize',' cluster(s)',' 
     ' %3u       %2.3f   %3u        %u          %u      %3G     %3G     %3G\n'],...
     size(Centers,3), result, sigma,Parameter.values.(Method),Parameter.normalize ,itertime, cleaningtime,visualtime);
 
-% disp(['  #Centers    psnr    noise    ',Method,'    normalize',' cluster(s)','  Clean(s)','  visual(s)'])
-% disp([round(size(Centers,3)), result, round(sigma), Parameter.values.(Method) ,...
-%     Parameter.normalize ,round(itertime), round(cleaningtime),round(visualtime)])
-
 if ischar(Parameter.Context)
     if ischar(Parameter.Spatil.CoOcThr);Parameter.Spatil.CoOcThr=nan;end
     fprintf(strcat('#Centers    psnr    Context    noise    ,',Parameter.Context,'-Lambda  context(m)  K2    NN    CoOc    CC_{Thr}\n',...
@@ -99,11 +94,7 @@ if ischar(Parameter.Context)
         size(Centers,3), result,result2, sigma,Parameter.Spatil.lambda,...
         contexttime/60,length (unique(AssignVec2)),Parameter.Spatil.NN,Parameter.Spatil.CoOc,Parameter.Spatil.CoOcThr);
 
-% disp(['  #Centers    psnr    noise    ',Parameter.Context,'    normalize',' context(s)'])
-% disp([length(unique(AssignVec2)), result2, round(sigma), Parameter.Spatil.lambda ,...
-%     Parameter.normalize ,round(contexttime)])
-
 end
-% if Parameter.normalize== -5
-%     global ORACLE
-%     ORACLE=struct('Centers',Centers,'AssignVec',AssignVec);end
+if Parameter.normalize== -5
+    global ORACLE
+    ORACLE=struct('Centers',Centers,'AssignVec',AssignVec);end

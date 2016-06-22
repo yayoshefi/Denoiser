@@ -16,6 +16,7 @@ else
 end
 
 imshow(Output{1},[]); title(['psnr: ',num2str(result{1})],'Color','r');
+if Analysis.DebuggerMode && isfield(Analysis,'samp');DrawPixels (h1, Analysis.samp,true);end
 
 xlabel({[Method,' main parameter ',num2str(Parameter.values.(Method))],...
     [' normalize parameter ',num2str(Parameter.normalize)]});
@@ -23,6 +24,7 @@ xlabel({[Method,' main parameter ',num2str(Parameter.values.(Method))],...
 if i>1
 ax_psnr2=subplot (1,i,i);
 imshow(Output{2},[]); title(['psnr: ',num2str(result{2})],'Color','b');
+if Analysis.DebuggerMode && isfield(Analysis,'samp');DrawPixels (h1, Analysis.samp,true);end
 
 xlabel({['Context: ',Parameter.Context,'. ',num2str( Analysis.K2),' clusters']})
 
@@ -35,8 +37,9 @@ if Parameter.ORACLE
         'String',strcat('ORACLE-',num2str(Analysis.ORACLE.level)));end
 
 %% Labels images
+figsize=[10 100 1100 600];
 if nargin>2
-    h2=figure('name','Lables');
+    h2=figure('name','Lables','Position',figsize);
     if verLessThan('matlab','8.4')
         % -- Code to run in MATLAB R2014a and earlier here --
         h2Num = num2str(h2);
@@ -62,16 +65,17 @@ if nargin>2
     colormap (Analysis.ColorMap);
 annotation('textbox',dim,'String',str,'FitBoxToText','on','LineStyle','none');
 if Parameter.ORACLE
-    annotation ('textbox',[0.5,0.1,0.2,0.2],'String','ORACLE','Color','b','FaceAlpha',0.2);end
+    annotation ('textbox',[0.5,0.1,0.2,0.2],'Color','b','FaceAlpha',0.2...
+        ,'String',strcat('ORACLE-',num2str(Analysis.ORACLE.level)));end
 end
 %% SAVING DATA
 if Analysis.Save
     prefix();
     mkdir( strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix) );
     
-    saveas(h1,strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix,'\',h1Num,Analysis.ShortPrefix,'_D-noisedImages.jpg'))
+    saveas(h1,strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix,'\',h1Num,Analysis.ShortPrefix,'_D-noisedImages.png'))
     if exist('h2','var')         % print Lables if there is
-        saveas(h2,strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix,'\',h2Num,Analysis.ShortPrefix,'_Lables.jpg'))
+        saveas(h2,strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix,'\',h2Num,Analysis.ShortPrefix,'_Lables.png'))
     end
 
     % write parameters to text file
