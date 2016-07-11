@@ -64,6 +64,7 @@ switch Method
         CoOc=CC;
     case 'M'
         CoOc=log(1+M1);
+        CoOc=M1;
     case 'JP'
         CoOc=P1;    
 end

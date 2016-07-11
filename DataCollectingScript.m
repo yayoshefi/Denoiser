@@ -1,8 +1,8 @@
 %%---------------- Data Collecting-------------------Git Version
 clearvars ContextPsnr Psnr CentersCount Labeling new
 load Database.mat;load Sport+_DB.mat; Images = createImages();
-Image=barbara;      %clearvars -except Image
-description='barbara Mutual';
+Image=Bolt;      %clearvars -except Image
+description='aggegate P_i';
 %% --------------------------- PARAMETERS ------------------------------
 
 global Parameter Analysis

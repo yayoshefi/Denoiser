@@ -8,7 +8,7 @@ function ShowClusters (Image,Noise,AssignVec,Centers,varargin)
 % Parameters
 global Parameter Analysis
 scrsz = get(groot,'ScreenSize');
-figsize=[10 10 1350 1350]; %shold be for 4 images of 512
+figsize=[10 10 1650 1100]; %shold be for 4 images of 512
 bins=1000;
 NN=Parameter.Spatil.NN;  %window in Labels Image
 

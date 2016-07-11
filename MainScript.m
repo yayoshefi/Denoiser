@@ -6,7 +6,7 @@ description='free testing';
 global Parameter Analysis
 
 Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
-sigma=50;
+sigma=0;
 wsize=11;
 normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain (-5)- Oracle
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'
