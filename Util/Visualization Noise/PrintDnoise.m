@@ -70,7 +70,10 @@ if Parameter.ORACLE
 end
 %% SAVING DATA
 if Analysis.Save
-    prefix();
+    if isfield(Parameter,'ImageName');      prefix(Parameter.ImageName);
+    else                                    prefix();
+    end
+    
     mkdir( strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix) );
     
     saveas(h1,strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix,'\',h1Num,Analysis.ShortPrefix,'_D-noisedImages.png'))
@@ -105,31 +108,35 @@ end
 
 function str=str2notation()
 global Parameter
-switch Parameter.Spatil.CoOc
-    case 'M';   Type='Mutual info';
-    case 'CC';  Type='Conditional';
-    case 'JP';  Type='Joint Prob.';
+switch Parameter.spatial.CoOc
+    case 'MI';      Type='Mutual info';
+    case 'PMI';     Type='PointWise Mutual info';
+    case 'CC';      Type='Conditional';
+    case 'JP';      Type='Joint Prob.';
 end
 str={['\bf Context: ',Parameter.Context],...
-    ['\rm \lambda: ',num2str(Parameter.Spatil.lambda,'%G'),' NN:',num2str(Parameter.Spatil.NN)]...
-    ,[Type,' |CC|_{\epsilon} \epsilon=',num2str(Parameter.Spatil.CoOcThr,'%2.1G')],...
+    ['\rm \lambda: ',num2str(Parameter.spatial.lambda,'%G'),' NN:',num2str(Parameter.spatial.NN)]...
+    ,[Type,' |CC|_{\epsilon} \epsilon=',num2str(Parameter.spatial.CoOcThr,'%2.1G')],...
     ['W_1: ',num2str(Parameter.wsize2^0.5),'   \sigma: ',num2str(Parameter.sigma)],...
+    ['Update rule: ',num2str(Parameter.spatial.UpdateRule),' with ',Parameter.spatial.AssginType,' assignment'],...
     'reserved..'};
 
 end
 
-function []= prefix()
+function []= prefix(name)
 global Parameter Analysis
 % in PrintDnoise there is a subfolder for diffrent noise
-Analysis.DirSuffix=strcat('sigma',num2str(Parameter.sigma),'\',Parameter.description,...
+if ~exist('name','var');name='';end
+Analysis.DirSuffix=strcat(name,'_sigma',num2str(Parameter.sigma),'\',Parameter.description,...
     '_Context_',Parameter.Context,...
-    '_',num2str(Parameter.Spatil.lambda,'%G'),...
-    '_CoOc_',Parameter.Spatil.CoOc,'_Thr',num2str(Parameter.Spatil.CoOcThr,'%G'),...
-    Parameter.Method,...
-    '_norm',num2str(Parameter.normalize),'_metric_',Parameter.metric);
+    '_',num2str(Parameter.spatial.lambda,'%G'),...
+    '_CoOc_',Parameter.spatial.CoOc,'_Thr',num2str(Parameter.spatial.CoOcThr,'%G'),...
+    Parameter.Method);
+    %,'_norm',num2str(Parameter.normalize),'_metric_',Parameter.metric);
 
-Analysis.ShortPrefix=strcat('W1-',num2str(sqrt(Parameter.wsize2)),'_Context-',Parameter.Context,...
-    '-',num2str(Parameter.Spatil.lambda,'%G'),'_NN-',num2str(Parameter.Spatil.NN),';');
+Analysis.ShortPrefix=strcat('Rule-',num2str(Parameter.spatial.UpdateRule),Parameter.spatial.AssginType,...
+    '_W1-',num2str(sqrt(Parameter.wsize2)),'_Context-',Parameter.Context,...
+    '-',num2str(Parameter.spatial.lambda,'%G'),'_NN-',num2str(Parameter.spatial.NN),';');
 end
 
 

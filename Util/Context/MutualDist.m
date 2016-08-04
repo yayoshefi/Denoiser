@@ -19,7 +19,7 @@ n=Analysis.LabelsSize(2);
 
 
 [dim,pnum]=size (Data);
-NN=Parameter.Spatil.NN;  %window2
+NN=Parameter.spatial.NN;  %window2
 padding=floor(NN/2);
 
 Lhat=AssignVec; MaxIter=3; figure;
@@ -44,7 +44,7 @@ for iter=1:MaxIter
         d_vis=sqrt(  abs( sum(Data.^2)-2*C(:,:,k)'*Data+C(:,:,k)'*C(:,:,k) )  );
         d_hist=FastEMD(squeeze(C),H(k,:),squeeze(C),Hist);
         
-        tempDist=d_vis+Parameter.Spatil.lambda*d_hist;
+        tempDist=d_vis+Parameter.spatial.lambda*d_hist;
         index=tempDist<MutualDist;
         MutualDist(index)=tempDist(index);
         Lhat(index)=k;

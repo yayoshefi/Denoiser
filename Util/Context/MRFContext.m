@@ -54,8 +54,8 @@ down=sub2ind([K,K],AssignVec(p),AssignVec(p+1));
 ToTheLeft=sub2ind([K,K],AssignVec(p),AssignVec(p-n));
 up=sub2ind([K,K],AssignVec(p),AssignVec(p-1));
 
-compR=Parameter.Spatil.lambda*Prob_RN(right); compD=Parameter.Spatil.lambda*Prob_DN(down);
-compL=Parameter.Spatil.lambda*Prob_LN(ToTheLeft); compU=Parameter.Spatil.lambda*Prob_UN(up);
+compR=Parameter.spatial.lambda*Prob_RN(right); compD=Parameter.spatial.lambda*Prob_DN(down);
+compL=Parameter.spatial.lambda*Prob_LN(ToTheLeft); compU=Parameter.spatial.lambda*Prob_UN(up);
 
 weights=[SourceUnitary(p)    ,compR,compD,compL,compU    ,E(Target,p)];
 G=digraph(s,t,weights); %undefind for matlab 2014

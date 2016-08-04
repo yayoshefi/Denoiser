@@ -27,7 +27,7 @@ end
 AssignImg=col2im(AssignVec,[wsize,wsize],[Parameter.row,Parameter.col]);
 [m,n]=size(AssignImg);
 
-NN=Parameter.Spatil.NN;  %window2
+NN=Parameter.spatial.NN;  %window2
 padding=floor(NN/2);
 AssignImg=padarray(AssignImg,[padding,padding],-1);
 
@@ -108,7 +108,7 @@ end  %output figure
 
     subplot(2,2,2);
     modes=sum(CoOcN>0,2);
-    plot(modes);title (strcat('using Thr: ','none'));       %num2str(Parameter.Spatil.CoOcThr)));
+    plot(modes);title (strcat('using Thr: ','none'));       %num2str(Parameter.spatial.CoOcThr)));
     grid on; ylabel('||CC_{K,l}||_{\epsilon}')
     xlabel({'Labels K',...
         strcat('\color{blue} \epsilon=',num2str(alpha1),'; |Co-Oc|_{\epsilon} : ',num2str(epsNorm1)),...
@@ -127,7 +127,7 @@ end
 function C= CwithWindow (AssignImg,Type)
 global Parameter
 K=max(AssignImg(:));
-NN=Parameter.Spatil.NN;  %window2
+NN=Parameter.spatial.NN;  %window2
 padding=(sqrt(Parameter.wsize2)-1)/2;
 sigma=1;
 

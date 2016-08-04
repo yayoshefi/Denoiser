@@ -18,11 +18,11 @@ pnames = {'s'           'basis' };
 dflts =  {ones(wsize^2,1,K),0 };
 [Energy,Basis] = internal.stats.parseArgs(pnames, dflts, varargin{:});
 
-%if Parameter.Spatil.lambda==0; Parameter.Spatil.lambda=0.1; end
+%if Parameter.spatial.lambda==0; Parameter.spatial.lambda=0.1; end
 %E=CoherentAffinity (Patches, Centers,'s',Energy,'basis',Basis,'lambda',lambda);
 [E]=affinity (Data, Centers,20,1);
 B = Spatialaffinity ();
-E_spatial=[E;Parameter.Spatil.lambda*B];
+E_spatial=[E;Parameter.spatial.lambda*B];
 [AssignVec2]=MySpectralClustering(E_spatial,'e');
 end
 
@@ -34,7 +34,7 @@ m=Parameter.row-wsize+1;
 n=Parameter.col-wsize+1;
 [ColI,RowI]=meshgrid(1:n,1:m);  % coordinates of an the image
 
-switch Parameter.Spatil.spatialdist
+switch Parameter.spatial.spatialdist
     case 'landmarks'
         L=floor((m*n)^0.35);     %number of land marks
         sigma=500;
@@ -59,7 +59,7 @@ switch Parameter.Spatil.spatialdist
         B=B./Bn([1;1],:);
         
     case 'decomposition'
-        sigma=Parameter.Spatil.sigma;
+        sigma=Parameter.spatial.sigma;
         l=1:max(m,n);
         l2=repmat(l.*l,length(l),1);  %n^2
         D2= l2+l2'-2*l'*l;  % D(i,j)= (n(i)-n(j))^2

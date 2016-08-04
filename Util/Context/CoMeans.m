@@ -4,152 +4,131 @@ function AssignVec2=CoMeans(Data,AssignVec,Centers)
 % based on minimizing both Co-Occurrence entropy and also distance in visul
 % space.
 % this is consistent with Tokt 1st Scheme of minimizing the functional
+global Parameter Analysis
 
 SpatialRefernce='MessagePass';
+change=''; cnt=[];   alpha=1.33;
 
-global Parameter Analysis
 K=size(Centers,3);
 wsize=sqrt(Parameter.wsize2);
-
-
+lambda=Parameter.spatial.lambda;        rule=Parameter.spatial.UpdateRule;
+                                        AssginType=Parameter.spatial.AssginType;
 if (Parameter.ORACLE) && (Analysis.ORACLE.level>0)
         Centers=Analysis.ORACLE.Centers;end
 [P_i]=affinity (Data, Centers,0,true)';
+[CoOc,P_Ni]=lcm(AssignVec,'hard',Parameter.spatial.CoOc);
+CoOc_Hold=CoOc_V1(CoOc,false,'entropy');
+
 Lhat=AssignVec;
-NN=Parameter.Spatil.NN;  %window2
-padding=floor(NN/2);
 
-ratio=0;            [CC_Hold]=ShowCoOc(Lhat,false,'Entropy',Parameter.Spatil.CoOc);
 
-Parameter.Spatil.MaxIter=30;                    
-for iter=1:Parameter.Spatil.MaxIter
-    AssignImg=col2im(Lhat,[wsize,wsize],[Parameter.row,Parameter.col]);
-    AssignImg=padarray(AssignImg,[padding,padding],-1);
-
-    Neigbour=im2col(AssignImg,[NN,NN],'sliding');
-    Neigbour(ceil(NN^2/2),:)=[];
-    H=histc(Neigbour,1:K,1)';
-    
+Parameter.spatial.MaxIter=20;
+for iter=1:Parameter.spatial.MaxIter
     if (Parameter.ORACLE) && (Analysis.ORACLE.level>2)
-        CCthr=Analysis.ORACLE.CoOc;
+        CoOcThr=Analysis.ORACLE.CoOc;
+        [~,P_Ni]=lcm(Lhat,'hard',Parameter.spatial.CoOc);
     else
-        [CC]=ShowCoOc(Lhat,false,'CoOc',Parameter.Spatil.CoOc);
-        CCthr=CoOcShrinkage(CC);
-        
-        [CC_Hnew,epsNorm]=CC_Entropy(CCthr); ratio=CC_Hnew/CC_Hold; CC_Hold=CC_Hnew;
-        if ~mod(iter-1,7)
-        fprintf(['iter: %u. %u unique clusters. \tCoOc entropy ratio is %1.3f\n',...
-            '\t\t\t\t\t\t\t\tCoOc eps norm:%1.4G (i.e. %.3f of the matrix is not 0)\n'],...
-            iter,length (unique(Lhat)),ratio,epsNorm,(epsNorm/(K^2)));
+        switch AssginType
+            case 'soft'
+                arg1=reshape(P_i,[],1,K);
+            case 'hard'
+                arg1=Lhat;
         end
+        switch rule
+            case {1,2,6}
+                [CoOc,P_Ni]=lcm(arg1,AssginType,Parameter.spatial.CoOc);
+                CoOcThr=CoOcShrinkage(CoOc);
+            case 3
+                [CoOc,~]=lcm(arg1,AssginType,Parameter.spatial.CoOc);
+                CoOcThr=CoOcShrinkage(CoOc);
+            case 4
+                 CoOcThr=CoOcShrinkage(CoOc,alpha^iter);
+        end
+%         if strcmp(AssignType,'soft')
+%         [CoOc,P_Ni]=lcm(reshape(P_i,[],1,K),'soft',Parameter.spatial.CoOc);
+        
     end
-%     [I, PixelTotalI]=tf_idf (H);
-%     PixelTotalI=(PixelTotalI<100);
-%     PixelWeightI=PixelTotalI(:,ones(1,K));
+
     switch SpatialRefernce
         case 'MessagePass'
-            HNorm=sum(H,2);
-            E_h=DiagonalMult(H,1./HNorm,'l'); %for partial histograms
-%             E_h=E_h.*PixelWeightI;%%
-            L=(1-Parameter.Spatil.lambda)*P_i + Parameter.Spatil.lambda*E_h*CCthr;
-        case 'CenterPixel'
-            E_h=HistDist (H,CCthr,Centers);
-            L=(1-Parameter.Spatil.lambda)*P_i + Parameter.Spatil.lambda*E_h*CCthr;
+            L=(1-lambda)*P_i + lambda*P_Ni*CoOcThr;
         case 'ML'
-            HNorm=sum(H,2);
-            E_h=DiagonalMult(H,1./HNorm,'l'); %for partial histograms
-            L=(1-Parameter.Spatil.lambda)*P_i + Parameter.Spatil.lambda*E_h*CCthr';       %notice to invert CC
+            L=(1-lambda)*P_i + lambda*P_Ni*CoOcThr';       %notice to invert CC
     end
+    Old_Lhat=Lhat;
     [Pr,Lhat]=max(L,[],2);
    
-    % De-Bugging
-    if Analysis.DebuggerMode && ~(mod(iter-1,10));
-        Debug(CCthr,Lhat,Pr,iter,P_i,E_h,L,Analysis.samp);end
+% De-Bugging
+    iter_step=Analysis.DebuggerIter;        cnt=[cnt,sum(Lhat~=Old_Lhat(:))];
+    [CC_Hnew,epsNorm]=CoOc_V1 (CoOcThr,false,'both',Parameter.spatial.CoOcThr);
     Analysis.iterations(iter).AssignVec2=single(Lhat);
-    Analysis.iterations(iter).CoOc=single(CCthr);
+    Analysis.iterations(iter).CoOc=single(CoOcThr);
+    Analysis.iterations(iter).changes=cnt(end);
+    Analysis.iterations(iter).epsNorm=epsNorm;
+    
+    if ~mod(iter,iter_step)              %output to command window
+        ratio=CC_Hnew/CoOc_Hold; CoOc_Hold=CC_Hnew;
+        fprintf(['iter: %u. %u unique clusters. \tCoOc entropy ratio is %1.3f\n',...
+            '%s\t\t\t\t\t\t\t\tCoOc eps norm:%1.4G (i.e. %.3f of the matrix is not 0)\n'],...
+            iter,length (unique(Lhat)),ratio,change,epsNorm,(epsNorm/(K^2)));
+        fprintf('pixels changed last iterations');disp(cnt)
+        change=''; cnt=[];
+    
+        if Analysis.DebuggerMode 
+            Debug(CoOcThr,Lhat,Pr,iter,P_i,P_Ni,L,Analysis.samp);  end
+    end
 
-    % update Centers and affinity
+    
 %    fixed  Centers-> need to comment next 3 rows speeds up(no calc affinity)
-    if ~mod(iter-1,5)
+    if rule==1    % update Centers and affinity
+        change='centers changed';
         [Centers,~,~,~,~]=UpdateCenter(Data,Lhat,false);
        % do I need to update  Lhat in each iter? [Centers,~,Lhat,~,~]
         Centers=cat(3,Centers,inf*ones(wsize^2,1,K-size(Centers,3)));      % To avoid case of degenarated Centers
         [P_i]=affinity (Data, Centers,0,true)';    % maybe: P_i=L
     end
-    P_i=L;  %TEST 6/22/16 aggregate prob.
+    if rule == 6
+        P_i=L;  %TEST 6/22/16 aggregate prob.
+    end
 end
 
 AssignVec2=Lhat;
 end
 
-function CoOcThr=CoOcShrinkage(CoOc)
+function CoOcThr=CoOcShrinkage(CoOc,alpha)
 global Parameter
-if ~isnumeric(Parameter.Spatil.CoOcThr)
-    switch Parameter.Spatil.CoOc
+if ~isnumeric(Parameter.spatial.CoOcThr)
+    switch Parameter.spatial.CoOc
         case 'CC'
-            Parameter.Spatil.CoOcThr=0.005;
+            Parameter.spatial.CoOcThr=0.005;
         case 'JP'                           % matrix is normalized row & col
-            Parameter.Spatil.CoOcThr=1e-9;
-        case 'M'
-            Parameter.Spatil.CoOcThr=0;     % no shrinkage for Mutual information
+            Parameter.spatial.CoOcThr=1e-9;
+        case 'MI'
+            Parameter.spatial.CoOcThr=0;     % no shrinkage for Mutual information
+        case 'PMI'
+             Parameter.spatial.CoOcThr=0;
     end
 end
-CoOc(CoOc<Parameter.Spatil.CoOcThr)=0;
-switch Parameter.Spatil.CoOc
+if exist('alpha','var'); Parameter.spatial.CoOcThr=Parameter.spatial.CoOcThr*alpha;end
+CoOc(CoOc<Parameter.spatial.CoOcThr)=0;
+switch Parameter.spatial.CoOc
     case 'CC'
         CCNorm=sum(CoOc,2);
         CoOcThr=CoOc./CCNorm(:,ones(1,length(CCNorm)),:); CoOcThr(CoOc==0)=0;
     case 'JP'   %matrix is normalized row & col
         CCNorm=sum(CoOc(:));
         CoOcThr=CoOc/CCNorm;
-    otherwise   %'M'
-        CoOcThr=CoOc;   % the mutual information is no a probabilty function
+    otherwise   %'MI' or 'PMI'
+        CoOcThr=CoOc;   % the mutual information is not a probabilty function
 end
 
 end
-function E_h=HistDist (H,CC,Centers)
-global Parameter
 
-pnum=size(H,1);         speed='fast';
-
-if Parameter.wsize2==1;     Centers=squeeze(Centers)';
-else                        Centers=squeeze(Centers);   end
-PrH=DiagonalMult(H,1./sum(H,2),'l');
-PrH(H==0)=0;
-
-D_h=zeros(size(H)); E_h=zeros(size(H));
-switch speed
-    case 'normal'
-        for k=1:length (CC)
-            for i=1:pnum
-                [~,D_h(i,k)]=emd(Centers',Centers',PrH(i,:)',CC(k,:)');
-            end
-        end
-    case 'fast'
-        dist=FastEMD(Centers,CC(1,:),Centers,PrH);
-        E_h(:,1)=1;
-        for k=2:length (CC)
-%             D_h(:,k)=FastEMD(Centers,CC(k,:),Centers,PrH); with
-%             k=1:length
-            tempdist=FastEMD(Centers,CC(k,:),Centers,PrH);
-            E_h(tempdist<dist,k)=1;
-            E_h(tempdist<dist,1:k-1)=0;
-            dist(tempdist<dist)=tempdist(tempdist<dist);
-        end
-end
-        
-
-% affinity=exp(-D_h/(2*Parameter.Spatil.sigma^2));
-% E_h=DiagonalMult(affinity,1./sum(affinity,2),'l');
-% E_h(affinity==0)=0;
-
-end
-
-function[] = Debug (CoOc,Lhat,Pr,iter,S,E_h,L,samp)
+function[] = Debug (CoOc,Lhat,Pr,iter,S,P_Ni,L,samp)
 global Parameter Analysis
 
-ShowProb (cat(3,S,E_h*CoOc,L),samp);
-subplot(3,1,1);ylabel('Pr. visual');subplot(3,1,2);ylabel('Pr. Hist');subplot(3,1,3); xlabel({'pixel',['iter: ',num2str(iter)]})
+ShowProb (cat(3,S,P_Ni*CoOc,L),samp);
+subplot(3,1,1);ylabel('Pr. visual');subplot(3,1,2);ylabel('Pr. Context');subplot(3,1,3); xlabel({'pixel',['iter: ',num2str(iter)]})
 
 wsize=sqrt(Parameter.wsize2);
 
@@ -171,7 +150,7 @@ H=mean(H_row);
 xlabel(strcat('mean entropy for each row is:  ',num2str (H)));
 subplot(2,2,4);
 modes=sum(CoOc>0,2);
-plot(modes);title (strcat('using Thr: ',num2str(Parameter.Spatil.CoOcThr)));
+plot(modes);title (strcat('using Thr: ',num2str(Parameter.spatial.CoOcThr)));
 axis([1,size(CoOc,1),0,15]);grid on
 xlabel('Labels');ylabel('||_{\epsilon} per Conditonal Pr.')
 
@@ -187,32 +166,5 @@ if isfield (Analysis,'ORACLE')
         strcat('Rand index is: ',num2str(RI))})
 else
     xlabel(strcat(num2str(length(unique(Lhat))) ,' diffrent labels'));
-end
-end
-
-function [H,varargout]=CC_Entropy(CoOcN,K,m,n)
-global Parameter
-
-if isvector(CoOcN)         %case this is AssignVec and not CoOc
-    wsize=sqrt(Parameter.wsize2); NN=Parameter.Spatil.NN; padding=floor(NN/2);
-    AssignImg=col2im(CoOcN,[wsize,wsize],[Parameter.row,Parameter.col]);
-    AssignImg=padarray(AssignImg,[padding,padding],-1);
-
-    Neigbour=im2col(AssignImg,[NN,NN],'sliding');
-    Neigbour(ceil(NN^2/2),:)=[];
-    H=histc(Neigbour,1:K,1)';
-    
-    Indicator=sparse(CoOcN,1:m*n,ones(1,m*n),K,m*n);
-    CC=Indicator*H;
-    CCNorm=sum(CC,2);
-    CoOcN=CC./CCNorm(:,ones(1,K),:); CoOcN(CC==0)=0; %to avoid 0/0=nan
-end
-
-LogCoOc=log2(CoOcN);
-LogCoOc(CoOcN==0)=0;  % no nan resulting from inf*0;
-H_row=-sum( CoOcN.*LogCoOc,2 );
-H=mean(H_row);
-if nargout>1
-     varargout{1}=sum(sum(CoOcN>Parameter.Spatil.CoOcThr));
 end
 end

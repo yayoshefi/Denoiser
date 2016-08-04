@@ -9,7 +9,7 @@ global Parameter
 wsize=sqrt(Parameter.wsize2);
 K=size(Centers,3);
 AssignImg=col2im(AssignVec,[wsize,wsize],[Parameter.row,Parameter.col]);
-NN=Parameter.Spatil.NN;
+NN=Parameter.spatial.NN;
 Neigbour=im2col(AssignImg,[NN,NN],'sliding');
 Neigbour(ceil(NN^2/2),:)=[];
 LocalHist=histc(Neigbour,1:K,1);        

@@ -10,7 +10,7 @@ row=Parameter.row;      col=Parameter.col;
 m=row-wsize+1;         % number of rows in Assign Mat
 n=col-wsize+1;         % number of columns in Assign Mat
 
-if Parameter.Spatil.lambda;Parameter.Spatil.lambda=0.1; end
+if Parameter.spatial.lambda;Parameter.spatial.lambda=0.1; end
 % ---- initialization   -------
 Lables=col2im(AssignVec,[wsize,wsize],[row,col],'sliding');
 
@@ -21,25 +21,25 @@ L_C=reshape( Lables(Logical_C),[m-2,n-2] );
 
 % shifted Right inner matrix
 Logical_R=logical( padarray(padarray(ones(m-2,n-2),[1,0]),[0,2],'pre') );
-E_R=Parameter.Spatil.lambda*E(ones(K,1),Logical_R(:)');
+E_R=Parameter.spatial.lambda*E(ones(K,1),Logical_R(:)');
 L_R=reshape( Lables(Logical_R),[m-2,n-2] );
 comp_R= 2*(L_R==L_C)-1;
 
 % shifted Left inner matrix
 Logical_L=logical( padarray(padarray(ones(m-2,n-2),[1,0]),[0,2],'post') );
-E_L=Parameter.Spatil.lambda*E(ones(K,1),Logical_L(:)');
+E_L=Parameter.spatial.lambda*E(ones(K,1),Logical_L(:)');
 L_L=reshape( Lables(Logical_L),[m-2,n-2]);
 comp_L= 2*(L_L==L_C)-1;
 
 %shifted Up Inner Matrix
 Logical_U=logical( padarray(padarray(ones(m-2,n-2),[0,1]),[2,0],'post') );
-E_U=Parameter.Spatil.lambda*E(ones(K,1),Logical_U(:)');
+E_U=Parameter.spatial.lambda*E(ones(K,1),Logical_U(:)');
 L_U=reshape( Lables(Logical_U),[m-2,n-2] );
 comp_U= 2*(L_U==L_C)-1;
 
 %shifted Down Inner Matrix
 Logical_D=logical( padarray(padarray(ones(m-2,n-2),[0,1]),[2,0],'pre') );
-E_D=Parameter.Spatil.lambda*E(ones(K,1),Logical_D(:)');
+E_D=Parameter.spatial.lambda*E(ones(K,1),Logical_D(:)');
 L_D=reshape( Lables(Logical_D),[m-2,n-2] );
 comp_D= 2*(L_D==L_C)-1;
 

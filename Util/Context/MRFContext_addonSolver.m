@@ -19,7 +19,7 @@ Sc = ones(K) - eye(K);
 
 [Hc, Vc] = SpatialCues( reshape(Data(1,:),[m,n]) );
 
-gch = GraphCut('open', Dc, Parameter.Spatil.lambda*Sc, exp(-Vc*5), exp(-Hc*5) );
+gch = GraphCut('open', Dc, Parameter.spatial.lambda*Sc, exp(-Vc*5), exp(-Hc*5) );
 [gch, L] = GraphCut('expand',gch,5);
 gch = GraphCut('close', gch);
 

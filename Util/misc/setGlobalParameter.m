@@ -21,23 +21,24 @@ function setGlobalParameter()
 %
 global Parameter Analysis ORACLE
 %%  ############# Parameter  ##############
-InitClustersNUM=150;        MaxSubSpace=0;      MinimunClusterSize=20;
-Debug=true;               USEORACLE=false;      ORACLE_level=0;
+InitClustersNUM=50;            Context='comeans';      UpdateRule=3; 
+Debug=false;    DebugIter=10;   USEORACLE=false;      ORACLE_level=2;
 SplitType='median'; % 'median' or 'totvar'
-Context='comeans'; % [] or 'spectral' or 'graphcut' 'rl' or 'mrf' 'entropy'
-                   % 'mutualdist', 'comeans'
+%Context options:[]\'spectral'\'graphcut'\'rl'\'mrf' 'entropy' 'mutualdist' 'comeans'
+MaxSubSpace=0;              MinimunClusterSize=20;
 % **************     other clustring Parameters     ****************
 Parameter.MSS=MaxSubSpace;          Parameter.minclstsize=MinimunClusterSize;
 Parameter.SplitType=SplitType;      Parameter.Context=Context;
 Parameter.subsample=0.20;           Parameter.ORACLE=USEORACLE;
 
 % **************     Context clustring Parameters     ****************
-Parameter.Spatil.spatialdist='decomposition';        Parameter.Spatil.lambda=0.1;
+Parameter.spatial.spatialdist='decomposition';          Parameter.spatial.lambda=0.08;
 %'landmarks' / 'decomposition'  /  'simplenoramlize' /'none'
-Parameter.Spatil.sigma=20;   Parameter.Spatil.NN=9;      Parameter.Spatil.CoOcThr='unused';
-                                                         Parameter.Spatil.CoOc='M';
-Parameter.location='C:/Users/Yair/Dropbox/Thesis code';
+Parameter.spatial.sigma=20;   Parameter.spatial.NN=3;   Parameter.spatial.CoOcThr='unused';
+Parameter.spatial.UpdateRule=UpdateRule;                Parameter.spatial.CoOc='MI';
+                                                        Parameter.spatial.AssginType='hard';
 
+Parameter.location='C:/Users/Yair/Dropbox/Thesis code';
 % **************      Method Parameter     *****************
 if ~isfield (Parameter,'wsize2');Parameter.wsize2=81;end  %default value
 Parameter.values=struct('VarianceSplit',5*Parameter.wsize2,'Distance',InitClustersNUM,...
@@ -51,11 +52,14 @@ Parameter.Spectral=struct('clustrsNUM',InitClustersNUM,'dictsize',dictsize,...
 %%  ############# Analysis  ##############
 if Parameter.ORACLE; if isstruct('ORACLE');ORACLE=Analysis.ORACLE;end;end %save last ORACLE Or update
 Analysis=struct('Show',true,'Save',true,'figures',1,'Fast',true,'Handles',[]...
-    ,'K',0,'DebuggerMode',Debug,'ColorMap','jet','LabelsSize',...
+    ,'K',0,'DebuggerMode',Debug,'DebuggerIter',DebugIter,'ColorMap','jet','LabelsSize',...
     [Parameter.row-sqrt(Parameter.wsize2)+1,Parameter.col-sqrt(Parameter.wsize2)+1]);
 if Parameter.ORACLE;
     fprintf ('You choose to use ORACLE with level %u!\n',ORACLE_level)
     Analysis.ORACLE=ORACLE; Analysis.ORACLE.level=ORACLE_level;end
+%% ############ Warnings ##################
+warning('off','MATLAB:MKDIR:DirectoryExists');
+warning('off','stats:kmeans:FailedToConverge');
 end
 
 %%

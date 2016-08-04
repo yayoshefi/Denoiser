@@ -1,5 +1,6 @@
-function RI=RandIndex(L1,L2)
+function [RI,MH]=RandIndex(L1,L2)
 %RANDINDEX - calculates Rand index to compare two partitions
+L1=L1(:); L2=L2(:);
 
 P=max(L1);
 Q=max(L2);
@@ -19,12 +20,14 @@ for p=1:P
         OtherLabel=L1not & L2not;   % points that r not in either clusters
         B=B+a(q)*sum(OtherLabel);
         
-        M(p,q)=agreements;          % Confiusion matrix - comparing clustering - jan\2007
+        M(p,q)=a(q);          % Confiusion matrix - comparing clustering - jan\2007
     end
     %duplicates??
 end
 B=B/2;
 RI=(A+B)/(nchoosek(N,2));
+
+MH=mean(max(M,[],2));     % L2 is the ORACLE
 end
 
 

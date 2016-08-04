@@ -2,7 +2,7 @@
 h1=figure('name','Iteration Labels');
 h2=figure('name','Iteration denoisnig');
 
-K=Parameter.Spatil.MaxIter;
+K=Parameter.spatial.MaxIter;
 for iter=1:K
 
     [Context_Output]=removenoise(double(Image),Noise,Analysis.iterations(iter).AssignVec2);

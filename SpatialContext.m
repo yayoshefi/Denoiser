@@ -66,7 +66,7 @@ m=Parameter.row-wsize+1;
 n=Parameter.col-wsize+1;
 [ColI,RowI]=meshgrid(1:n,1:m);  % coordinates of an the image
 
-switch Parameter.Spatil.spatialdist
+switch Parameter.spatial.spatialdist
     case 'landmarks'
         L=floor((m*n)^0.35);     %number of land marks
         sigma=500;
@@ -91,7 +91,7 @@ switch Parameter.Spatil.spatialdist
         B=B./Bn([1;1],:);
         
     case 'decomposition'
-        sigma=Parameter.Spatil.sigma;
+        sigma=Parameter.spatial.sigma;
         l=1:max(m,n);
         l2=repmat(l.*l,length(l),1);  %n^2
         D2= l2+l2'-2*l'*l;  % D(i,j)= (n(i)-n(j))^2
@@ -146,7 +146,7 @@ H=mean(H_row);
 xlabel(strcat('mean entropy for each row is:  ',num2str (H)));
 subplot(2,2,4);
 modes=sum(CoOc>0,2);
-plot(modes);title (strcat('using Thr: ',num2str(Parameter.Spatil.CoOcThr)));
+plot(modes);title (strcat('using Thr: ',num2str(Parameter.spatial.CoOcThr)));
 axis([1,size(CoOc,1),0,15]);grid on
 xlabel('Labels');ylabel('modes for every cluster')
 

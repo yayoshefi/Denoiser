@@ -1,12 +1,12 @@
 %%---------------- Main Script: De noising-------------------GitHub Version
 load Database;Images = createImages();load Sport+_DB;
-Image=Bolt;
+Image=barbara;
 description='free testing';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 
 Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
-sigma=0;
+sigma=25;
 wsize=11;
 normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain (-5)- Oracle
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'
@@ -88,13 +88,14 @@ fprintf(['#Centers    psnr    noise    ',Method,'    normalize',' cluster(s)',' 
     size(Centers,3), result, sigma,Parameter.values.(Method),Parameter.normalize ,itertime, cleaningtime,visualtime);
 
 if ischar(Parameter.Context)
-    if ischar(Parameter.Spatil.CoOcThr);Parameter.Spatil.CoOcThr=nan;end
+    if ischar(Parameter.spatial.CoOcThr);Parameter.spatial.CoOcThr=nan;end
     fprintf(strcat('#Centers    psnr    Context    noise    ,',Parameter.Context,'-Lambda  context(m)  K2    NN    CoOc    CC_{Thr}\n',...
         ' %3u       %2.3f   %2.3f     %3u           %G            %3.2G     %u     %u     %s     %3.2E\n'),...
-        size(Centers,3), result,result2, sigma,Parameter.Spatil.lambda,...
-        contexttime/60,length (unique(AssignVec2)),Parameter.Spatil.NN,Parameter.Spatil.CoOc,Parameter.Spatil.CoOcThr);
+        size(Centers,3), result,result2, sigma,Parameter.spatial.lambda,...
+        contexttime/60,length (unique(AssignVec2)),Parameter.spatial.NN,Parameter.spatial.CoOc,Parameter.spatial.CoOcThr);
 
 end
 if Parameter.normalize== -5
     global ORACLE
-    ORACLE=struct('Centers',Centers,'AssignVec',AssignVec);end
+    CoOc=lcm(AssignVec,'hard',Parameter.spatial.CoOc);
+    ORACLE=struct('Centers',Centers,'AssignVec',AssignVec,'CoOc',CoOc);end

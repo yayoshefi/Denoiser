@@ -1,10 +1,10 @@
-%%---------------- Data Collecting-------------------Git Version
+% %%---------------- Data Collecting-------------------Git Version
 clearvars ContextPsnr Psnr CentersCount Labeling new
 load Database.mat;load Sport+_DB.mat; Images = createImages();
-Image=Bolt;      %clearvars -except Image
-description='aggegate P_i';
+Image=Zebra;      %clearvars -except Image
+description='finding lambda 4 updaterule';
 %% --------------------------- PARAMETERS ------------------------------
-
+disp('rule 6, CC, Hard gaussian window' )
 global Parameter Analysis
 %check struct Name
 Method='kmeans';          %Distance  ,  VarianceSplit , kmeans , 'Spectral'
@@ -12,11 +12,11 @@ metric ='euclidean';        %distance function can be 'euclidean','mahalanobis'
                             %'varing_cluster_size'                            
 
 % ---- arrays ----
-sigma_array=[15,25,50,70];
-wsize_array=[5,9,13,15];
+sigma_array=[50];
+wsize_array=[11];
 normalize_array=[0];          %normalize 0-do nothing ; 1-only bias; 2- bias and gain
-lambda_array=[0.001,0.01,0.05,0.1,0.3];%,0.5,0.75,0.9,0.99];%[0.01,0.05,0.1];
-NN_array=[3,5,7,9,11];
+lambda_array=[0.1,0.3];%,0.5,0.75,0.9,0.99];%[0.01,0.05,0.1];
+NN_array=[9];
 CoOcThr_array=[1e-10];%[0.0005,0.0001];
 
 Arrays=struct('Lambda',lambda_array,'NN',NN_array,'CoOcThr',CoOcThr_array,...
@@ -74,11 +74,11 @@ for sigma=sigma_array
             
 %% ------------------  Context  --------------------------------
             for thr=1:length(CoOcThr_array);
-                Parameter.Spatil.CoOcThr=CoOcThr_array(thr);
+                Parameter.spatial.CoOcThr=CoOcThr_array(thr);
             for NN=NN_array
-                 Parameter.Spatil.NN=NN;
+                 Parameter.spatial.NN=NN;
             for l=1:length(lambda_array)
-                Parameter.Spatil.lambda=lambda_array(l);
+                Parameter.spatial.lambda=lambda_array(l);
                 startcontext=toc;
 close all
 if ischar(Parameter.Context)
@@ -104,8 +104,8 @@ if ischar(Parameter.Context)
     
     fprintf(['#Centers    psnr    Context    noise    ',Parameter.Context,'-Lambda  context(m)  K2   NN   CoOc    CC_{Thr}   psnr_iter\n',...
         ' %3u       %2.3f   %2.3f     %3u            %3G           %4.3G   %u    %u    %s     %2.1G   %2.3f\n'],...
-        round(size(Centers,3)), result,result2, sigma,Parameter.Spatil.lambda,...
-        contexttime/60,length (unique(AssignVec2)),NN,Parameter.Spatil.CoOc,Parameter.Spatil.CoOcThr,iter_result2)
+        round(size(Centers,3)), result,result2, sigma,Parameter.spatial.lambda,...
+        contexttime/60,length (unique(AssignVec2)),NN,Parameter.spatial.CoOc,Parameter.spatial.CoOcThr,iter_result2)
 
     PrintDnoise ({Output,Context_Output},{result,result2},AssignVec,AssignVec2)
     
@@ -134,7 +134,7 @@ Psnr.(['normalize',num2str(normalize)]).(['wsize',num2str(wsize)])...
 new.(['Lambda',num2str(l)]).(['NN',num2str(NN)]).(['CoOcThr',num2str(thr)])...
         .(['normalize',num2str(normalize)]).(['wsize',num2str(wsize)])(find(sigma==sigma_array)) = ...
         struct('sigma',sigma,'PrePsnr',result,'PreRI',rand_index,'K',round(size(Centers,3)),...
-        'ContextPSNR',result2,'ContextRI',rand_index2,'K2',length (unique(AssignVec2)),'iterations',Parameter.Spatil.MaxIter);
+        'ContextPSNR',result2,'ContextRI',rand_index2,'K2',length (unique(AssignVec2)),'iterations',Parameter.spatial.MaxIter);
 
             end % Lambda
             end % NN
