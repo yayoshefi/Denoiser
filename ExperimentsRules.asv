@@ -145,21 +145,18 @@ ContextPsnr(ind).CoOc=CoOcType_array{t};        ClusterCompre(ind).CoOc=CoOcType
 RulesPsnr(rule+(t-1)*T)=ContextPsnr(ind);
 RulesClusterCompre(rule+(t-1)*T)=ClusterCompre(ind);
 
-Save4Latex('name',[I(i).name,'_'],'lambda',ContextPsnr(ind).lambda,'CoOc',ContextPsnr(ind).CoOc,'Thr',ContextPsnr(ind).CoOcThr)
 end % AssignType
 end % rules
 end % CoOcType
 
-Ref(1)=struct('wsize',wsize,'sigma',sigma,'Psnr',result,'Method',Method);
-Ref(2)=struct('wsize',wsize,'sigma',sigma,'Psnr',ORACLEresult,'Method','ORACLE');
-Ref(2).AssignVec=ORACLE;
+Psnr(1)=struct('wsize',wsize,'sigma',sigma,'Psnr',result,'Method',Method);
+Psnr(2)=struct('wsize',wsize,'sigma',sigma,'Psnr',ORACLEresult,'Method','ORACLE');
         % ORACLE
         Labeling(thr*L+1).AssignVec2=ORACLE;
         Labeling(thr*L+1).lambda='ORACLE';
         figure;imshow(col2im(ORACLE,[wsize,wsize],[row,col]),[]);colormap jet;title (['ORACLE for w_1=',num2str(wsize)])
-        xlabel(['Psnr ',num2str(ORACLEresult)]);
         
-        full_Data(i)=struct('ImageName',I(i).name,'Reference',Ref,...
+        full_Data(i)=struct('ImageName',I(i).name,'Psnr',Psnr,...
             'ContextPsnr',RulesPsnr,'ClusterCompre',RulesClusterCompre,'Arrays',Arrays);
 end % Image
  %% save info

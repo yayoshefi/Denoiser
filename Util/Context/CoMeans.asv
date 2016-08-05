@@ -99,7 +99,7 @@ if exist('alpha','var'); per=per*alpha;end
 
 [N,edges] = histcounts(CoOc,10.^(-15:0),'Normalization','cdf');
 ind=find (N>per,1);
-Parameter.spatial.CoOcThr=edges(ind+1);
+Thr=edges(ind+1);
 %{
 if ~isnumeric(Parameter.spatial.CoOcThr)
     switch Parameter.spatial.CoOc

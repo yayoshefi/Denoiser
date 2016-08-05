@@ -44,6 +44,7 @@ switch Parameter.Method
         Centers=0;
         
 end
+AssignVec=uint16(AssignVec);
 end 
 if nargout>2    % This can ruin the centers when using ORACLE
     [Centers,Basis,AssignVec,Energy,E80]= UpdateCenter(Data,AssignVec,false);

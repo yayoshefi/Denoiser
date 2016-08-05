@@ -37,7 +37,7 @@ switch lower(AssignMethod)
         else AssignImg=arg1;    arg1=AssignImg(:);
         end
 
-        Indicator=sparse(arg1(:),1:M,ones(1,M),K,M);
+        Indicator=sparse(double(arg1(:)),1:M,ones(1,M),K,M);
         switch filterType
             case 'rect'
                 AssignImg=padarray(AssignImg,[padding,padding],-1);

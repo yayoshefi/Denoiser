@@ -1,7 +1,7 @@
 %%---------------- Main Script: De noising-------------------GitHub Version
 load Database;Images = createImages();load Sport+_DB;
-Image=barbara;
-description='free testing';
+Image=house;
+description='test uint16';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 

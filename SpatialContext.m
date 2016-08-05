@@ -31,6 +31,7 @@ switch Parameter.Context
     case 'comeans'
          AssignVec2=CoMeans(Data,AssignVec,Centers);
 end
+AssignVec2=uint16(AssignVec2);
  if length(AssignVec2)~=length(AssignVec) % so that AssignVec2 will be always same size
      mprime=sqrt(length(AssignVec2)); m=Parameter.row-wsize+1;
      %mprime=Analysis.LabelsSize(1)
