@@ -1,0 +1,22 @@
+%% This Script changes the name in the path 
+
+PthDir='C:\Users\Yair\Dropbox\Thesis\Latex\figures\07-Aug-2016OLD\Bolt__CC_sigma2';
+NewDir=PthDir;
+
+ind=strfind(NewDir,'_');
+fi
+
+fils=dir(PthDir);
+for f=1:length(fils)
+    for r=1:7
+        if ( strfind(fils(f).name,['Rule-',num2str(r)]) )
+            if (strfind(fils(f).name,'Labels'))
+                NewName=strcat('Rule',num2str(r),'Labels');
+            elseif (strfind(fils(f).name,'noised'))
+                NewName=strcat('Rule',num2str(r),'denoised');
+            end
+            movefile([PthDir,'\',fils(f).name],[PthDir,'\',NewName,'.png'])
+        end
+    end
+    
+end

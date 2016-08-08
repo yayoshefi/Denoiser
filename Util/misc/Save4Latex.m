@@ -9,7 +9,7 @@ src=strcat('C:\Users\Yair\Dropbox\Thesis code\Results\',day,'\',name,...
     'sigma',num2str(sigma),'\rule #',num2str(rule),'_Context_comeans_',num2str(lambda,'%G'),...
     '_CoOc_',CoOc,'_Thr',num2str(Thr,'%G'),'kmeans');
 
-trgt=strcat('C:\Users\Yair\Dropbox\Thesis\Latex\figures\',day);
+trgt=strcat('C:\Users\Yair\Dropbox\Thesis\Latex\figures\',day,'\',name,'_',CoOc,'_sigma',num2str(sigma));
 
 copyfile(src,trgt)
 
