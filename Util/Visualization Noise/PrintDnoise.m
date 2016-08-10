@@ -16,7 +16,8 @@ else
 end
 if i==3
         ORACLE{1}=['  (',num2str(result{3}-result{1},'%1.3f'),')'];
-        ORACLE{2}=['  (',num2str(result{3}-result{2},3),')'];
+        if result{2}-result{1}>0; sgn='+';else sgn='';end
+        ORACLE{2}=['  (',sgn,num2str(result{2}-result{1},'%1.3f'),')'];
 else    ORACLE{1}='';   ORACLE{2}='';
 end
 imshow(Output{1},[]); title(['psnr: ',num2str(result{1}),ORACLE{1}],'Color','r');

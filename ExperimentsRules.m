@@ -1,6 +1,6 @@
 % %%---------------- Data Collecting-------------------Git Version
 clearvars ContextPsnr ClusterCompre Psnr  Labeling RulesPsnr RulesClusterCompre full_Data
-load ExpImages.mat
+load ExpImages.mat;     load rectImage.mat
 
 description='rule #4 soft assign';
 %% --------------------------- PARAMETERS ------------------------------
@@ -18,16 +18,16 @@ lam=3*10.^(-5:-1);
 lambda_array=[lam,flip(1-lam)];
 rules_array=[3,4];
 CoOcType_array={'MI'};
-AssignType_array={'soft'};
-CoOcThr_array=[0];%[0.0005,0.0001];
+AssignType_array={'hard'};
+ShrinkPer=[0,0.05,0.15];%[0.0005,0.0001];
 L=length(lambda_array);     T=length(CoOcType_array);
 
-Arrays=struct('Lambda',lambda_array,'CoOcThr',CoOcThr_array);
+Arrays=struct('Lambda',lambda_array,'CoOcPerThr',ShrinkPer);
 
-for i=1:7
-    Image=I(i).Image;
-    disp(I(i).name)
-Parameter=struct('description',description,'ImageName',I(i).name,'row',size(Image,1),'col',...
+for i=1:4
+    Image=rectImage(i).Image;
+    name=(rectImage(i).name);   disp(name)
+Parameter=struct('description',description,'ImageName',name,'row',size(Image,1),'col',...
     size(Image,2),'Method',Method,'sigma',sigma,'wsize2',wsize^2,'normalize',...
     0,'metric',metric);
 %% ------------------------- INITIALIZATION ---------------------------
@@ -37,12 +37,14 @@ setGlobalParameter();                   Analysis.Show=true;
 row=Parameter.row;                      col=Parameter.col;
 Parameter.spatial.NN=NN;
 Analysis.DebuggerIter=1000;
+ImageDir=strcat(Parameter.location,'\Results\',date,'\',Parameter.ImageName,'_sigma',num2str(Parameter.sigma),'\');
+
 
 Analysis.Arrays=Arrays;
 Analysis.LabelsSize=[Parameter.row-sqrt(Parameter.wsize2)+1,Parameter.col-sqrt(Parameter.wsize2)+1];
 
 Noise=randn(size(Image))*sigma;
-Input=double(Image)+Noise;
+Input=double(Image)+Noise;             
 Data=im2col(Input,[wsize,wsize],'sliding');
 
 X=Data;
@@ -84,8 +86,8 @@ for a=1:length(AssignType_array);
     clearvars ContextPsnr ClusterCompre
     
     
-for thr=1:length(CoOcThr_array);
-    Parameter.spatial.CoOcThr=CoOcThr_array(thr);
+for thr=1:length(ShrinkPer);
+    Parameter.spatial.shrink=ShrinkPer(thr);
 for l=1:length(lambda_array)
     Parameter.spatial.lambda=lambda_array(l);
     
@@ -107,23 +109,23 @@ for l=1:length(lambda_array)
     [RI2,MH2]           = RandIndex(AssignVec2 (:),ORACLE(:));
     [samp_RI,samp_MH]   = RandIndex(Analysis.iterations(samp_iter).Lhat (:),ORACLE(:));
 %% structures to save
-    temppsnr=struct('lambda',lambda_array(l),'CoOcThr',Parameter.spatial.CoOcThr,...
+    temppsnr=struct('lambda',lambda_array(l),'CoOcPerThr',Parameter.spatial.shrink,...
         'MaxIter',Parameter.spatial.MaxIter,'psnr2',result2,'dev2',result2-result,...
-        'samp_iter',samp_iter,'samp_result',samp_iter_result2,'samp_dev',samp_iter_result2-result);
-    tempCmpClst=struct('lambda',lambda_array(l),'CoOcThr',Parameter.spatial.CoOcThr,...
+        'samp_iter',samp_iter,'samp_result',samp_iter_result2,'samp_dev',samp_iter_result2-result,'Thr',Parameter.spatial.CoOcThr);
+    tempCmpClst=struct('lambda',lambda_array(l),'CoOcPerThr',Parameter.spatial.shrink,...
         'MH',MH,'MH2',MH2,'samp_iter',samp_iter,'samp_MH',samp_MH);
     
     ContextPsnr(l+(thr-1)*L)=temppsnr;
     
     ClusterCompre(l+(thr-1)*L)=tempCmpClst;
     
-    Labeling(l+(thr-1)*L)=struct('lambda',lambda_array(l),'CoOcThr',CoOcThr_array(thr),'AssignVec2',AssignVec2);
+    Labeling(l+(thr-1)*L)=struct('lambda',lambda_array(l),'CoOcPerThr',ShrinkPer(thr),'AssignVec2',AssignVec2);
 
 %% Summary
-    fprintf(['#Centers    psnr    Context    noise    ',Parameter.Context,'-Lambda  context(m)  K2   NN   CoOc    CC_{Thr}   psnr@%i\n',...
-        ' %3u       %2.3f   %2.3f     %3u            %3G         %2.2G   %u    %u    %s     %2.1G         %2.3f\n'],...
+    fprintf(['#Centers    psnr    Context    noise    ',Parameter.Context,'-Lambda  context(m)  K2   NN   CoOc    CC_{Per}   psnr@%i\n',...
+        ' %3u       %2.3f   %2.3f     %3u            %3G         %2.2G   %u      %u    %s     %2.1G         %2.3f\n'],...
         samp_iter,round(size(Centers,3)), result,result2, sigma,Parameter.spatial.lambda,...
-        contexttime/60,length (unique(AssignVec2)),NN,Parameter.spatial.CoOc,Parameter.spatial.CoOcThr,samp_iter_result2)
+        contexttime/60,length (unique(AssignVec2)),NN,Parameter.spatial.CoOc,Parameter.spatial.shrink,samp_iter_result2)
 
     fprintf (['Basic        @%i            @%i             ORACLE\n',...
                 '%2.3f      %1.4f       %1.4f       %2.3f (%1.4f) \n\n'],...
@@ -141,13 +143,15 @@ if samp_value<value2
         ind=index2;
 else    ind=samp_index;
 end
+CoOc_V1 (lcm(Labeling(ind).AssignVec2,Parameter.spatial.AssginType,Parameter.spatial.CoOc),true)
+saveas (gcf,strcat(ImageDir,'CoOc.png'))
 
 ContextPsnr(ind).CoOc=CoOcType_array{t};        ClusterCompre(ind).CoOc=CoOcType_array{t};
 RulesPsnr(rule+(t-1)*T)=ContextPsnr(ind);
 RulesClusterCompre(rule+(t-1)*T)=ClusterCompre(ind);
 
-Save4Latex('name',[I(i).name,'_'],'lambda',ContextPsnr(ind).lambda,'CoOc',ContextPsnr(ind).CoOc,...
-    'Thr',ContextPsnr(ind).CoOcThr,'rule',rule,'sigma',sigma)
+Save4Latex('name',[name,'_'],'lambda',ContextPsnr(ind).lambda,'CoOc',ContextPsnr(ind).CoOc,...
+    'Thr',ContextPsnr(ind).Thr,'rule',rule,'sigma',sigma)
 end % AssignType
 end % rules
 end % CoOcType
@@ -157,15 +161,17 @@ Ref(2)=struct('wsize',wsize,'sigma',sigma,'Psnr',ORACLEresult,'Method','ORACLE',
         % ORACLE
         Labeling(thr*L+1).AssignVec2=ORACLE;
         Labeling(thr*L+1).lambda='ORACLE';
+        % Save static image
         figure;imshow(col2im(ORACLE,[wsize,wsize],[row,col]),[]);colormap jet;title (['ORACLE for w_1=',num2str(wsize)])
         xlabel(['Psnr ',num2str(ORACLEresult)]);
-        saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',I(i).name,'_sigma',num2str(sigma),...
+        saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',name,'_sigma',num2str(sigma),...
             '\ORACLE.png'))
         figure; imshow(ORACLEOutput,[]); title ('ORACLE Denoising')
-        saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',I(i).name,'_sigma',num2str(sigma),...
+        saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',name,'_sigma',num2str(sigma),...
             '\ORACLEdenosing.png'))
         PrintDnoise ({Image,Input},{'Original', 'Noisy'})
-        full_Data(i)=struct('ImageName',I(i).name,'Reference',Ref,...
+        
+        full_Data(i)=struct('ImageName',name,'Reference',Ref,...
             'ContextPsnr',RulesPsnr,'ClusterCompre',RulesClusterCompre,'Arrays',Arrays);
 end % Image
  %% save info

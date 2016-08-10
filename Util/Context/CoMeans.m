@@ -10,6 +10,8 @@ SpatialRefernce='MessagePass';
 change=''; cnt=[];   alpha=1.03;
 
 K=size(Centers,3);
+
+iter_step=Analysis.DebuggerIter;
 wsize=sqrt(Parameter.wsize2);
 lambda=Parameter.spatial.lambda;        rule=Parameter.spatial.UpdateRule;
                                         AssginType=Parameter.spatial.AssginType;
@@ -59,7 +61,7 @@ for iter=1:Parameter.spatial.MaxIter
     [Pr,Lhat]=max(L,[],2);
    
 % De-Bugging
-    iter_step=Analysis.DebuggerIter;        cnt=[cnt,sum(Lhat~=Old_Lhat(:))];
+    cnt=[cnt,sum(Lhat~=Old_Lhat(:))];
     [CC_Hnew,epsNorm]=CoOc_V1 (CoOcThr,false,'both',Parameter.spatial.CoOcThr);
     Analysis.iterations(iter)=struct('Lhat',Lhat,'CoOc',CoOcThr,...
         'changes',cnt(end),'epsNorm',epsNorm);
@@ -94,7 +96,9 @@ end
 
 function CoOcThr=CoOcShrinkage(CoOc,alpha)
 global Parameter
-per=0.2;
+% Parameter.spatial.shrink=0.0;
+
+per=Parameter.spatial.shrink;
 if exist('alpha','var'); per=per*alpha;end
 
 [N,edges] = histcounts(CoOc,10.^(-15:0),'Normalization','cdf');
