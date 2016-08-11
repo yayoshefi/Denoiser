@@ -16,17 +16,17 @@ wsize=11;       NN=9;
 lam=3*10.^(-5:-1);
 % lambda_array=[0.001,0.01,0.1,0.3,0.6];
 lambda_array=[lam,flip(1-lam)];
-rules_array=[3,4];
-CoOcType_array={'MI'};
+rules_array=[6];
+CoOcType_array={'CC'};
 AssignType_array={'hard'};
 ShrinkPer=[0,0.05,0.15];%[0.0005,0.0001];
 L=length(lambda_array);     T=length(CoOcType_array);
 
 Arrays=struct('Lambda',lambda_array,'CoOcPerThr',ShrinkPer);
 
-for i=1:4
-    Image=rectImage(i).Image;
-    name=(rectImage(i).name);   disp(name)
+for i=1:7
+    Image=I(i).Image;
+    name=(I(i).name);   disp(name)
 Parameter=struct('description',description,'ImageName',name,'row',size(Image,1),'col',...
     size(Image,2),'Method',Method,'sigma',sigma,'wsize2',wsize^2,'normalize',...
     0,'metric',metric);
@@ -123,7 +123,7 @@ for l=1:length(lambda_array)
 
 %% Summary
     fprintf(['#Centers    psnr    Context    noise    ',Parameter.Context,'-Lambda  context(m)  K2   NN   CoOc    CC_{Per}   psnr@%i\n',...
-        ' %3u       %2.3f   %2.3f     %3u            %3G         %2.2G   %u      %u    %s     %2.1G         %2.3f\n'],...
+        ' %3u       %2.3f   %2.3f     %3u            %3G         %2.2G   %u      %u    %s     %2.2G         %2.3f\n'],...
         samp_iter,round(size(Centers,3)), result,result2, sigma,Parameter.spatial.lambda,...
         contexttime/60,length (unique(AssignVec2)),NN,Parameter.spatial.CoOc,Parameter.spatial.shrink,samp_iter_result2)
 
@@ -162,15 +162,18 @@ Ref(2)=struct('wsize',wsize,'sigma',sigma,'Psnr',ORACLEresult,'Method','ORACLE',
         Labeling(thr*L+1).AssignVec2=ORACLE;
         Labeling(thr*L+1).lambda='ORACLE';
         % Save static image
-        figure;imshow(col2im(ORACLE,[wsize,wsize],[row,col]),[]);colormap jet;title (['ORACLE for w_1=',num2str(wsize)])
-        xlabel(['Psnr ',num2str(ORACLEresult)]);
-        saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',name,'_sigma',num2str(sigma),...
-            '\ORACLE.png'))
-        figure; imshow(ORACLEOutput,[]); title ('ORACLE Denoising')
-        saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',name,'_sigma',num2str(sigma),...
-            '\ORACLEdenosing.png'))
-        PrintDnoise ({Image,Input},{'Original', 'Noisy'})
-        
+%         figure;imshow(col2im(ORACLE,[wsize,wsize],[row,col]),[]);colormap jet;title (['ORACLE for w_1=',num2str(wsize)])
+%         xlabel(['Psnr ',num2str(ORACLEresult)]);
+%         saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',name,'_sigma',num2str(sigma),...
+%             '\ORACLE.png'))
+%         figure; imshow(ORACLEOutput,[]); title ('ORACLE Denoising')
+%         saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',name,'_sigma',num2str(sigma),...
+%             '\ORACLEdenosing.png'))
+%         PrintDnoise ({Image,Input},{'Original', 'Noisy'})
+              
+        SaveStaticImg(ORACLE,ORACLEOutput,ORACLEresult,name,sigma,...
+                            {Image,Input},{'Original', 'Noisy'})
+                        
         full_Data(i)=struct('ImageName',name,'Reference',Ref,...
             'ContextPsnr',RulesPsnr,'ClusterCompre',RulesClusterCompre,'Arrays',Arrays);
 end % Image

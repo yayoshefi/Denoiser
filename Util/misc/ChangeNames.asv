@@ -36,6 +36,5 @@ for f=1:length(fils)
     
 end
 %}
-% movefile([PthDir,'\CoOc.png'],[NewDir,'\CoOc.png']);
-movefile(PthDir,NewDir);
+movefile([PthDir,'\CoOc.png'],[NewDir,'\CoOc.png']);
 

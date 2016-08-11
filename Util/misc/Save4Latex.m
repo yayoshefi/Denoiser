@@ -11,7 +11,7 @@ src=strcat('C:\Users\Yair\Dropbox\Thesis code\Results\',day,'\',name,...
 srcCoOc=strcat('C:\Users\Yair\Dropbox\Thesis code\Results\',day,'\',name,...
     'sigma',num2str(sigma),'\CoOc.png');
 
-trgt=strcat('C:\Users\Yair\Dropbox\Thesis\Latex\figures\',day,'\',name,'_',CoOc,'_sigma',num2str(sigma));
+trgt=strcat('C:\Users\Yair\Dropbox\Thesis\Latex\figures\',day,'\',name,CoOc,'_sigma',num2str(sigma));
 
 copyfile(src,trgt)
 movefile(srcCoOc,trgt)
