@@ -43,6 +43,11 @@ switch Parameter.Method
             'hardthr',Parameter.Spectral.HardThr);
         Centers=0;
         
+    case 'gabor'
+        [idx,C]=kmeans(SampData',Parameter.values.kmeans,'onlinephase','off');
+        Centers=reshape(C',[size(Data,1),1,Parameter.values.gabor]);
+        [AssignVec,~]=Dist2SubSpace(Data,Centers,'dim',zeros(1,1,Parameter.values.kmeans));
+        
 end
 AssignVec=uint16(AssignVec);
 end 

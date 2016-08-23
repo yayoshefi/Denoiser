@@ -2,11 +2,11 @@
 clearvars ContextPsnr ClusterCompre Psnr  Labeling RulesPsnr RulesClusterCompre full_Data
 load ExpImages.mat;     load rectImage.mat
 
-description='kmeans compare2 gabor';
+description='kmeans compare2 ';
 %% --------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 %check struct Name
-Method='kmeans'; 
+Method='gabor'; 
 metric ='euclidean';
 
 sigma=50;
@@ -24,7 +24,7 @@ L=length(lambda_array);     T=length(CoOcType_array);
 
 Arrays=struct('Lambda',lambda_array,'CoOcPerThr',ShrinkPer);
 
-for i=14:14
+for i=1:5
     Image=Irect(i).Image;
     name=(Irect(i).name);   disp(name)
 Parameter=struct('description',description,'ImageName',name,'row',size(Image,1),'col',...
@@ -58,7 +58,7 @@ Xn=X./(Xnorm(ones(wsize^2,1),:)+0.01);
 [ORACLEOutput]=removenoise(double(Image),Noise,ORACLE);
 ORACLEresult=psnr(ORACLEOutput,double(Image),255);
 % DM3D
-[BM3dresult, BM3dOutput] = BM3D(im2double(Image), im2double(Image)+(Noise/255), sigma,'np',0);
+[BM3dresult, BM3dOutput] = BM3D(im2double(Image), im2double(Image)+(Noise/255), sigma);
 
 if Parameter.normalize==2; Patches=Xn;
 elseif Parameter.normalize==1; Patches=X; 
@@ -83,13 +83,10 @@ result=psnr(Output,double(Image),255);
 cleaningtime=toc-itertime;
             
 %% ------------------  Context  --------------------------------
-best='';
 for t=1:length(CoOcType_array);
     Parameter.spatial.CoOc=CoOcType_array{t};
-    best=[best,CoOcType_array{t},'\n'];
 for rule=rules_array;
     Parameter.spatial.UpdateRule=rule;      Parameter.description=['rule #',num2str(rule)];
-                                            best=[best,'rule #',num2str(rule),':'];
 for a=1:length(AssignType_array);
     Parameter.spatial.AssginType=AssignType_array{a};
     disp(['rule ',num2str(rule),', ',CoOcType_array{t},', ',AssignType_array{a},' assignment'])
@@ -162,11 +159,8 @@ RulesClusterCompre(rule+(t-1)*T)=ClusterCompre(ind);
 
 Save4Latex('name',[name,'_'],'lambda',ContextPsnr(ind).lambda,'CoOc',ContextPsnr(ind).CoOc,...
     'Thr',ContextPsnr(ind).Thr,'rule',rule,'sigma',sigma,'Method',Method)
-best=strcat(best,'lam=',num2str(ClusterCompre(ind).lambda,'%1.3E') );
 end % AssignType
 end % rules
-SaveStaticImg(ORACLE,ORACLEOutput,ORACLEresult,BM3dresult, BM3dOutput,...
-                name,sigma,{Image,Input},{'Original', 'Noisy'})
 end % CoOcType
 
 Ref(1)=struct('wsize',wsize,'sigma',sigma,'Psnr',result,'Method',Method,'AssignVec',[]);
@@ -174,14 +168,25 @@ Ref(2)=struct('wsize',wsize,'sigma',sigma,'Psnr',ORACLEresult,'Method','ORACLE',
         % ORACLE
         Labeling(thr*L+1).AssignVec2=ORACLE;
         Labeling(thr*L+1).lambda='ORACLE';
+        % Save static image
+%         figure;imshow(col2im(ORACLE,[wsize,wsize],[row,col]),[]);colormap jet;title (['ORACLE for w_1=',num2str(wsize)])
+%         xlabel(['Psnr ',num2str(ORACLEresult)]);
+%         saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',name,'_sigma',num2str(sigma),...
+%             '\ORACLE.png'))
+%         figure; imshow(ORACLEOutput,[]); title ('ORACLE Denoising')
+%         saveas(gcf,strcat(Parameter.location,'\Results\',date,'\',name,'_sigma',num2str(sigma),...
+%             '\ORACLEdenosing.png'))
+%         PrintDnoise ({Image,Input},{'Original', 'Noisy'})
               
+        SaveStaticImg(ORACLE,ORACLEOutput,ORACLEresult,BM3dresult, BM3dOutput,...
+                        name,sigma,{Image,Input},{'Original', 'Noisy'})
+                        
         full_Data(i)=struct('ImageName',name,'Reference',Ref,...
             'ContextPsnr',RulesPsnr,'ClusterCompre',RulesClusterCompre,'Arrays',Arrays);
 end % Image
  %% save info
 save (strcat(Parameter.location,'\Results/',date,'/','full_Data.mat'), 'full_Data', '-v7.3')
-frprintf(best)
-% for i=1:size(full_Data,2)
-%     disp([full_Data(i).ImageName,'  ','rule #',num2str(rule)])
-%     disp(full_Data(i).ContextPsnr(rule))
-% end
+for i=1:size(full_Data,2)
+    disp([full_Data(i).ImageName,'  ','rule #',num2str(rule)])
+    disp(full_Data(i).ContextPsnr(rule))
+end

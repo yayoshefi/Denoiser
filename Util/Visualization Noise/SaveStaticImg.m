@@ -1,5 +1,5 @@
-function []=SaveStaticImg(ORACLE,ORACLEOutput,ORACLEresult,name,sigma,...
-                            InputsImg,InputsStr)
+function []=SaveStaticImg(ORACLE,ORACLEOutput,ORACLEresult,BM3dresult, BM3dOutput,...
+                            name,sigma,InputsImg,InputsStr)
 global Parameter
 wsize=sqrt(Parameter.wsize2);
 row =Parameter.row; col=Parameter.col;
@@ -15,6 +15,11 @@ saveas (gcf,strcat(src,'\ORACLECoOc.png'))
 
 figure; imshow(ORACLEOutput,[]); title ('ORACLE Denoising')
 saveas(gcf,strcat(src,'\ORACLEdenosing.png'))
+
+if exist('BM3dOutput','var')
+figure; imshow(BM3dOutput,[]); title (['BM3D Denoising (',num2str(BM3dresult),')'])
+saveas(gcf,strcat(src,'\DM3Ddenosing.png'))
+end
 
 PrintDnoise (InputsImg,InputsStr)
 

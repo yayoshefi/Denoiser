@@ -2,13 +2,13 @@
 load Database;Images = createImages();load Sport+_DB;
 load ExpImages.mat
 
-Image=I(1).Image;
+Image=lena;
 description='test Debug';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 
-Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
-sigma=50;
+Method='gabor';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
+sigma=25;
 wsize=11;
 normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain (-5)- Oracle
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'
@@ -41,8 +41,16 @@ elseif Parameter.normalize==1;  Patches=X;
 elseif Parameter.normalize==0;  Patches=Data;
 elseif Parameter.normalize==-5; Patches=im2col(double(Image),[wsize,wsize],'sliding'); %OracleMode
 end
+if strcmp (Method,'gabor')  
+    G=gabor ([wsize,wsize/2],[0,30,60,90,120,150]);
+    Mag=imgaborfilt(Image,G);       P=(wsize-1)/2;
+    Patches=(  reshape(Mag(P+1:end-P,P+1:end-P,:),[(row-2*P)*(col-2*P),length(G)] )  )';
+end
 clearvars Xmean Xnorm row col normalize description metric 
 clearvars lena boat house barbara Synth Synth2 Synth3 MultiTexture MultiTexture2 Mond Images Bolt Drogba Federer Zebra
+% DM3D
+[BM3dresult, BM3dOutput] = BM3D(im2double(Image), im2double(Image)+(Noise/255), sigma);
+
 %% ----------------------- Cluster -----------------------------------
 tic
 [AssignVec, Centers,Energy,Basis]= FindClusters(Patches,'maxsubspace',Parameter.MSS);
