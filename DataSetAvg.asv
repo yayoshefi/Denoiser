@@ -1,0 +1,104 @@
+% %%---------------- Data Collecting-------------------Git Version
+clearvars 
+load Data\ExpImages.mat;        load Data\rectImage.mat 
+load Data\BSDS300_test.mat;     load Data\BSDS300_train.mat;
+
+description='Avg denoising values';
+%% --------------------------- PARAMETERS ------------------------------
+global Parameter Analysis
+Method='kmeans';        metric ='euclidean';
+
+sigma=50;       wsize=11;       NN=9;
+lambda= 0.03;   rule=3;        
+
+I=BSDS300_test;
+
+for i=1:length(I)
+    Image=I(i).Image;
+    name=(I(i).name);  
+Parameter=struct('description',description,'ImageName',name,'row',size(Image,1),'col',...
+    size(Image,2),'Method',Method,'sigma',sigma,'wsize2',wsize^2,'normalize',...
+    0,'metric',metric);
+%% ------------------------- INITIALIZATION ---------------------------
+NewPath=genpath([pwd,'/Util']);
+addpath(NewPath);
+setGlobalParameter();                   Analysis.Show=false;
+row=Parameter.row;                      col=Parameter.col;
+Parameter.spatial.NN=NN;                Parameter.spatial.rule;
+Analysis.DebuggerIter=1000;             Parameter.spatial.lambda=lambda;
+
+Analysis.LabelsSize=[Parameter.row-sqrt(Parameter.wsize2)+1,Parameter.col-sqrt(Parameter.wsize2)+1];
+
+Noise=randn(size(Image))*sigma;
+Input=double(Image)+Noise;             
+Data=im2col(Input,[wsize,wsize],'sliding');
+
+X=Data;
+Xmean=mean(X);
+X=X-Xmean(ones(wsize^2,1),:);
+Xnorm=(sum(X.^2)).^0.5;
+Xn=X./(Xnorm(ones(wsize^2,1),:)+0.01);
+
+% ORACLE
+[ORACLE,ORACLECenters]=FindClusters(im2col(double(Image),[wsize,wsize],'sliding') );
+[ORACLEOutput]=removenoise(double(Image),Noise,ORACLE);
+ORACLEresult=psnr(ORACLEOutput,double(Image),255);
+[ORACLE_Entropy, ORACLE_Sparsity]=...
+    CoOc_V1 (lcm(Labeling(ind).AssignVec2,Parameter.spatial.AssginType,Parameter.spatial.CoOc),false,'both',0);
+% BM3D
+[BM3dresult, BM3dOutput] = BM3D(im2double(Image), im2double(Image)+(Noise/255), sigma,'np',0);
+%KSVD
+
+if Parameter.normalize==2; Patches=Xn;
+elseif Parameter.normalize==1; Patches=X; 
+else Patches=Data;
+end
+if strcmp (Method,'gabor')  
+    G=gabor ([wsize,wsize/2],[0,30,60,90,120,150]);
+    Mag=imgaborfilt(Image,G);       P=(wsize-1)/2;
+    Patches=(  reshape(Mag(P+1:end-P,P+1:end-P,:),[(row-2*P)*(col-2*P),length(G)] )  )';
+end
+
+%% ----------------------- Cluster -----------------------------------
+[AssignVec, Centers,Energy,Basis]=...
+    FindClusters(Patches,'maxsubspace',Parameter.MSS);
+[Entropy,Sparsity]=...
+    CoOc_V1 (lcm(AssignVec,Parameter.spatial.AssginType,Parameter.spatial.CoOc),false,'both',0);
+
+%% ------------------ Remove Noise --------------------------------
+[Output]=removenoise(double(Image),Noise,AssignVec);
+result=psnr(Output,double(Image),255);
+            
+%% ------------------  Context  --------------------------------    
+[AssignVec2]=SpatialContext (Patches,AssignVec,Centers);
+[Context_Output]     =removenoise(double(Image),Noise,AssignVec2);
+Context_result   = psnr(Context_Output      ,double(Image),255);
+
+[RI,MH  ]               = RandIndex(AssignVec (:),ORACLE(:));
+[Context_RI,Context_MH] = RandIndex(AssignVec2 (:),ORACLE(:));
+
+[Context_Entropy, Context_Sparsity]=...
+CoOc_V1 (lcm(AssignVec2,Parameter.spatial.AssginType,Parameter.spatial.CoOc),false,'both',0);
+
+%% structures to save
+    Psnr=struct('Name',name,'Kmeans',result,'CoC',Context_result,'ORACLE',ORACLEresult,'BM3D',BM3dresult,'KSVD',[]);
+    PsnrStrct(i)=Psnr;
+    CoOcs= struct('Name',name,'Entropy',Entropy,'Sparsity', Sparsity,...
+        'ORACLE_Entropy',ORACLE_Entropy,'ORACLE_Sparsity', ORACLE_Sparsity,...
+        'Context_Entropy',Context_Entropy,'Context_Sparsity',Context_Sparsity);
+    CoOcStrct(i)=CoOcs;
+%% Summary
+    Avg_res=Avg_res+result;             Avg_Context_res=Avg_Context_res+Context_result;
+    Avg_BM3Dres=Avg_BM3Dres+BM3dresult; Avg_ORACLEres=Avg_ORACLEres+ORACLEresult;
+           
+end % Image
+Avg_res=Avg_res/i;  Avg_Context_res=Avg_Context_res/i;  Avg_BM3Dres=Avg_BM3Dres/i;  Avg_ORACLEres=Avg_ORACLEres/i;
+
+PsnrStrct(i+1)=struct('Name',name,'Kmeans',Avg_res,'CoC',Avg_Context_res,'ORACLE',Avg_ORACLEres,'BM3D',Avg_BM3Dres,'KSVD',[]);
+full_Data=struct('Psnr',PsnrStrct,'Sparsity',CoOcStrct);
+disp ()
+ %% save info
+save (strcat(Parameter.location,'\Results/',date,'/','full_Data.mat'), 'full_Data', '-v7.3')
+
+
+

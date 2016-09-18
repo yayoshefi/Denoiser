@@ -9,14 +9,15 @@ global Parameter Analysis
 SpatialRefernce='MessagePass';
 change=''; cnt=[];   alpha=1.03;
 
-K=size(Centers,3);
+K=size(Centers,3); M=size(Data,2);
 
 iter_step=Analysis.DebuggerIter;
 wsize=sqrt(Parameter.wsize2);
 lambda=Parameter.spatial.lambda;        rule=Parameter.spatial.UpdateRule;
                                         AssginType=Parameter.spatial.AssginType;
 if (Parameter.ORACLE) && (Analysis.ORACLE.level>0)
-        Centers=Analysis.ORACLE.Centers;end
+    Centers=Analysis.ORACLE.Centers;            end
+Distances = patch2center (Data,Centers);
 [P_i]=affinity (Data, Centers,0,true)';
 [CoOc,P_Ni]=lcm(AssignVec,'hard',Parameter.spatial.CoOc);
 CoOc_Hold=CoOc_V1(CoOc,false,'entropy');
@@ -61,8 +62,11 @@ for iter=1:Parameter.spatial.MaxIter
     [Pr,Lhat]=max(L,[],2);
    
 % De-Bugging
+    if (iter_step < Parameter.spatial.MaxIter)
     cnt=[cnt,sum(Lhat~=Old_Lhat(:))];
     [CC_Hnew,epsNorm]=CoOc_V1 (CoOcThr,false,'both',Parameter.spatial.CoOcThr);
+    ind=sub2ind([K,M],1:M,Lhat);
+    score=sum(Distances(ind) )/M+epsNorm;
     Analysis.iterations(iter)=struct('Lhat',Lhat,'CoOc',CoOcThr,...
         'changes',cnt(end),'epsNorm',epsNorm);
     if ~mod(iter,iter_step)              %output to command window
@@ -75,6 +79,7 @@ for iter=1:Parameter.spatial.MaxIter
     
         if Analysis.DebuggerMode 
             Debug(CoOcThr,Lhat,Pr,iter,P_i,P_Ni,L,Analysis.samp);  end
+    end
     end
 
     
@@ -175,4 +180,14 @@ if isfield (Analysis,'ORACLE')
 else
     xlabel(strcat(num2str(length(unique(Lhat))) ,' diffrent labels'));
 end
+end
+
+function Distances = patch2center (Data,Centers)
+K=size(Centers,3);
+Distances=zeros (size(Data,2),K);
+for k=1:K
+    pointdist=sum(Data.^2)-2*Centers(:,:,k)'*Data+Centers(:,:,k)'*Centers(:,:,k);
+    Distances(k,:)=pointdist.^0.5;
+end
+
 end

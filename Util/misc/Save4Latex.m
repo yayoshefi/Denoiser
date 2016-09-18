@@ -1,4 +1,5 @@
 function []=Save4Latex(varargin)
+% moves Images from the results directory 2 the latex figures
 
 pnames = {'name'    'lambda'   'Thr'    'rule'   'CoOc',    'sigma'     'day'   'Method'};
 dflts =  {'',       0.1,          0,      4,      'MI',         50  ,    date()  'kmeans'};
