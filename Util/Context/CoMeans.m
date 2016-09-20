@@ -65,7 +65,7 @@ for iter=1:Parameter.spatial.MaxIter
     if (iter_step < Parameter.spatial.MaxIter)
     cnt=[cnt,sum(Lhat~=Old_Lhat(:))];
     [CC_Hnew,epsNorm]=CoOc_V1 (CoOcThr,false,'both',Parameter.spatial.CoOcThr);
-    ind=sub2ind([K,M],1:M,Lhat);
+    ind=sub2ind([K,M],Lhat,1:M);
     score=sum(Distances(ind) )/M+epsNorm;
     Analysis.iterations(iter)=struct('Lhat',Lhat,'CoOc',CoOcThr,...
         'changes',cnt(end),'epsNorm',epsNorm);
@@ -184,7 +184,7 @@ end
 
 function Distances = patch2center (Data,Centers)
 K=size(Centers,3);
-Distances=zeros (size(Data,2),K);
+Distances=zeros (K,size(Data,2));
 for k=1:K
     pointdist=sum(Data.^2)-2*Centers(:,:,k)'*Data+Centers(:,:,k)'*Centers(:,:,k);
     Distances(k,:)=pointdist.^0.5;

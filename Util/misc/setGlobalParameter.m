@@ -48,6 +48,8 @@ Parameter.values.VarianceSplit=300;
 dictsize=300;           sparsity=3;         HardThr=1;
 Parameter.Spectral=struct('clustrsNUM',InitClustersNUM,'dictsize',dictsize,...
     'sparsity',sparsity,'HardThr',HardThr,'Fast',true);
+Parameter.KSVD_params=struct('x',[],'blocksize',8,'dictsize',256,'sigma',[],'maxval',255,...
+                             'trainnum',40000,'iternum',20,'memusage','normal');
 
 %%  ############# Analysis  ##############
 if Parameter.ORACLE; if isstruct('ORACLE');ORACLE=Analysis.ORACLE;end;end %save last ORACLE Or update

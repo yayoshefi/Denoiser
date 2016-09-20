@@ -13,8 +13,12 @@ Method='kmeans';        metric ='euclidean';
 sigma=50;       wsize=11;       NN=9;
 lambda= 0.03;   rule=3;        
 
-Avg_Context_res=0;Avg_BM3D_res=0;Avg_ORACLE_res=0;Avg_res=0;
-for i=1:length(I)
+Avg_Context_res=0;Avg_BM3D_res=0;Avg_ORACLE_res=0;Avg_res=0;Avg_KSVD_res=0;
+L=length(I);
+PsnrStrct(L+1)=struct('Name',[],'Kmeans',[],'CoC',[],'ORACLE',[],'BM3D',[],'KSVD',[]);
+CoOcStrct(L)=struct('Name',[],'Entropy',[],'Sparsity', [],...
+        'ORACLE_Entropy',[],'ORACLE_Sparsity', [],'Context_Entropy',[],'Context_Sparsity',[]);
+for i=1:5
     Image=I(i).Image;
     name=(I(i).Name);  
 Parameter=struct('description',description,'ImageName',name,'row',size(Image,1),'col',...
@@ -49,6 +53,10 @@ ORACLEresult=psnr(ORACLEOutput,double(Image),255);
 % BM3D
 [BM3dresult, BM3dOutput] = BM3D(im2double(Image), im2double(Image)+(Noise/255), sigma,'np',0);
 %KSVD
+Parameter.KSVD_params.x=Input;      Parameter.KSVD_params.sigma=sigma;
+[KSVDOutput, ~] = ksvddenoise(Parameter.KSVD_params,0);
+KSVDresult=psnr(KSVDOutput,double(Image),255);
+
 
 if Parameter.normalize==2; Patches=Xn;
 elseif Parameter.normalize==1; Patches=X; 
@@ -82,7 +90,7 @@ Context_result   = psnr(Context_Output      ,double(Image),255);
 CoOc_V1 (lcm(AssignVec2,Parameter.spatial.AssginType,Parameter.spatial.CoOc),false,'both',0);
 
 %% structures to save
-    Psnr=struct('Name',name,'Kmeans',result,'CoC',Context_result,'ORACLE',ORACLEresult,'BM3D',BM3dresult,'KSVD',[]);
+    Psnr=struct('Name',name,'Kmeans',result,'CoC',Context_result,'ORACLE',ORACLEresult,'BM3D',BM3dresult,'KSVD',KSVDresult);
     PsnrStrct(i)=Psnr;
     CoOcs= struct('Name',name,'Entropy',Entropy,'Sparsity', Sparsity,...
         'ORACLE_Entropy',ORACLE_Entropy,'ORACLE_Sparsity', ORACLE_Sparsity,...
@@ -90,12 +98,12 @@ CoOc_V1 (lcm(AssignVec2,Parameter.spatial.AssginType,Parameter.spatial.CoOc),fal
     CoOcStrct(i)=CoOcs;
 %% Summary
     Avg_res=Avg_res+result;                 Avg_Context_res=Avg_Context_res+Context_result;
-    Avg_BM3D_res=Avg_BM3D_res+BM3dresult;   Avg_ORACLE_res=Avg_ORACLE_res+ORACLEresult;
+    Avg_BM3D_res=Avg_BM3D_res+BM3dresult;   Avg_ORACLE_res=Avg_ORACLE_res+ORACLEresult;         Avg_KSVD_res=Avg_KSVD_res+KSVDresult;
            
 end % Image
-Avg_res=Avg_res/i;  Avg_Context_res=Avg_Context_res/i;  Avg_BM3D_res=Avg_BM3D_res/i;  Avg_ORACLE_res=Avg_ORACLE_res/i;
+Avg_res=Avg_res/i;  Avg_Context_res=Avg_Context_res/i;  Avg_BM3D_res=Avg_BM3D_res/i;  Avg_ORACLE_res=Avg_ORACLE_res/i;      Avg_KSVD_res=Avg_KSVD_res/i;
 
-PsnrStrct(i+1)=struct('Name','mean values','Kmeans',Avg_res,'CoC',Avg_Context_res,'ORACLE',Avg_ORACLE_res,'BM3D',Avg_BM3D_res,'KSVD',[]);
+PsnrStrct(i+1)=struct('Name','mean values','Kmeans',Avg_res,'CoC',Avg_Context_res,'ORACLE',Avg_ORACLE_res,'BM3D',Avg_BM3D_res,'KSVD',Avg_KSVD_res);
 full_Data=struct('Psnr',PsnrStrct,'Sparsity',CoOcStrct);
 disp (PsnrStrct(i+1))
  %% save info
