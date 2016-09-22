@@ -7,7 +7,7 @@ function AssignVec2=CoMeans(Data,AssignVec,Centers)
 global Parameter Analysis
 
 SpatialRefernce='MessagePass';
-change=''; cnt=[];   alpha=1.03;
+change=''; cnt=[];   alpha=1.03; score=[];  beta=0.01;%objective score param
 
 K=size(Centers,3); M=size(Data,2);
 
@@ -65,17 +65,18 @@ for iter=1:Parameter.spatial.MaxIter
     if (iter_step < Parameter.spatial.MaxIter)
     cnt=[cnt,sum(Lhat~=Old_Lhat(:))];
     [CC_Hnew,epsNorm]=CoOc_V1 (CoOcThr,false,'both',Parameter.spatial.CoOcThr);
-    ind=sub2ind([K,M],Lhat,1:M);
-    score=sum(Distances(ind) )/M+epsNorm;
+    ind=sub2ind([K,M],Lhat',1:M);
+    AvgDist=sum(Distances(ind) )/M;
+    score=[score,AvgDist+beta*epsNorm];
     Analysis.iterations(iter)=struct('Lhat',Lhat,'CoOc',CoOcThr,...
-        'changes',cnt(end),'epsNorm',epsNorm);
+        'changes',cnt(end),'AvgDist',AvgDist,'epsNorm',epsNorm);
     if ~mod(iter,iter_step)              %output to command window
         ratio=CC_Hnew/CoOc_Hold; CoOc_Hold=CC_Hnew;
         fprintf(['iter: %u. %u unique clusters. \tCoOc entropy ratio is %1.3f\n',...
             '%s\t\t\t\t\t\t\t\tCoOc eps norm:%1.4G (i.e. %.3f of the matrix is not 0)\n'],...
             iter,length (unique(Lhat)),ratio,change,epsNorm,(epsNorm/(K^2)));
-        fprintf('pixels changed last iterations');disp(cnt)
-        change=''; cnt=[];
+        fprintf('pixels changed (and scores) last iterations');disp(cnt);disp (score);
+        change=''; cnt=[];  score=[];
     
         if Analysis.DebuggerMode 
             Debug(CoOcThr,Lhat,Pr,iter,P_i,P_Ni,L,Analysis.samp);  end
@@ -187,7 +188,7 @@ K=size(Centers,3);
 Distances=zeros (K,size(Data,2));
 for k=1:K
     pointdist=sum(Data.^2)-2*Centers(:,:,k)'*Data+Centers(:,:,k)'*Centers(:,:,k);
-    Distances(k,:)=pointdist.^0.5;
+    Distances(k,:)=abs(pointdist).^0.5;
 end
 
 end

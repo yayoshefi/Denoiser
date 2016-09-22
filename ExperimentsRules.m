@@ -1,6 +1,6 @@
 % %%---------------- Data Collecting-------------------Git Version
 clearvars ContextPsnr ClusterCompre Psnr  Labeling RulesPsnr RulesClusterCompre full_Data
-load ExpImages.mat;     load rectImage.mat
+load Data\ExpImages.mat;     load Data\rectImage.mat
 
 description='kmeans compare2 gabor';
 %% --------------------------- PARAMETERS ------------------------------

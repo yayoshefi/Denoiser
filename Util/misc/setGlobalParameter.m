@@ -32,13 +32,13 @@ Parameter.SplitType=SplitType;      Parameter.Context=Context;
 Parameter.subsample=0.20;           Parameter.ORACLE=USEORACLE;
 
 % **************     Context clustring Parameters     ****************
-Parameter.spatial.spatialdist='decomposition';          Parameter.spatial.lambda=0.08;
+Parameter.spatial.spatialdist='decomposition';          Parameter.spatial.lambda=0.03;
 %'landmarks' / 'decomposition'  /  'simplenoramlize' /'none'
-Parameter.spatial.sigma=20;   Parameter.spatial.NN=3;   Parameter.spatial.CoOcThr='unused';
+Parameter.spatial.sigma=20;   Parameter.spatial.NN=9;   Parameter.spatial.CoOcThr='unused';
 Parameter.spatial.UpdateRule=UpdateRule;                Parameter.spatial.CoOc='MI';
 Parameter.spatial.shrink=0;                             Parameter.spatial.AssginType='hard';
 
-Parameter.location='C:/Users/Yair/Dropbox/Thesis code';
+loc=cd;     Parameter.location=[loc( 1:findstr(loc,'\Doc') ),'Dropbox\Thesis code'];
 % **************      Method Parameter     *****************
 if ~isfield (Parameter,'wsize2');Parameter.wsize2=81;end  %default value
 Parameter.values=struct('VarianceSplit',5*Parameter.wsize2,'Distance',InitClustersNUM,...

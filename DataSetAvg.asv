@@ -10,17 +10,20 @@ I=BSDS300_test;         clearvars -except I description
 global Parameter Analysis
 Method='kmeans';        metric ='euclidean';
 
-sigma=50;       wsize=11;       NN=9;
+sigma=75;       wsize=11;       NN=9;
 lambda= 0.03;   rule=3;        
 
+MainT=tic;
 Avg_Context_res=0;Avg_BM3D_res=0;Avg_ORACLE_res=0;Avg_res=0;Avg_KSVD_res=0;
 L=length(I);
 PsnrStrct(L+1)=struct('Name',[],'Kmeans',[],'CoC',[],'ORACLE',[],'BM3D',[],'KSVD',[]);
 CoOcStrct(L)=struct('Name',[],'Entropy',[],'Sparsity', [],...
         'ORACLE_Entropy',[],'ORACLE_Sparsity', [],'Context_Entropy',[],'Context_Sparsity',[]);
-for i=1:5
+L=50;
+for i=1:L
     Image=I(i).Image;
     name=(I(i).Name);  
+    if ( mod(i,5)==0 ); fprintf('  %i / %i images in %i sec\n' , i,L, round(toc(MainT)));    end;
 Parameter=struct('description',description,'ImageName',name,'row',size(Image,1),'col',...
     size(Image,2),'Method',Method,'sigma',sigma,'wsize2',wsize^2,'normalize',...
     0,'metric',metric);
@@ -54,7 +57,7 @@ ORACLEresult=psnr(ORACLEOutput,double(Image),255);
 [BM3dresult, BM3dOutput] = BM3D(im2double(Image), im2double(Image)+(Noise/255), sigma,'np',0);
 %KSVD
 Parameter.KSVD_params.x=Input;      Parameter.KSVD_params.sigma=sigma;
-[KSVDOutput, ~] = ksvddenoise(Parameter.KSVD_params);
+[KSVDOutput, ~] = ksvddenoise(Parameter.KSVD_params,0);
 KSVDresult=psnr(KSVDOutput,double(Image),255);
 
 
@@ -99,14 +102,16 @@ CoOc_V1 (lcm(AssignVec2,Parameter.spatial.AssginType,Parameter.spatial.CoOc),fal
 %% Summary
     Avg_res=Avg_res+result;                 Avg_Context_res=Avg_Context_res+Context_result;
     Avg_BM3D_res=Avg_BM3D_res+BM3dresult;   Avg_ORACLE_res=Avg_ORACLE_res+ORACLEresult;         Avg_KSVD_res=Avg_KSVD_res+KSVDresult;
+    Avg_Context_Sps=Context_Sparsity
            
 end % Image
 Avg_res=Avg_res/i;  Avg_Context_res=Avg_Context_res/i;  Avg_BM3D_res=Avg_BM3D_res/i;  Avg_ORACLE_res=Avg_ORACLE_res/i;      Avg_KSVD_res=Avg_KSVD_res/i;
 
 PsnrStrct(i+1)=struct('Name','mean values','Kmeans',Avg_res,'CoC',Avg_Context_res,'ORACLE',Avg_ORACLE_res,'BM3D',Avg_BM3D_res,'KSVD',Avg_KSVD_res);
-full_Data=struct('Psnr',PsnrStrct,'Sparsity',CoOcStrct);
+full_Data=struct('Psnr',PsnrStrct,'Sparsity',CoOcStrct,'Parameters',Parameter);
 disp (PsnrStrct(i+1))
  %% save info
+mkdir(strcat(Parameter.location,'\Results/',date));
 save (strcat(Parameter.location,'\Results/',date,'/','full_Data.mat'), 'full_Data', '-v7.3')
 
 

@@ -1,14 +1,15 @@
 %%---------------- Main Script: De noising-------------------GitHub Version
-load Database;Images = createImages();load Sport+_DB;
-load ExpImages.mat
+load Data\Database;Images = createImages();load Data\Sport+_DB;
+load Data\ExpImages.mat;     load Data\rectImage.mat
 
-Image=lena;
-description='test Debug';
+
+Image=Irect(7).Image;
+description='test evolving lambda';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 
-Method='gabor';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
-sigma=25;
+Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
+sigma=50;
 wsize=11;
 normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain (-5)- Oracle
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'

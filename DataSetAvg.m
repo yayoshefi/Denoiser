@@ -10,17 +10,21 @@ I=BSDS300_test;         clearvars -except I description
 global Parameter Analysis
 Method='kmeans';        metric ='euclidean';
 
-sigma=50;       wsize=11;       NN=9;
+sigma=25;       wsize=11;       NN=9;
 lambda= 0.03;   rule=3;        
 
+MainT=tic;
 Avg_Context_res=0;Avg_BM3D_res=0;Avg_ORACLE_res=0;Avg_res=0;Avg_KSVD_res=0;
+Avg_Context_Sps=0;Avg_ORACLE_Sps=0;Avg_sps=0;
 L=length(I);
 PsnrStrct(L+1)=struct('Name',[],'Kmeans',[],'CoC',[],'ORACLE',[],'BM3D',[],'KSVD',[]);
 CoOcStrct(L)=struct('Name',[],'Entropy',[],'Sparsity', [],...
         'ORACLE_Entropy',[],'ORACLE_Sparsity', [],'Context_Entropy',[],'Context_Sparsity',[]);
-for i=1:5
+L=50;
+for i=1:L
     Image=I(i).Image;
-    name=(I(i).Name);  
+    name=(I(i).name);  
+    if ( mod(i,5)==0 ); fprintf('  %i / %i images in %i sec\n' , i,L, round(toc(MainT)));    end;
 Parameter=struct('description',description,'ImageName',name,'row',size(Image,1),'col',...
     size(Image,2),'Method',Method,'sigma',sigma,'wsize2',wsize^2,'normalize',...
     0,'metric',metric);
@@ -99,15 +103,19 @@ CoOc_V1 (lcm(AssignVec2,Parameter.spatial.AssginType,Parameter.spatial.CoOc),fal
 %% Summary
     Avg_res=Avg_res+result;                 Avg_Context_res=Avg_Context_res+Context_result;
     Avg_BM3D_res=Avg_BM3D_res+BM3dresult;   Avg_ORACLE_res=Avg_ORACLE_res+ORACLEresult;         Avg_KSVD_res=Avg_KSVD_res+KSVDresult;
+    Avg_Context_Sps=Avg_Context_Sps+Context_Sparsity;   Avg_ORACLE_Sps=Avg_ORACLE_Sps+ORACLE_Sparsity; Avg_sps=Avg_sps+Sparsity;
            
 end % Image
 Avg_res=Avg_res/i;  Avg_Context_res=Avg_Context_res/i;  Avg_BM3D_res=Avg_BM3D_res/i;  Avg_ORACLE_res=Avg_ORACLE_res/i;      Avg_KSVD_res=Avg_KSVD_res/i;
+Avg_Context_Sps=Avg_Context_Sps/i;   Avg_ORACLE_Sps=Avg_ORACLE_Sps/i;   Avg_sps=Avg_sps/i;
 
 PsnrStrct(i+1)=struct('Name','mean values','Kmeans',Avg_res,'CoC',Avg_Context_res,'ORACLE',Avg_ORACLE_res,'BM3D',Avg_BM3D_res,'KSVD',Avg_KSVD_res);
-full_Data=struct('Psnr',PsnrStrct,'Sparsity',CoOcStrct);
+CoOcStrct(i+1)=struct('Name','mean','Entropy',[],'Sparsity', Avg_sps,'ORACLE_Entropy',[],...
+    'ORACLE_Sparsity', Avg_ORACLE_Sps,'Context_Entropy',[],'Context_Sparsity',Avg_Context_Sps);
+full_Data=struct('Psnr',PsnrStrct,'Sparsity',CoOcStrct,'Parameters',Parameter);
 disp (PsnrStrct(i+1))
  %% save info
-save (strcat(Parameter.location,'\Results/',date,'/','full_Data.mat'), 'full_Data', '-v7.3')
-
-
+mkdir(strcat(Parameter.location,'\Results/',date));
+filName=strcat('full_Data_sigma',numstr(sigma),'_clusters',num2str(Parameter.values.kmeans),'.mat');
+save (strcat(Parameter.location,'\Results/',date,'/',filName), 'full_Data', '-v7.3')
 
