@@ -7,7 +7,7 @@ function AssignVec2=CoMeans(Data,AssignVec,Centers)
 global Parameter Analysis
 
 SpatialRefernce='MessagePass';
-change=''; cnt=[];   alpha=1.03; score=[];
+change=''; cnt=[];   alpha=1.03; score=[];  beta=0.1;%objective score param
 
 K=size(Centers,3); M=size(Data,2);
 
@@ -17,19 +17,18 @@ lambda=Parameter.spatial.lambda;        rule=Parameter.spatial.UpdateRule;
                                         AssginType=Parameter.spatial.AssginType;
 if (Parameter.ORACLE) && (Analysis.ORACLE.level>0)
     Centers=Analysis.ORACLE.Centers;            end
-Distances = patch2center (Data,Centers);
-[P_i]=affinity (Data, Centers,0,true)';
+[Distances,P_i] = patch2center (Data,Centers,wsize);
+% [P_i]=affinity (Data, Centers,0,true)';
 [CoOc,P_Ni]=lcm(AssignVec,'hard',Parameter.spatial.CoOc);
 CoOc_Hold=CoOc_V1(CoOc,false,'entropy');
 
 Lhat=AssignVec;
 
-
-Parameter.spatial.MaxIter=20;
+Parameter.spatial.MaxIter=10;
 for iter=1:Parameter.spatial.MaxIter
-    if (Parameter.ORACLE) && (Analysis.ORACLE.level>2)
+    if (Parameter.ORACLE) && (Analysis.ORACLE.level>=2)
         CoOcThr=Analysis.ORACLE.CoOc;
-        [~,P_Ni]=lcm(Lhat,'hard',Parameter.spatial.CoOc);
+        [CoOc,P_Ni]=lcm(Lhat,'hard',Parameter.spatial.CoOc);
     else
         switch AssginType
             case 'soft'
@@ -67,16 +66,18 @@ for iter=1:Parameter.spatial.MaxIter
     [CC_Hnew,epsNorm]=CoOc_V1 (CoOcThr,false,'both',Parameter.spatial.CoOcThr);
     ind=sub2ind([K,M],Lhat',1:M);
     AvgDist=sum(Distances(ind) )/M;
-    score=[score,AvgDist+epsNorm];
+    score=[score,AvgDist+beta*epsNorm];
     Analysis.iterations(iter)=struct('Lhat',Lhat,'CoOc',CoOcThr,...
         'changes',cnt(end),'AvgDist',AvgDist,'epsNorm',epsNorm);
     if ~mod(iter,iter_step)              %output to command window
         ratio=CC_Hnew/CoOc_Hold; CoOc_Hold=CC_Hnew;
-        fprintf(['iter: %u. %u unique clusters. \tCoOc entropy ratio is %1.3f\n',...
+        fprintf(['iter: %u. %u unique clusters. \tCoOc entropy ratio is %1.3f. distance to CoOc target %2.3g \n',...
             '%s\t\t\t\t\t\t\t\tCoOc eps norm:%1.4G (i.e. %.3f of the matrix is not 0)\n'],...
-            iter,length (unique(Lhat)),ratio,change,epsNorm,(epsNorm/(K^2)));
-        fprintf('pixels changed (and scores) last iterations');disp(cnt)
-        change=''; cnt=[];
+            iter,length (unique(Lhat)),ratio,...
+            change,epsNorm,(epsNorm/(K^2)));
+        fprintf('pixels changed: ');disp(cnt)
+        disp(strrep(['score  changed:     ' sprintf(' %3.0f,', score)], ',', '     '))
+        change=''; cnt=[];  score=[];
     
         if Analysis.DebuggerMode 
             Debug(CoOcThr,Lhat,Pr,iter,P_i,P_Ni,L,Analysis.samp);  end
@@ -103,6 +104,11 @@ end
 function CoOcThr=CoOcShrinkage(CoOc,alpha)
 global Parameter
 % Parameter.spatial.shrink=0.0;
+%% zeroize k elements in each row..zs
+% element = round (0.4*length(CoOc));
+% [SrtCoOc,I]=sort(CoOc);
+% ind=sub2ind(size(CoOc),I(:,element)',1:length(CoOc));
+
 
 per=Parameter.spatial.shrink;
 if exist('alpha','var'); per=per*alpha;end
@@ -183,12 +189,18 @@ else
 end
 end
 
-function Distances = patch2center (Data,Centers)
+function [Distances,E] = patch2center (Data,Centers,wsize)
 K=size(Centers,3);
 Distances=zeros (K,size(Data,2));
+sigma=(wsize^2)/4;
 for k=1:K
     pointdist=sum(Data.^2)-2*Centers(:,:,k)'*Data+Centers(:,:,k)'*Centers(:,:,k);
-    Distances(k,:)=pointdist.^0.5;
+    Distances(k,:)=abs(pointdist).^0.5;
 end
-
+E=exp(Distances/(-sigma^2));
+cumE=sum(E,1);
+NormalizeFactor=1./cumE;
+NormalizeFactor( cumE'==0 )=0;
+E= bsxfun(@times,E,NormalizeFactor);
+E=E';
 end

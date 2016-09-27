@@ -25,7 +25,7 @@ padding=floor(NN/2);
 K=Analysis.K;
 
 
-filterType='gaussian';      %  'gaussian' or 'rect'
+filterType='rect';      %  'gaussian' or 'rect'
 [NormailzeFactor,filt]= SetNeigborWindow(NN,m,n,filterType);   
 
 switch lower(AssignMethod)

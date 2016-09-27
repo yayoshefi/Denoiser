@@ -6,7 +6,7 @@ function setGlobalParameter()
 %       0- is only for comparesens  = Do nothing
 %       1- Uses centers
 %       2- Uses both Co-Occurrence matrix and the centers 
-%       3- ORACLE labeling. uses the pre-defiend 0 noise clusterting
+%       3- ORACLE labeling. uses the pre-de
 %
 %   To create the ORACLE run main with:
 %   no context no noise and normalize=-5 
@@ -34,7 +34,7 @@ Parameter.subsample=0.20;           Parameter.ORACLE=USEORACLE;
 % **************     Context clustring Parameters     ****************
 Parameter.spatial.spatialdist='decomposition';          Parameter.spatial.lambda=0.3;
 %'landmarks' / 'decomposition'  /  'simplenoramlize' /'none'
-Parameter.spatial.sigma=20;   Parameter.spatial.NN=9;   Parameter.spatial.CoOcThr=0;
+Parameter.spatial.sigma=20;   Parameter.spatial.NN=9;   Parameter.spatial.CoOcThr='unused';
 Parameter.spatial.UpdateRule=UpdateRule;                Parameter.spatial.CoOc='MI';
 Parameter.spatial.shrink=0;                             Parameter.spatial.AssginType='hard';
 

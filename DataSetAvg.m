@@ -1,18 +1,20 @@
-% %%---------------- Data Collecting-------------------Git Version
+% %%---------------- Avg DataBase-------------------Git Version
 clearvars 
 load Data\ExpImages.mat;        load Data\rectImage.mat 
-load Data\BSDS300_test.mat;     load Data\BSDS300_train.mat;
+load Data\BSDS300_test.mat;     load Data\BSDS68.mat;
 
-description='Avg denoising values';
+description='Avg denoising values lambda 0.3';
 %% --------------------------- PARAMETERS ------------------------------
-I=BSDS300_test;         clearvars -except I description
+I=BSDS68;         clearvars -except I description
 
 global Parameter Analysis
 Method='kmeans';        metric ='euclidean';
 
 sigma=25;       wsize=11;       NN=9;
-lambda= 0.03;   rule=3;        
+lambda= 0.3;   rule=3;         sigmaArr=[25,50,75,100];        
 
+for sigma=sigmaArr
+clearvars full_Data PsnrStrct CoOcStrct
 MainT=tic;
 Avg_Context_res=0;Avg_BM3D_res=0;Avg_ORACLE_res=0;Avg_res=0;Avg_KSVD_res=0;
 Avg_Context_Sps=0;Avg_ORACLE_Sps=0;Avg_sps=0;
@@ -20,11 +22,10 @@ L=length(I);
 PsnrStrct(L+1)=struct('Name',[],'Kmeans',[],'CoC',[],'ORACLE',[],'BM3D',[],'KSVD',[]);
 CoOcStrct(L)=struct('Name',[],'Entropy',[],'Sparsity', [],...
         'ORACLE_Entropy',[],'ORACLE_Sparsity', [],'Context_Entropy',[],'Context_Sparsity',[]);
-L=50;
 for i=1:L
     Image=I(i).Image;
     name=(I(i).name);  
-    if ( mod(i,5)==0 ); fprintf('  %i / %i images in %i sec\n' , i,L, round(toc(MainT)));    end;
+    if ( mod(i,10)==0 ); fprintf('  %i / %i images in %i sec\n' , i,L, round(toc(MainT)));    end;
 Parameter=struct('description',description,'ImageName',name,'row',size(Image,1),'col',...
     size(Image,2),'Method',Method,'sigma',sigma,'wsize2',wsize^2,'normalize',...
     0,'metric',metric);
@@ -116,6 +117,8 @@ full_Data=struct('Psnr',PsnrStrct,'Sparsity',CoOcStrct,'Parameters',Parameter);
 disp (PsnrStrct(i+1))
  %% save info
 mkdir(strcat(Parameter.location,'\Results/',date));
-filName=strcat('full_Data_sigma',numstr(sigma),'_clusters',num2str(Parameter.values.kmeans),'.mat');
+filName=strcat('full_Data_sigma',num2str(sigma),'_clusters',num2str(Parameter.values.kmeans),'.mat');
 save (strcat(Parameter.location,'\Results/',date,'/',filName), 'full_Data', '-v7.3')
+
+end
 

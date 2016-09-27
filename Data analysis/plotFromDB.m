@@ -1,3 +1,4 @@
+fprintf('Plotting statistics for %i clusters and noise std=%i\n',full_Data.Parameters.values.kmeans,full_Data.Parameters.sigma)
 % PSNR [K-means, CoC , ORACLE]'
 Psnr=struct2cell(full_Data.Psnr);
 Psnr= squeeze( cell2mat(Psnr(2:4,:,:)) );
@@ -8,7 +9,7 @@ Sparsity= squeeze( cell2mat(Sparsity([3,7,5],:,:)) );
 
 
 %% sparsity Vs Psnr per each image
-K=2500;
+K=full_Data.Parameters.values.kmeans^2;
 figure;title('Psnr Vs Sparsity')
 plot( Sparsity(:,1:end-1)/K,Psnr(:,1:end-1) );
 xlabel('Sparse'); ylabel ('Psnr')
@@ -27,9 +28,12 @@ x={'K-means','CoC','ORACLE'};
 figure;
 [AX,H1,H2] =plotyy( 1:3:9,Sparsity(:,end),2:3:9,Psnr(:,end),'bar','bar' );
 H1.BarWidth=0.3;                            H2.BarWidth=0.3;
+AX(1).YLim;                                 AX(2).YLim=[22,29];
+AX(1).YTick;                                AX(2).YTick=22:2:30;
 c1=AX(1).ColorOrder(1,:);                   c2=AX(1).ColorOrder(2,:);
 H1.FaceColor=c1;                            H2.FaceColor=c2;
 ylabel(AX(1),'|| MI ||_{0}','Color',c1);    ylabel(AX(2),'Psnr','Color',c2);
+legend({'Sparsity','Psnr'})
 
 AX(1).XTickLabel=x;
 
@@ -38,9 +42,9 @@ AX(1).XTickLabel=x;
 
 %% worst and best improvments
 [value, index]=sort(improve);
-disp worst images
-disp ([full_Data.Psnr(index(1)).Name,'  ',full_Data.Psnr(index(2)).Name])
+disp ('worst images')
+disp ([full_Data.Psnr(index(1)).Name,'  ',full_Data.Psnr(index(2)).Name,'  ',full_Data.Psnr(index(3)).Name])
 
-disp best images
-disp ([full_Data.Psnr(index(end)).Name,'  ',full_Data.Psnr(index(end-1)).Name])
+disp ('best images')
+disp ([full_Data.Psnr(index(end)).Name,'  ',full_Data.Psnr(index(end-1)).Name,'  ',full_Data.Psnr(index(end-2)).Name])
 
