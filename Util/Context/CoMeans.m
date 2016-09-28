@@ -6,24 +6,21 @@ function AssignVec2=CoMeans(Data,AssignVec,Centers)
 % this is consistent with Tokt 1st Scheme of minimizing the functional
 global Parameter Analysis
 
-SpatialRefernce='MessagePass';
-change=''; cnt=[];   alpha=1.03; score=[];  beta=0.1;%objective score param
-
-K=size(Centers,3); M=size(Data,2);
-
-iter_step=Analysis.DebuggerIter;
-wsize=sqrt(Parameter.wsize2);
+SpatialRefernce='MessagePass';      
+K=size(Centers,3);                      alpha=1.03;
+iter_step=Analysis.DebuggerIter;        wsize=sqrt(Parameter.wsize2);
 lambda=Parameter.spatial.lambda;        rule=Parameter.spatial.UpdateRule;
-                                        AssginType=Parameter.spatial.AssginType;
+AssginType=Parameter.spatial.AssginType;
+
+%%
 if (Parameter.ORACLE) && (Analysis.ORACLE.level>0)
     Centers=Analysis.ORACLE.Centers;            end
 [Distances,P_i] = patch2center (Data,Centers,wsize);
-% [P_i]=affinity (Data, Centers,0,true)';
 [CoOc,P_Ni]=lcm(AssignVec,'hard',Parameter.spatial.CoOc);
-CoOc_Hold=CoOc_V1(CoOc,false,'entropy');
 
-Lhat=AssignVec;
+Lhat=AssignVec';     Old_Lhat=Lhat;
 
+%% Loop
 Parameter.spatial.MaxIter=10;
 for iter=1:Parameter.spatial.MaxIter
     if (Parameter.ORACLE) && (Analysis.ORACLE.level>=2)
@@ -50,45 +47,30 @@ for iter=1:Parameter.spatial.MaxIter
 %         [CoOc,P_Ni]=lcm(reshape(P_i,[],1,K),'soft',Parameter.spatial.CoOc);
         
     end
-
+%% De bugging
+if Analysis.DebuggerMode 
+    Analysis.iterations(iter) = Debugstrct(Lhat,Old_Lhat,CoOc,CoOcThr,...
+        Distances,Parameter.spatial.CoOcThr);
+    
+    if ~mod(iter,iter_step)
+        Debugprint (iter)
+        if Analysis.Show
+            Debug(CoOcThr,Lhat,Pr,iter,P_i,P_Ni,L,Analysis.samp);
+        end
+    end
+end
+    
+%% Local update    
     switch SpatialRefernce
         case 'MessagePass'
             L=(1-lambda)*P_i + lambda*P_Ni*CoOcThr;
         case 'ML'
             L=(1-lambda)*P_i + lambda*P_Ni*CoOcThr';       %notice to invert CC
     end
-    Old_Lhat=Lhat;
     [Pr,Lhat]=max(L,[],2);
-   
-% De-Bugging
-    if (iter_step < Parameter.spatial.MaxIter)
-    cnt=[cnt,sum(Lhat~=Old_Lhat(:))];
-    [CC_Hnew,epsNorm]=CoOc_V1 (CoOcThr,false,'both',Parameter.spatial.CoOcThr);
-    ind=sub2ind([K,M],Lhat',1:M);
-    AvgDist=sum(Distances(ind) )/M;
-    score=[score,AvgDist+beta*epsNorm];
-    CoOcConverge = sum( (CoOc(:)-CoOcThr(:)).^2 );
-    Analysis.iterations(iter)=struct('Lhat',Lhat,'CoOc',CoOcThr,...
-        'changes',cnt(end),'AvgDist',AvgDist,'epsNorm',epsNorm);
-    if ~mod(iter,iter_step)              %output to command window
-        ratio=CC_Hnew/CoOc_Hold; CoOc_Hold=CC_Hnew;
-        fprintf(['\niter: %u. %u unique clusters. \tCoOc entropy ratio is %1.3f. distance to CoOc target %2.3g \n',...
-            '%s\t\t\t\t\t\t\t\tCoOc eps norm:%1.4G (i.e. %.3f of the matrix is not 0)\n'],...
-            iter,length (unique(Lhat)),ratio,sum( (CoOc(:)-CoOcThr(:)).^2 ),...
-            change,epsNorm,(epsNorm/(K^2)));
-        fprintf('pixels changed: ');disp(cnt)
-        disp(strrep(['score  changed:     ' sprintf(' %3.0f,', score)], ',', '     '))
-        change=''; cnt=[];  score=[];
-    
-        if Analysis.DebuggerMode 
-            Debug(CoOcThr,Lhat,Pr,iter,P_i,P_Ni,L,Analysis.samp);  end
-    end
-    end
 
-    
-%    fixed  Centers-> need to comment next 3 rows speeds up(no calc affinity)
+%%  Other Rules
     if rule==1    % update Centers and affinity
-        change='centers changed';
         [Centers,~,~,~,~]=UpdateCenter(Data,Lhat,false);
        % do I need to update  Lhat in each iter? [Centers,~,Lhat,~,~]
         Centers=cat(3,Centers,inf*ones(wsize^2,1,K-size(Centers,3)));      % To avoid case of degenarated Centers
@@ -145,7 +127,7 @@ end
 
 end
 
-function[] = Debug (CoOc,Lhat,Pr,iter,S,P_Ni,L,samp)
+function [] = Debug (CoOc,Lhat,Pr,iter,S,P_Ni,L,samp)
 global Parameter Analysis
 
 ShowProb (cat(3,S,P_Ni*CoOc,L),samp);
@@ -188,6 +170,37 @@ if isfield (Analysis,'ORACLE')
 else
     xlabel(strcat(num2str(length(unique(Lhat))) ,' diffrent labels'));
 end
+end
+
+function [] = Debugprint (iter)
+global Analysis
+iter_step=Analysis.DebuggerIter;
+K=length( Analysis.iterations(iter).CoOc );
+
+cnt  = [Analysis.iterations(iter+1-iter_step:iter).changes];
+score= [Analysis.iterations(iter+1-iter_step:iter).score];
+l_0=Analysis.iterations(iter).epsNorm;
+sparsity= (l_0/(K^2));
+
+fprintf('\niter %i: l_0 norm= %3.0f (%0.3f)\n',iter,l_0,sparsity);
+disp( strrep(['pixels changed:' sprintf(' %i,'  ,cnt(:) )], ',', '    '))
+disp( strrep(['score  changed:' sprintf(' %3.0f,',score) ], ',', '    '))
+end
+
+function [s] = Debugstrct (Lhat,Old_Lhat,CoOc_S,CoOc_T,Distances,Threshold)
+K=length(CoOc_S); M=length(Lhat);   beta=0.1;%objective score param
+
+change=sum(Lhat~=Old_Lhat(:));
+[CC_Hnew,epsNorm]=CoOc_V1 (CoOc_T,false,'both',Threshold);
+
+ind=sub2ind([K,M],Lhat',1:M);
+AvgDist=sum(Distances(ind) )/M;
+
+score=AvgDist+beta*epsNorm;
+CoOcConverge = sum( (CoOc_S(:)-CoOc_T(:)).^2 ); %sum( CoOC_T(:) .* ( log(CoOC_T(:)./CoOC_S(:)) ) )
+    
+s=struct('Lhat',Lhat,'CoOc',CoOc_T,'changes',change,'AvgDist',AvgDist,'epsNorm',epsNorm,...
+    'CoOcDist',CoOcConverge,'score',score);
 end
 
 function [Distances,E] = patch2center (Data,Centers,wsize)

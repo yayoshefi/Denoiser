@@ -10,9 +10,9 @@ I=I;         clearvars -except I description
 global Parameter Analysis
 Method='kmeans';        metric ='euclidean';
 
-sigma=50;      wsize=11;       CoOcType='MI';
+sigma=50;      wsize=11;       CoOcType='CC';
 rule=3;        beta=0.1;
-lambda_array= [0.001];
+lambda_array= [0.3];
 
 
 for i=7:7
@@ -27,7 +27,7 @@ addpath(NewPath);
 setGlobalParameter();
 
 Parameter.spatial.CoOc=CoOcType;            Parameter.spatial.UpdateRule=rule;
-Analysis.DebuggerIter=5;
+Analysis.DebuggerIter=5;        Analysis.DebuggerMode=true;     Analysis.Show=false;
     
 Noise=randn(size(Image))*sigma;
 Input=double(Image)+Noise;             
@@ -54,14 +54,15 @@ Patches=Data;
 [AssignVec, Centers,Energy,Basis]=...
     FindClusters(Patches,'maxsubspace',Parameter.MSS);
 CoOc = lcm(AssignVec,Parameter.spatial.AssginType,Parameter.spatial.CoOc);
-[Entropy,Sparsity]=...
-    CoOc_V1 (CoOc,false,'both',0);
+[Entropy,Sparsity] = CoOc_V1 (CoOc,false,'both',0);
 % D noise
 [Output]=removenoise(double(Image),Noise,AssignVec);
 result=psnr(Output,double(Image),255);
-fprintf ('ORACLE denoising, Psnr=%2.3f , margin (%1.4f)\n',ORACLEresult,ORACLEresult-result)
 
-for NN=3:2:9
+fprintf ('ORACLE denoising, Psnr=%2.3f , margin (%1.4f)\n',ORACLEresult,ORACLEresult-result)
+PsnrStrct(1)= struct('Params',[name, 'K-means'],'Psnr',result,'Score',0,'iterations',[]);
+
+for NN=7
     Parameter.spatial.NN=NN;
 for l=1:length(lambda_array)
     Parameter.spatial.lambda=lambda_array(l);
@@ -78,12 +79,18 @@ score= Analysis.iterations(end).AvgDist+beta*Analysis.iterations(end).epsNorm;
 fprintf ('Using: lambda=%G , NN=%i\n \t score=%3.1f Psnr=%2.3f (%1.4f) \n',...
     lambda_array(l),NN,score,Context_result,Context_result-result)
 
+if isfield(Analysis,'iterations')
+        iter=Analysis.iterations;
+else    iter=[];    end
+PsnrStrct(end+1)=struct('Params',['lma=',num2str(lambda_array(l),'%1.3G'),'NN=',num2str(NN)],...
+    'Psnr',Context_result,'Score',score,'iterations',iter);
+
 end %lambda
 end %NN
 end %image
 
 %% sumary
-% full_Data=struct('Psnr',PsnrStrct,'Sparsity',CoOcStrct,'Parameters',Parameter);
+full_Data=struct('Psnr',PsnrStrct,'Parameters',Parameter);
 % disp (PsnrStrct(i+1))
 %  %% save info
 % mkdir(strcat(Parameter.location,'\Results/',date));
