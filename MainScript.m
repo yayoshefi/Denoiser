@@ -99,14 +99,14 @@ fprintf(['#Centers    psnr    noise    ',Method,'    normalize',' cluster(s)',' 
     size(Centers,3), result, sigma,Parameter.values.(Method),Parameter.normalize ,itertime, cleaningtime,visualtime);
 
 if ischar(Parameter.Context)
-    if ischar(Parameter.spatial.CoOcThr);Parameter.spatial.CoOcThr=nan;end
+    if ischar(Parameter.CoOc.Thr);Parameter.CoOc.Thr=nan;end
     fprintf(strcat('#Centers    psnr    Context    noise    ,',Parameter.Context,'-Lambda  context(m)  K2    NN    CoOc    CC_{Thr}\n',...
         ' %3u       %2.3f   %2.3f     %3u           %G            %3.2G     %u     %u     %s     %3.2E\n'),...
         size(Centers,3), result,result2, sigma,Parameter.spatial.lambda,...
-        contexttime/60,length (unique(AssignVec2)),Parameter.spatial.NN,Parameter.spatial.CoOc,Parameter.spatial.CoOcThr);
+        contexttime/60,length (unique(AssignVec2)),Parameter.spatial.NN,Parameter.CoOc.Type,Parameter.CoOc.Thr);
 
 end
 if Parameter.normalize== -5
     global ORACLE
-    CoOc=lcm(AssignVec,'hard',Parameter.spatial.CoOc);
+    CoOc=lcm(AssignVec,'hard',Parameter.CoOc.Type);
     ORACLE=struct('Centers',Centers,'AssignVec',AssignVec,'CoOc',CoOc);end

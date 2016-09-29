@@ -5,9 +5,10 @@ function [varargout]=CoOc_V1 (CoOc,visual,output,eps)
 global Analysis
 K=length(CoOc);
 
-eps1=0.005;                     eps2=0.02;                      eps3=0.0001; 
+eps1=0.005;         eps2=0.02;          eps3=0.0001; 
 if exist('eps','var');          eps1=eps;   end
-epsNorm1=sum(CoOc(:)>eps1); epsNorm2=sum(CoOc(:)>eps2); epsNorm3=sum(CoOc(:)>eps3);
+epsNorm0=sum(CoOc(:)> 0 );      epsNorm1=sum(CoOc(:)>eps1); 
+epsNorm2=sum(CoOc(:)>eps2);     epsNorm3=sum(CoOc(:)>eps3);
 
 % Thresholding
 % Thr=1.5*min(CoOc(CoOc~=0));
@@ -22,11 +23,11 @@ MatrixEntropy=mean(H_row);
 if ~exist('output','var');output='none';end
 switch lower(output)
     case 'eps'
-        varargout={epsNorm1,epsNorm2,epsNorm3};
+        varargout={epsNorm0,epsNorm1,epsNorm2,epsNorm3};
     case 'entropy'
         varargout={MatrixEntropy};
     case 'both'
-        varargout={MatrixEntropy,epsNorm1};        
+        varargout={MatrixEntropy,epsNorm0,epsNorm1,epsNorm2};
 end
 
 % Plot
@@ -42,8 +43,8 @@ sparsity=sum(CoOc>0,2);
 plot(sparsity);title (strcat('using Thr: ','none'));       %num2str(Parameter.spatial.CoOcThr)));
 grid on; ylabel('||CC_{k,l}||_{\epsilon}')
 xlabel({'Labels K',...
-    strcat('\color{blue} \epsilon=',num2str(eps1),'; |Co-Oc|_{\epsilon} : ',num2str(epsNorm1)),...
-    strcat('\color{magenta} \epsilon=',num2str(eps2),'; |Co-Oc|_{\epsilon} : ',num2str(epsNorm2))});
+    strcat('\color{blue} \epsilon=0; |Co-Oc|_{\0} : ',num2str(epsNorm0)),...
+    strcat('\color{magenta} \epsilon=',num2str(eps1),'; |Co-Oc|_{\epsilon} : ',num2str(epsNorm1))});
 
 subplot(2,2,[3,4]);
 bar( 1:K ,CoOc(round(K/2),:) )

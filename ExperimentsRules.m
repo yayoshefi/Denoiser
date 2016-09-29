@@ -85,19 +85,19 @@ cleaningtime=toc-itertime;
 %% ------------------  Context  --------------------------------
 best='';
 for t=1:length(CoOcType_array);
-    Parameter.spatial.CoOc=CoOcType_array{t};
+    Parameter.CoOc.Type=CoOcType_array{t};   setEpsilon ();
     best=[best,CoOcType_array{t},'\n'];
 for rule=rules_array;
     Parameter.spatial.UpdateRule=rule;      Parameter.description=['rule #',num2str(rule)];
                                             best=[best,'rule #',num2str(rule),':'];
 for a=1:length(AssignType_array);
-    Parameter.spatial.AssginType=AssignType_array{a};
+    Parameter.CoOc.AssginType=AssignType_array{a};
     disp(['rule ',num2str(rule),', ',CoOcType_array{t},', ',AssignType_array{a},' assignment'])
     clearvars ContextPsnr ClusterCompre
     
     
 for thr=1:length(ShrinkPer);
-    Parameter.spatial.shrink=ShrinkPer(thr);
+    Parameter.CoOc.ShrinkPer=ShrinkPer(thr);
 for l=1:length(lambda_array)
     Parameter.spatial.lambda=lambda_array(l);
     
@@ -119,10 +119,10 @@ for l=1:length(lambda_array)
     [RI2,MH2]           = RandIndex(AssignVec2 (:),ORACLE(:));
     [samp_RI,samp_MH]   = RandIndex(Analysis.iterations(samp_iter).Lhat (:),ORACLE(:));
 %% structures to save
-    temppsnr=struct('lambda',lambda_array(l),'CoOcPerThr',Parameter.spatial.shrink,...
+    temppsnr=struct('lambda',lambda_array(l),'CoOcPerThr',Parameter.CoOc.ShrinkPer,...
         'MaxIter',Parameter.spatial.MaxIter,'psnr2',result2,'dev2',result2-result,...
-        'samp_iter',samp_iter,'samp_result',samp_iter_result2,'samp_dev',samp_iter_result2-result,'Thr',Parameter.spatial.CoOcThr);
-    tempCmpClst=struct('lambda',lambda_array(l),'CoOcPerThr',Parameter.spatial.shrink,...
+        'samp_iter',samp_iter,'samp_result',samp_iter_result2,'samp_dev',samp_iter_result2-result,'Thr',Parameter.CoOc.Thr);
+    tempCmpClst=struct('lambda',lambda_array(l),'CoOcPerThr',Parameter.CoOc.ShrinkPer,...
         'MH',MH,'MH2',MH2,'samp_iter',samp_iter,'samp_MH',samp_MH);
     
     ContextPsnr(l+(thr-1)*L)=temppsnr;
@@ -135,7 +135,7 @@ for l=1:length(lambda_array)
     fprintf(['#Centers    psnr    Context    noise    ',Parameter.Context,'-Lambda  context(m)  K2   NN   CoOc    CC_{Per}   psnr@%i\n',...
         ' %3u       %2.3f   %2.3f     %3u            %3G         %2.2G   %u      %u    %s     %2.2G         %2.3f\n'],...
         samp_iter,round(size(Centers,3)), result,result2, sigma,Parameter.spatial.lambda,...
-        contexttime/60,length (unique(AssignVec2)),NN,Parameter.spatial.CoOc,Parameter.spatial.shrink,samp_iter_result2)
+        contexttime/60,length (unique(AssignVec2)),NN,Parameter.CoOc.Type,Parameter.CoOc.ShrinkPer,samp_iter_result2)
 
     fprintf (['Basic        @%i            @%i             ORACLE       BM3D\n',...
                 '%2.3f      %1.4f       %1.4f       %2.3f (%1.4f)   %2.3f \n\n'],...
@@ -153,7 +153,7 @@ if samp_value<value2
         ind=index2;
 else    ind=samp_index;
 end
-CoOc_V1 (lcm(Labeling(ind).AssignVec2,Parameter.spatial.AssginType,Parameter.spatial.CoOc),true)
+CoOc_V1 (lcm(Labeling(ind).AssignVec2,Parameter.CoOc.AssginType,Parameter.CoOc.Type),true)
 saveas (gcf,strcat(ImageDir,'CoOc.png'))
 
 ContextPsnr(ind).CoOc=CoOcType_array{t};        ClusterCompre(ind).CoOc=CoOcType_array{t};

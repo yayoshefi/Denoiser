@@ -21,7 +21,7 @@ function setGlobalParameter()
 %
 global Parameter Analysis ORACLE
 %%  ############# Parameter  ##############
-InitClustersNUM=150;            Context='comeans';      UpdateRule=3; 
+InitClustersNUM=150;            Context='comeans';      UpdateRule=3;   Type='MI'; 
 Debug=false;    DebugIter=7;   USEORACLE=false;      ORACLE_level=0;
 SplitType='median'; % 'median' or 'totvar'
 %Context options:[]\'spectral'\'graphcut'\'rl'\'mrf' 'entropy' 'mutualdist' 'comeans'
@@ -34,11 +34,13 @@ Parameter.subsample=0.20;           Parameter.ORACLE=USEORACLE;
 % **************     Context clustring Parameters     ****************
 Parameter.spatial.spatialdist='decomposition';          Parameter.spatial.lambda=0.3;
 %'landmarks' / 'decomposition'  /  'simplenoramlize' /'none'
-Parameter.spatial.sigma=20;   Parameter.spatial.NN=9;   Parameter.spatial.CoOcThr=0;
-Parameter.spatial.UpdateRule=UpdateRule;                Parameter.spatial.CoOc='MI';
-Parameter.spatial.shrink=0;                             Parameter.spatial.AssginType='hard';
+Parameter.spatial.sigma=20;             Parameter.spatial.NN=9;   
+Parameter.spatial.UpdateRule=UpdateRule;                
 
-loc=cd;     Parameter.location=[loc( 1:findstr(loc,'\Doc') ),'Dropbox\Thesis code'];
+Parameter.CoOc=struct('Type',Type,'AssginType','hard','ShrinkType','matrix',...
+    'ShrinkPer',0.3,'Thr',0,'epsilon',setEpsilon(Type),'logarithmic',[]);
+
+loc=cd;     Parameter.location=[loc( 1:strfind(loc,'\Doc') ),'Dropbox\Thesis code'];
 % **************      Method Parameter     *****************
 if ~isfield (Parameter,'wsize2');Parameter.wsize2=81;end  %default value
 Parameter.values=struct('VarianceSplit',5*Parameter.wsize2,'Distance',InitClustersNUM,...
@@ -53,7 +55,7 @@ Parameter.KSVD_params=struct('x',[],'blocksize',8,'dictsize',256,'sigma',[],'max
 
 %%  ############# Analysis  ##############
 if Parameter.ORACLE; if isstruct('ORACLE');ORACLE=Analysis.ORACLE;end;end %save last ORACLE Or update
-Analysis=struct('Show',true,'Save',true,'figures',1,'Fast',true,'Handles',[]...
+Analysis=struct('Show',false,'Save',true,'figures',1,'Fast',true,'Handles',[]...
     ,'K',0,'DebuggerMode',Debug,'DebuggerIter',DebugIter,'ColorMap','jet','LabelsSize',...
     [Parameter.row-sqrt(Parameter.wsize2)+1,Parameter.col-sqrt(Parameter.wsize2)+1]);
 if Parameter.ORACLE;

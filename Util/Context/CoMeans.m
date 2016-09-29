@@ -10,13 +10,13 @@ SpatialRefernce='MessagePass';
 K=size(Centers,3);                      alpha=1.03;
 iter_step=Analysis.DebuggerIter;        wsize=sqrt(Parameter.wsize2);
 lambda=Parameter.spatial.lambda;        rule=Parameter.spatial.UpdateRule;
-AssginType=Parameter.spatial.AssginType;
+AssginType=Parameter.CoOc.AssginType;
 
 %%
 if (Parameter.ORACLE) && (Analysis.ORACLE.level>0)
     Centers=Analysis.ORACLE.Centers;            end
 [Distances,P_i] = patch2center (Data,Centers,wsize);
-[CoOc,P_Ni]=lcm(AssignVec,'hard',Parameter.spatial.CoOc);
+[CoOc_S,P_Ni]=lcm(AssignVec,'hard',Parameter.CoOc.Type);
 
 Lhat=AssignVec';     Old_Lhat=Lhat;
 
@@ -24,8 +24,8 @@ Lhat=AssignVec';     Old_Lhat=Lhat;
 Parameter.spatial.MaxIter=10;
 for iter=1:Parameter.spatial.MaxIter
     if (Parameter.ORACLE) && (Analysis.ORACLE.level>=2)
-        CoOcThr=Analysis.ORACLE.CoOc;
-        [CoOc,P_Ni]=lcm(Lhat,'hard',Parameter.spatial.CoOc);
+        CoOc_T=Analysis.ORACLE.CoOc;
+        [CoOc_S,P_Ni]=lcm(Lhat,'hard',Parameter.CoOc.Type);
     else
         switch AssginType
             case 'soft'
@@ -35,27 +35,27 @@ for iter=1:Parameter.spatial.MaxIter
         end
         switch rule
             case {1,2,6}
-                [CoOc,P_Ni]=lcm(arg1,AssginType,Parameter.spatial.CoOc);
-                CoOcThr=CoOcShrinkage(CoOc);
+                [CoOc_S,P_Ni]=lcm(arg1,AssginType,Parameter.CoOc.Type);
+                CoOc_T=CoOcShrinkage(CoOc_S);
             case 3
-                [CoOc,~]=lcm(arg1,AssginType,Parameter.spatial.CoOc);
-                CoOcThr=CoOcShrinkage(CoOc);
+                [CoOc_S,~]=lcm(arg1,AssginType,Parameter.CoOc.Type);
+                CoOc_T=CoOcShrinkage(CoOc_S);
             case 4
-                 CoOcThr=CoOcShrinkage(CoOc,alpha^iter);
+                 CoOc_T=CoOcShrinkage(CoOc_S,alpha^iter);
         end
 %         if strcmp(AssignType,'soft')
-%         [CoOc,P_Ni]=lcm(reshape(P_i,[],1,K),'soft',Parameter.spatial.CoOc);
+%         [CoOc,P_Ni]=lcm(reshape(P_i,[],1,K),'soft',Parameter.CoOc.Type);
         
     end
 %% De bugging
 if Analysis.DebuggerMode 
-    Analysis.iterations(iter) = Debugstrct(Lhat,Old_Lhat,CoOc,CoOcThr,...
-        Distances,Parameter.spatial.CoOcThr);
+    Analysis.iterations(iter) = Debugstrct(Lhat,Old_Lhat,CoOc_S,CoOc_T,...
+        Distances,Parameter.CoOc.epsilon,Analysis.LabelsSize);
     
     if ~mod(iter,iter_step)
         Debugprint (iter)
         if Analysis.Show
-            Debug(CoOcThr,Lhat,Pr,iter,P_i,P_Ni,L,Analysis.samp);
+            DebugShow(CoOc_T,Lhat,Pr,iter,P_i,P_Ni,L,Analysis.samp);
         end
     end
 end
@@ -63,9 +63,9 @@ end
 %% Local update    
     switch SpatialRefernce
         case 'MessagePass'
-            L=(1-lambda)*P_i + lambda*P_Ni*CoOcThr;
+            L=(1-lambda)*P_i + lambda*P_Ni*CoOc_T;
         case 'ML'
-            L=(1-lambda)*P_i + lambda*P_Ni*CoOcThr';       %notice to invert CC
+            L=(1-lambda)*P_i + lambda*P_Ni*CoOc_T';       %notice to invert CC
     end
     [Pr,Lhat]=max(L,[],2);
 
@@ -86,35 +86,35 @@ end
 
 function CoOcThr=CoOcShrinkage(CoOc,alpha)
 global Parameter
-% Parameter.spatial.shrink=0.0;
-%% zeroize k elements in each row..zs
-% element = round (0.4*length(CoOc));
-% [SrtCoOc,I]=sort(CoOc);
-% ind=sub2ind(size(CoOc),I(:,element)',1:length(CoOc));
+% Parameter.CoOc.ShrinkPer=0.0;
+ShrinkageType  = Parameter.CoOc.ShrinkType;
 
-
-per=Parameter.spatial.shrink;
-if exist('alpha','var'); per=per*alpha;end
-
-[N,edges] = histcounts(CoOc,10.^(-15:0),'Normalization','cdf');
-ind=find (N>per,1);
-Parameter.spatial.CoOcThr=edges(ind+1);
-%{
-if ~isnumeric(Parameter.spatial.CoOcThr)
-    switch Parameter.spatial.CoOc
-        case 'CC'
-            Parameter.spatial.CoOcThr=0.005;
-        case 'JP'                           % matrix is normalized row & col
-            Parameter.spatial.CoOcThr=1e-9;
-        case 'MI'
-            Parameter.spatial.CoOcThr=0;     % no shrinkage for Mutual information
-        case 'PMI'
-             Parameter.spatial.CoOcThr=0;
-    end
+switch ShrinkageType
+    case 'row'
+        %% Zeroize k elements in each row;
+        k = round (Parameter.CoOc.ShrinkPer * length(CoOc));
+        [SrtCoOc]=sort(CoOc);
+        CoOc ( bsxfun(@ge,CoOc,SrtCoOc(:,k)) )=0;
+        
+    case 'matrix'
+        %% Zeroize bottom precentage of elemnts (entire matrix)
+        per=Parameter.CoOc.ShrinkPer;
+        if exist('alpha','var'); per=per*alpha;end
+        
+        [N,edges] = histcounts(CoOc,10.^(-15:0),'Normalization','cdf');
+        ind=find (N>per,1);
+        Parameter.CoOc.Thr=edges(ind+1);
+ 
+        CoOc(CoOc<Parameter.CoOc.Thr)=0;
+    case 'none'
+    case 'epsilon'
+        %% Zeroize by constant factor epsilon
+        Parameter.CoOc.Thr=Parameter.CoOc.epsilon;
+        CoOc(CoOc<Parameter.CoOc.Thr)=0;
 end
-%}
-CoOc(CoOc<Parameter.spatial.CoOcThr)=0;
-switch Parameter.spatial.CoOc   %Normilazation
+
+%%  Normilazation
+switch Parameter.CoOc.Type  
     case 'CC'
         CCNorm=sum(CoOc,2);
         CoOcThr=CoOc./CCNorm(:,ones(1,length(CCNorm)),:); CoOcThr(CoOc==0)=0;
@@ -127,7 +127,7 @@ end
 
 end
 
-function [] = Debug (CoOc,Lhat,Pr,iter,S,P_Ni,L,samp)
+function [] = DebugShow (CoOc,Lhat,Pr,iter,S,P_Ni,L,samp)
 global Parameter Analysis
 
 ShowProb (cat(3,S,P_Ni*CoOc,L),samp);
@@ -153,7 +153,7 @@ H=mean(H_row);
 xlabel(strcat('mean entropy for each row is:  ',num2str (H)));
 subplot(2,2,4);
 modes=sum(CoOc>0,2);
-plot(modes);title (strcat('using Thr: ',num2str(Parameter.spatial.CoOcThr)));
+plot(modes);title (strcat('using Thr: ',num2str(Parameter.CoOc.Thr)));
 axis([1,size(CoOc,1),0,15]);grid on
 xlabel('Labels');ylabel('||_{\epsilon} per Conditonal Pr.')
 
@@ -187,20 +187,24 @@ disp( strrep(['pixels changed:' sprintf(' %i,'  ,cnt(:) )], ',', '    '))
 disp( strrep(['score  changed:' sprintf(' %3.0f,',score) ], ',', '    '))
 end
 
-function [s] = Debugstrct (Lhat,Old_Lhat,CoOc_S,CoOc_T,Distances,Threshold)
+function [s] = Debugstrct (Lhat,Old_Lhat,CoOc_S,CoOc_T,Distances,epsilon,rwcl)
 K=length(CoOc_S); M=length(Lhat);   beta=0.1;%objective score param
 
+img=reshape( uint16(Lhat) ,rwcl);
 change=sum(Lhat~=Old_Lhat(:));
-[CC_Hnew,epsNorm]=CoOc_V1 (CoOc_T,false,'both',Threshold);
+[CC_Hnew,l_0,l_1]=CoOc_V1 (CoOc_S,false,'both',epsilon);
 
 ind=sub2ind([K,M],Lhat',1:M);
 AvgDist=sum(Distances(ind) )/M;
 
-score=AvgDist+beta*epsNorm;
-CoOcConverge = sum( (CoOc_S(:)-CoOc_T(:)).^2 ); %sum( CoOC_T(:) .* ( log(CoOC_T(:)./CoOC_S(:)) ) )
+score=AvgDist+beta*l_1;
+CoOcConverge = sum( (CoOc_S(:)-CoOc_T(:)).^2 );
+d1 = ( log(CoOc_T(:)./CoOc_S(:)) );         d1( isnan(d1) )=0;      d1( isinf(d1) )=0; %contradiction to divergance definition
+d2 = ( CoOc_T(:) .* d1 );                   d2 ( isnan(d2) )=0;
+divergance = sum( d2 );
     
-s=struct('Lhat',Lhat,'CoOc',CoOc_T,'changes',change,'AvgDist',AvgDist,'epsNorm',epsNorm,...
-    'CoOcDist',CoOcConverge,'score',score);
+s=struct('Lhat',img,'CoOc',CoOc_T,'changes',change,'AvgDist',AvgDist,'l_0',l_0,...
+    'l_1',l_1,'CoOcDist',CoOcConverge,'divergance',divergance,'score',score);
 end
 
 function [Distances,E] = patch2center (Data,Centers,wsize)

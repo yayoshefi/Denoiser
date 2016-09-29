@@ -59,16 +59,14 @@ switch lower(AssignMethod)
         CC=diag(1./clstCnt)*C;                  CC(NullClusters,:)=0;
         switch Type
             case 'CC'
-                CoOc = CC;
+                CoOc=CC;
             case 'MI'
-                CoOc = CC*diag(1./clstCnt);       CoOc(:,NullClusters)=0;
+                CoOc=CC*diag(1./clstCnt);       CoOc(:,NullClusters)=0;
                 %MI=  JP/( Pl(l) Pl(k) )
             case 'JP'
-                CoOc = C/M;
+                CoOc=C/M;
             case 'PMI'
                 CoOc=diag(1./Pl) * (C/M).^2 * diag(1./Pl);
-            case 'C*'
-                CoOc = Indicator*Hstar;
         end
         P_Ni=H;
         
