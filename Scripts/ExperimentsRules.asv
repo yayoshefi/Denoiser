@@ -1,4 +1,5 @@
 % %%---------------- Data Collecting-------------------Git Version
+p=pwd;      NewPath=genpath(p(1:end-8));    addpath(NewPath);
 clearvars ContextPsnr ClusterCompre Psnr  Labeling RulesPsnr RulesClusterCompre full_Data
 load Data\ExpImages.mat;     load Data\rectImage.mat
 
@@ -13,30 +14,31 @@ sigma=50;
 wsize=11;       NN=9;
 
 % ---- arrays ----
-lam=3*10.^(-5:-1);
+lam=1*10.^(-5:-2);
 % lambda_array=[0.001,];
-lambda_array=[lam,flip(1-lam)];
-rules_array=[3,4];
-CoOcType_array={'CC','MI'};
+lambda_array=sort([lam, 5*lam]);%,flip(1-lam)];
+rules_array=[3];
+CoOcType_array={'CC'};
 AssignType_array={'hard'};
-ShrinkPer=[0,0.025,0.15];%[0.0005,0.0001];
+ShrinkPer=[0,0.85,0.95];%[0.0005,0.0001];
 L=length(lambda_array);     T=length(CoOcType_array);
 
 Arrays=struct('Lambda',lambda_array,'CoOcPerThr',ShrinkPer);
 
-for i=14:14
+for i=1:14
     Image=Irect(i).Image;
     name=(Irect(i).name);   disp(name)
 Parameter=struct('description',description,'ImageName',name,'row',size(Image,1),'col',...
     size(Image,2),'Method',Method,'sigma',sigma,'wsize2',wsize^2,'normalize',...
     0,'metric',metric);
 %% ------------------------- INITIALIZATION ---------------------------
-NewPath=genpath([pwd,'/Util']);
-addpath(NewPath);
 setGlobalParameter();                   Analysis.Show=true;
 row=Parameter.row;                      col=Parameter.col;
 Parameter.spatial.NN=NN;
-Analysis.DebuggerIter=1000;
+
+Analysis.DebuggerIter=50;    Analysis.Show=false;        Analysis.DebuggerMode=true;
+Analysis.Save=false;    %save 2 latex folders & include static images
+
 ImageDir=strcat(Parameter.location,'\Results\',date,'\',Parameter.ImageName,'_sigma',num2str(Parameter.sigma),'\');
 
 
@@ -95,25 +97,24 @@ for a=1:length(AssignType_array);
     disp(['rule ',num2str(rule),', ',CoOcType_array{t},', ',AssignType_array{a},' assignment'])
     clearvars ContextPsnr ClusterCompre
     
-    
 for thr=1:length(ShrinkPer);
     Parameter.CoOc.ShrinkPer=ShrinkPer(thr);
 for l=1:length(lambda_array)
     Parameter.spatial.lambda=lambda_array(l);
     
     startcontext=toc;
-    [AssignVec2]=SpatialContext (Patches,AssignVec,Centers);
-    contexttime=toc-startcontext;
+    [AssignVec2]        = SpatialContext (Patches,AssignVec,Centers);
+    contexttime         = toc-startcontext;
     
-    samp_iter=find (( [Analysis.iterations.changes]/length(AssignVec2) )<0.002,1) ;
-    if isempty(samp_iter); samp_iter=5;end
+    samp_iter=find (( [Analysis.iterations(2:end).changes]/length(AssignVec2) )<0.002,1) ;
+    if isempty(samp_iter); samp_iter=2;end
     % find the iteration where less the 0.2 % of the image changed labels
     
-    [Context_Output]     =removenoise(double(Image),Noise,AssignVec2);
-    [samp_iter_Output   ]=removenoise(double(Image),Noise,Analysis.iterations(samp_iter).Lhat);
+    [Context_Output]    = removenoise(double(Image),Noise,AssignVec2);
+    [samp_iter_Output ] = removenoise(double(Image),Noise,Analysis.iterations(samp_iter).Lhat(:));
     
-    result2      =psnr(Context_Output,double(Image),255);
-    samp_iter_result2=psnr(samp_iter_Output   ,double(Image),255);
+    result2             = psnr(Context_Output,double(Image),255);
+    samp_iter_result2   = psnr(samp_iter_Output   ,double(Image),255);
     
     [RI,MH  ]           = RandIndex(AssignVec (:),ORACLE(:));
     [RI2,MH2]           = RandIndex(AssignVec2 (:),ORACLE(:));
@@ -121,6 +122,7 @@ for l=1:length(lambda_array)
 %% structures to save
     temppsnr=struct('lambda',lambda_array(l),'CoOcPerThr',Parameter.CoOc.ShrinkPer,...
         'MaxIter',Parameter.spatial.MaxIter,'psnr2',result2,'dev2',result2-result,...
+        'AvgDist',Analysis.iterations(end).AvgDist,'l_1',Analysis.iterations(end).l_1,...
         'samp_iter',samp_iter,'samp_result',samp_iter_result2,'samp_dev',samp_iter_result2-result,'Thr',Parameter.CoOc.Thr);
     tempCmpClst=struct('lambda',lambda_array(l),'CoOcPerThr',Parameter.CoOc.ShrinkPer,...
         'MH',MH,'MH2',MH2,'samp_iter',samp_iter,'samp_MH',samp_MH);
@@ -132,6 +134,7 @@ for l=1:length(lambda_array)
     Labeling(l+(thr-1)*L)=struct('lambda',lambda_array(l),'CoOcPerThr',ShrinkPer(thr),'AssignVec2',AssignVec2);
 
 %% Summary
+    if Analysis.Show
     fprintf(['#Centers    psnr    Context    noise    ',Parameter.Context,'-Lambda  context(m)  K2   NN   CoOc    CC_{Per}   psnr@%i\n',...
         ' %3u       %2.3f   %2.3f     %3u            %3G         %2.2G   %u      %u    %s     %2.2G         %2.3f\n'],...
         samp_iter,round(size(Centers,3)), result,result2, sigma,Parameter.spatial.lambda,...
@@ -143,7 +146,7 @@ for l=1:length(lambda_array)
                 samp_iter_result2-result,result2-result,ORACLEresult,ORACLEresult-result,BM3dresult)
     close all
     PrintDnoise ({Output,Context_Output},{result,result2,ORACLEresult},AssignVec,AssignVec2)
-    
+    end
 end % Lambda
 end % CoOcThr
 [value2,index2]         =max([ContextPsnr.psnr2]);
@@ -153,20 +156,28 @@ if samp_value<value2
         ind=index2;
 else    ind=samp_index;
 end
-CoOc_V1 (lcm(Labeling(ind).AssignVec2,Parameter.CoOc.AssginType,Parameter.CoOc.Type),true)
-saveas (gcf,strcat(ImageDir,'CoOc.png'))
+if Analysis.Show
+    CoOc_V1 (lcm(Labeling(ind).AssignVec2,Parameter.CoOc.AssginType,Parameter.CoOc.Type),true)
+    saveas (gcf,strcat(ImageDir,'CoOc.png'));
+end
 
 ContextPsnr(ind).CoOc=CoOcType_array{t};        ClusterCompre(ind).CoOc=CoOcType_array{t};
 RulesPsnr(rule+(t-1)*T)=ContextPsnr(ind);
 RulesClusterCompre(rule+(t-1)*T)=ClusterCompre(ind);
 
+T=struct2table(ContextPsnr);
+disp(T);
+if Analysis.Save
 Save4Latex('name',[name,'_'],'lambda',ContextPsnr(ind).lambda,'CoOc',ContextPsnr(ind).CoOc,...
-    'Thr',ContextPsnr(ind).Thr,'rule',rule,'sigma',sigma,'Method',Method)
+    'Thr',ContextPsnr(ind).Thr,'rule',rule,'sigma',sigma,'Method',Method,'loc',Parameter.location)
+end
 best=strcat(best,'lam=',num2str(ClusterCompre(ind).lambda,'%1.3E') );
+
 end % AssignType
 end % rules
-SaveStaticImg(ORACLE,ORACLEOutput,ORACLEresult,BM3dresult, BM3dOutput,...
-                name,sigma,{Image,Input},{'Original', 'Noisy'})
+if Analysis.Save;   SaveStaticImg(ORACLE,ORACLEOutput,ORACLEresult,BM3dresult,...
+        BM3dOutput,name,sigma,{Image,Input},{'Original', 'Noisy'})
+end
 end % CoOcType
 
 Ref(1)=struct('wsize',wsize,'sigma',sigma,'Psnr',result,'Method',Method,'AssignVec',[]);
@@ -179,8 +190,9 @@ Ref(2)=struct('wsize',wsize,'sigma',sigma,'Psnr',ORACLEresult,'Method','ORACLE',
             'ContextPsnr',RulesPsnr,'ClusterCompre',RulesClusterCompre,'Arrays',Arrays);
 end % Image
  %% save info
+disp(struct2table(RulesPsnr));
 save (strcat(Parameter.location,'\Results/',date,'/','full_Data.mat'), 'full_Data', '-v7.3')
-frprintf(best)
+fprintf([best,'\n'])
 % for i=1:size(full_Data,2)
 %     disp([full_Data(i).ImageName,'  ','rule #',num2str(rule)])
 %     disp(full_Data(i).ContextPsnr(rule))

@@ -3,7 +3,7 @@ load Data\Database;Images = createImages();load Data\Sport+_DB;
 load Data\ExpImages.mat;     load Data\rectImage.mat
 
 
-Image=Irect(7).Image;
+Image=Irect(12).Image;
 description='test evolving lambda';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
@@ -26,6 +26,8 @@ addpath(NewPath);
 setGlobalParameter();
 
 row=Parameter.row;      col=Parameter.col;
+Analysis.DebuggerMode=true;
+
 Noise=randn(size(Image))*sigma;
 Input=double(Image)+Noise;
 Data=im2col(double(Input),[wsize,wsize],'sliding');

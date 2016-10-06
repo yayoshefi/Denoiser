@@ -10,7 +10,7 @@ figure;imshow(col2im(ORACLE,[wsize,wsize],[row,col]),[]);colormap jet;title (['O
 xlabel(['Psnr ',num2str(ORACLEresult)]);
 saveas(gcf,strcat(src,'\ORACLE.png'))
 
-CoOc_V1 (lcm(ORACLE,Parameter.spatial.AssginType,Parameter.spatial.CoOc),true);
+CoOc_V1 (lcm(ORACLE,Parameter.CoOc.AssginType,Parameter.CoOc.Type),true);
 saveas (gcf,strcat(src,'\ORACLECoOc.png'))
 
 figure; imshow(ORACLEOutput,[]); title ('ORACLE Denoising')
@@ -24,7 +24,7 @@ end
 PrintDnoise (InputsImg,InputsStr)
 
 
-trgt=strcat('C:\Users\Yair\Dropbox\Thesis\Latex\figures\',date,'\',name,'_',Parameter.spatial.CoOc,'_sigma',num2str(sigma));
+trgt=[Parameter.location(1:end-5),sprintf('\\Latex\\figures\\%s\\%s_%s_sigma%i',date,name,Parameter.CoOc.Type,sigma)];
 copyfile(src,trgt)
 
 end

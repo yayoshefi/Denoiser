@@ -1,4 +1,5 @@
 % %%---------------- Data Collecting-------------------Git Version
+p=pwd;      NewPath=genpath(p(1:end-8));    addpath(NewPath);
 clearvars ContextPsnr Psnr CentersCount Labeling new
 load Database.mat;load Sport+_DB.mat; Images = createImages();
 Image=Zebra;      %clearvars -except Image
@@ -26,8 +27,6 @@ Parameter=struct('description',description,'row',size(Image,1),'col',size(Image,
 
 
 %% ------------------------- INITIALIZATION ---------------------------
-NewPath=genpath([pwd,'/Util']);
-addpath(NewPath);
 setGlobalParameter();                   Analysis.Show=true;
 row=Parameter.row;                      col=Parameter.col;
 

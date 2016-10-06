@@ -20,8 +20,13 @@ if (Parameter.ORACLE) && (Analysis.ORACLE.level>0)
 
 Lhat=AssignVec';     Old_Lhat=Lhat;
 
+d_0= sum(Distances( sub2ind(size(Distances),Lhat',1:length(Lhat)) ) )/length(Lhat);
+d_iter=d_0;
+
 %% Loop
-Parameter.spatial.MaxIter=10;
+Parameter.spatial.MaxIter=10;               iter=0;
+% while (iter < Parameter.spatial.MaxIter) && ( abs(d_iter - d_0) < 0.1 ) 
+% iter=iter+1;
 for iter=1:Parameter.spatial.MaxIter
     if (Parameter.ORACLE) && (Analysis.ORACLE.level>=2)
         CoOc_T=Analysis.ORACLE.CoOc;
@@ -48,6 +53,8 @@ for iter=1:Parameter.spatial.MaxIter
         
     end
 %% De bugging
+d_iter= sum(Distances( sub2ind(size(Distances),Lhat',1:length(Lhat)) ) )/length(Lhat);
+
 if Analysis.DebuggerMode 
     Analysis.iterations(iter) = Debugstrct(Lhat,Old_Lhat,CoOc_S,CoOc_T,...
         Distances,Parameter.CoOc.epsilon,Analysis.LabelsSize);
@@ -80,7 +87,10 @@ end
         P_i=L;  %TEST 6/22/16 aggregate prob.
     end
 end
-
+if Analysis.DebuggerMode ;
+    Analysis.iterations(end+1) = Debugstrct(Lhat,Old_Lhat,lcm(Lhat,AssginType,Parameter.CoOc.Type),CoOc_T,...
+        Distances,Parameter.CoOc.epsilon,Analysis.LabelsSize);
+end
 AssignVec2=Lhat;
 end
 
@@ -100,8 +110,12 @@ switch ShrinkageType
         %% Zeroize bottom precentage of elemnts (entire matrix)
         per=Parameter.CoOc.ShrinkPer;
         if exist('alpha','var'); per=per*alpha;end
-        
-        [N,edges] = histcounts(CoOc,10.^(-15:0),'Normalization','cdf');
+        switch Parameter.CoOc.Type  
+            case 'CC';                bins=10.^(-5:(1/3):0);
+            case 'MI';                bins=10.^(-15:0);
+            otherwise;                bins=10.^(-15:0);
+        end
+        [N,edges] = histcounts(CoOc,bins,'Normalization','cdf');
         ind=find (N>per,1);
         Parameter.CoOc.Thr=edges(ind+1);
  
@@ -179,7 +193,7 @@ K=length( Analysis.iterations(iter).CoOc );
 
 cnt  = [Analysis.iterations(iter+1-iter_step:iter).changes];
 score= [Analysis.iterations(iter+1-iter_step:iter).score];
-l_0=Analysis.iterations(iter).epsNorm;
+l_0=Analysis.iterations(iter).l_0;
 sparsity= (l_0/(K^2));
 
 fprintf('\niter %i: l_0 norm= %3.0f (%0.3f)\n',iter,l_0,sparsity);
