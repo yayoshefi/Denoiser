@@ -32,7 +32,7 @@ AX(1).YLim;                                 AX(2).YLim=[22,29];
 AX(1).YTick;                                AX(2).YTick=22:2:30;
 c1=AX(1).ColorOrder(1,:);                   c2=AX(1).ColorOrder(2,:);
 H1.FaceColor=c1;                            H2.FaceColor=c2;
-ylabel(AX(1),'|| MI ||_{0}','Color',c1);    ylabel(AX(2),'Psnr','Color',c2);
+ylabel(AX(1),['|| ',full_Data.Parameters.CoOc.Type,' ||_{\epsilon}'],'Color',c1);    ylabel(AX(2),'Psnr','Color',c2);
 legend({'Sparsity','Psnr'})
 
 AX(1).XTickLabel=x;

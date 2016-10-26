@@ -12,7 +12,7 @@ global Parameter Analysis
 Method='kmeans';        metric ='euclidean';
 
 sigma=50;       wsize=11;       NN=9;
-lambda= 0.0003;    rule=3;         sigmaArr=[25,50,75,100];        
+lambda= 1e-7;    rule=3;         sigmaArr=[100];        
 
 for sigma=sigmaArr
 clearvars full_Data PsnrStrct CoOcStrct
@@ -26,7 +26,7 @@ CoOcStrct(L)=struct('Name',[],'Entropy',[],'Sparsity', [],...
 for i=1:L
     Image=I(i).Image;
     name=(I(i).name);  
-    if ( mod(i,10)==0 ); fprintf('  %i / %i images in %i sec\n' , i,L, round(toc(MainT)));    end;
+    if ( mod(i,15)==0 ); fprintf('  %i / %i images in %i sec\t' , i,L, round(toc(MainT)));    end;
 Parameter=struct('description',description,'ImageName',name,'row',size(Image,1),'col',...
     size(Image,2),'Method',Method,'sigma',sigma,'wsize2',wsize^2,'normalize',...
     0,'metric',metric);
@@ -113,7 +113,8 @@ PsnrStrct(i+1)=struct('Name','mean values','Kmeans',Avg_res,'CoC',Avg_Context_re
 CoOcStrct(i+1)=struct('Name','mean','Entropy',[],'Sparsity', Avg_sps,'ORACLE_Entropy',[],...
     'ORACLE_Sparsity', Avg_ORACLE_Sps,'Context_Entropy',[],'Context_Sparsity',Avg_Context_Sps);
 full_Data=struct('Psnr',PsnrStrct,'Sparsity',CoOcStrct,'Parameters',Parameter);
-disp (PsnrStrct(i+1))
+fprintf('\nEnded: sigma:%i ; lambda=%1.2G \n; ',sigma,lambda)
+% disp (PsnrStrct(i+1))
  %% save info
 mkdir(strcat(Parameter.location,'\Results/',date));
 filName=strcat('full_Data_sigma',num2str(sigma),'_clusters',num2str(Parameter.values.kmeans),'.mat');

@@ -13,7 +13,7 @@ Method='kmeans';        metric ='euclidean';
 
 sigma=50;      wsize=11;       CoOcType='CC';
 rule=3;        beta=0.005;
-lambda_array= 3E-4;%[10.^[-6:-2] 5*10.^[-5:-4] ];   %[0:0.05:0.2 0.4:0.2:0.8];
+lambda_array= 3e-4;%sort([10.^[-6:-2] 5*10.^[-5:-4] ]);   %[0:0.05:0.2 0.4:0.2:0.8];
 
 
 for i=12
@@ -27,7 +27,7 @@ size(Image,2),'Method',Method,'sigma',sigma,'wsize2',wsize^2,'normalize',...
 setGlobalParameter();
 
 Parameter.CoOc.Type=CoOcType;            Parameter.spatial.UpdateRule=rule;
-Analysis.DebuggerIter=50;    Analysis.Show=false;        Analysis.DebuggerMode=true;
+Analysis.DebuggerMode=true;     Analysis.DebuggerIter=10;    Analysis.Show=false;
 setEpsilon ();
 
 Noise=randn(size(Image))*sigma;
@@ -63,7 +63,7 @@ AvgORACLEDist=sum(OEACLEDistances(ind) )/M;
 [SimpleOutput]=removenoise(double(Image),Noise,AssignVec);
 Simpleresult=psnr(SimpleOutput,double(Image),255);
 PsnrStrct(1)= struct('Params',[name, ': K-means'],'Psnr',Simpleresult,'improve',ORACLEresult-Simpleresult,...
-    'Score',0,'iterations',[],'dist',[],'l_1',[],'Labels',[],'K',[]);
+    'Score',0,'iterations',[],'dist',nan,'l_1',nan,'Labels',[],'K',nan);
 
 %% Learned CoOc
  Analysis.ORACLE=struct('Centers',ORACLECenters,'CoOc',ORACLECoOc,'AssignVec',ORACLEVec,'level',2);
@@ -84,7 +84,7 @@ PsnrStrct(2)= struct('Params',['K-means','; level=1 '],'Psnr',result,'improve',O
     'Score',AvgDist + beta*l_1,'iterations',[],'dist',AvgDist,'l_1',l_1,...
     'Labels',reshape( uint16(AssignVec) ,Analysis.LabelsSize),'K',length(unique(AssignVec)));
 
-for NN=3
+for NN=3:4:31
     Parameter.spatial.NN=NN;
 for l=1:length(lambda_array)
     Parameter.spatial.lambda=lambda_array(l);
@@ -104,7 +104,7 @@ AvgContext_Dist=sum(OEACLEDistances(ind) )/M;
 score = AvgContext_Dist + beta * Context_l_1;
 
 if isfield(Analysis,'iterations')
-        iter=Analysis.iterations;
+        iter=Analysis.iterations;       Analysis=rmfield(Analysis,'iterations');
 else    iter=[];    end
 PsnrStrct(end+1)=struct('Params',['lambda=',num2str(lambda_array(l),'%1.3G'),'; NN=',num2str(NN)],...
     'Psnr',Context_result,'improve',Context_result-result,'Score',score,'iterations',iter,...

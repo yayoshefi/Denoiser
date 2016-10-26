@@ -15,17 +15,17 @@ wsize=11;       NN=9;
 
 % ---- arrays ----
 lam=1*10.^(-5:-2);
-% lambda_array=[0.001,];
+% lambda_array=1e-6;
 lambda_array=sort([lam, 5*lam]);%,flip(1-lam)];
 rules_array=[3];
 CoOcType_array={'CC'};
 AssignType_array={'hard'};
-ShrinkPer=[0,0.85,0.95];%[0.0005,0.0001];
+ShrinkPer=[0,0.4,0.85,0.95];%[0.0005,0.0001];
 L=length(lambda_array);     T=length(CoOcType_array);
 
 Arrays=struct('Lambda',lambda_array,'CoOcPerThr',ShrinkPer);
 
-for i=1:14
+for i=12:12
     Image=Irect(i).Image;
     name=(Irect(i).name);   disp(name)
 Parameter=struct('description',description,'ImageName',name,'row',size(Image,1),'col',...
@@ -165,8 +165,8 @@ ContextPsnr(ind).CoOc=CoOcType_array{t};        ClusterCompre(ind).CoOc=CoOcType
 RulesPsnr(rule+(t-1)*T)=ContextPsnr(ind);
 RulesClusterCompre(rule+(t-1)*T)=ClusterCompre(ind);
 
-T=struct2table(ContextPsnr);
-disp(T);
+Tab=struct2table(ContextPsnr);
+disp(Tab);
 if Analysis.Save
 Save4Latex('name',[name,'_'],'lambda',ContextPsnr(ind).lambda,'CoOc',ContextPsnr(ind).CoOc,...
     'Thr',ContextPsnr(ind).Thr,'rule',rule,'sigma',sigma,'Method',Method,'loc',Parameter.location)
@@ -191,6 +191,7 @@ Ref(2)=struct('wsize',wsize,'sigma',sigma,'Psnr',ORACLEresult,'Method','ORACLE',
 end % Image
  %% save info
 disp(struct2table(RulesPsnr));
+mkdir(strcat(Parameter.location,'\Results/',date));
 save (strcat(Parameter.location,'\Results/',date,'/','full_Data.mat'), 'full_Data', '-v7.3')
 fprintf([best,'\n'])
 % for i=1:size(full_Data,2)

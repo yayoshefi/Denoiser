@@ -111,10 +111,8 @@ switch ShrinkageType
     case 'row'
         %% Zeroize k elements in each row;
         k = round (Parameter.CoOc.ShrinkPer * length(CoOc));
-        if k>0
-            [SrtCoOc]=sort(CoOc,2);
-            CoOc ( bsxfun(@ge,CoOc,SrtCoOc(:,k)) )=0;
-        end
+        [SrtCoOc]=sort(CoOc,2);
+        CoOc ( bsxfun(@ge,CoOc,SrtCoOc(:,k)) )=0;
         
     case 'matrix'
         %% Zeroize bottom precentage of elemnts (entire matrix)

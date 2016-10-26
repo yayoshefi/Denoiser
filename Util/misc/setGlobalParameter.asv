@@ -37,7 +37,7 @@ Parameter.spatial.spatialdist='decomposition';          Parameter.spatial.lambda
 Parameter.spatial.sigma=20;             Parameter.spatial.NN=9;   
 Parameter.spatial.UpdateRule=UpdateRule;                
 
-Parameter.CoOc=struct('Type',Type,'AssginType','hard','ShrinkType','row',...
+Parameter.CoOc=struct('Type',Type,'AssginType','hard','ShrinkType','matrix',...
     'ShrinkPer',0.0,'Thr',0,'epsilon',setEpsilon(Type),'logarithmic',[]);
 
 loc=cd;     Parameter.location=strrep([loc( 1:strfind(loc,'\Doc') ),'Dropbox\Thesis code'],'\','/');
@@ -66,9 +66,8 @@ warning('off','MATLAB:MKDIR:DirectoryExists');
 warning('off','stats:kmeans:FailedToConverge');
 end
 %% De-Bugging
-%   DebuggerMode - sets to save iterations structure
-%   DebuggerIter - when smaller than MaxIter: prints progress on command window
-%   Show         - sets to print figures of P_i and P_Ni
+%   DebuggerMode - st
+%
 
 
 %%

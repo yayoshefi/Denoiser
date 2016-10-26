@@ -5,13 +5,13 @@ if nargin==0;   I=Analysis.iterations;
 else            I=iterations;
 end
 
-M=length(I);        step=2;%Analysis.DebuggerIter;
-rows=3;
+M=length(I);        step=1;%Analysis.DebuggerIter;
+rows=4;
 
-figure;     subplot (rows, ceil((M/step)/rows), 1)
+figure;     subplot (rows, ceil((M+1/step)/rows), 1)
 imshow(I(1).Lhat,[]);      title('no context')
 for t= step:step:length (I)
-    subplot(rows, ceil((M/step)/rows), floor(t/step)+1)
+    subplot(rows, ceil((M+1/step)/rows), floor(t/step)+1)
     imshow(I(t).Lhat,[]);  title( sprintf('iteration %i',t) )
     
     cnt  = [I(t+1-step:t).changes];
