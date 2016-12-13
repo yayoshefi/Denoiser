@@ -13,7 +13,7 @@ Method='kmeans';        metric ='euclidean';
 
 sigma=50;      wsize=11;       CoOcType='CC';
 rule=3;        beta=0.005;
-lambda_array= 3e-4;%sort([10.^[-6:-2] 5*10.^[-5:-4] ]);   %[0:0.05:0.2 0.4:0.2:0.8];
+lambda_array= sort([10.^[-6:-2] 5*10.^[-5:-4] ]);   %[0:0.05:0.2 0.4:0.2:0.8];
 
 
 for i=12

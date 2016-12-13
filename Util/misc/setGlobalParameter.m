@@ -21,7 +21,7 @@ function setGlobalParameter()
 %
 global Parameter Analysis ORACLE
 %%  ############# Parameter  ##############
-InitClustersNUM=150;            Context='comeans';      UpdateRule=3;   Type='CC'; 
+InitClustersNUM=150;            Context=[];      UpdateRule=3;   Type='CC'; 
 Debug=false;    DebugIter=5;   USEORACLE=false;      ORACLE_level=0;
 SplitType='median'; % 'median' or 'totvar'
 %Context options:[]\'spectral'\'graphcut'\'rl'\'mrf' 'entropy' 'mutualdist' 'comeans'
@@ -37,7 +37,7 @@ Parameter.spatial.spatialdist='decomposition';          Parameter.spatial.lambda
 Parameter.spatial.sigma=20;             Parameter.spatial.NN=9;   
 Parameter.spatial.UpdateRule=UpdateRule;                
 
-Parameter.CoOc=struct('Type',Type,'AssginType','hard','ShrinkType','row',...
+Parameter.CoOc=struct('Type',Type,'AssginType','hard','ShrinkType','matrix',...
     'ShrinkPer',0.0,'Thr',0,'epsilon',setEpsilon(Type),'logarithmic',[]);
 
 loc=cd;     Parameter.location=strrep([loc( 1:strfind(loc,'\Doc') ),'Dropbox\Thesis code'],'\','/');
@@ -46,6 +46,8 @@ if ~isfield (Parameter,'wsize2');Parameter.wsize2=81;end  %default value
 Parameter.values=struct('VarianceSplit',5*Parameter.wsize2,'Distance',InitClustersNUM,...
     'kmeans',InitClustersNUM,'Distance_Normalize',InitClustersNUM,'gabor',InitClustersNUM);
 Parameter.values.VarianceSplit=300;
+% **************   De-Nosier Parameters     ****************
+Parameter.DeNoise=struct('Robust',false,'soft',false);                       %Check
 % **************   Spectral (KSVD) Parameters     ****************
 dictsize=300;           sparsity=3;         HardThr=1;
 Parameter.Spectral=struct('clustrsNUM',InitClustersNUM,'dictsize',dictsize,...

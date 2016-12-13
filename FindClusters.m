@@ -48,6 +48,12 @@ switch Parameter.Method
         Centers=reshape(C',[size(Data,1),1,Parameter.values.gabor]);
         [AssignVec,~]=Dist2SubSpace(Data,Centers,'dim',zeros(1,1,Parameter.values.kmeans));
         
+    case 'suppression'
+        [idx,C]=kmeans(SampData',Parameter.values.kmeans,'onlinephase','off');
+        Centers=reshape(C',[size(Data,1),1,Parameter.values.kmeans]);
+        [SuppCenters]=NonMaxSus(Data,Centers);
+        [AssignVec,~]=Dist2SubSpace(Data,SuppCenters,'dim',zeros(1,1,Parameter.values.kmeans));
+        Parameter.Method='kmeans';
 end
 AssignVec=uint16(AssignVec);
 end 

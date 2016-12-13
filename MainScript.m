@@ -3,7 +3,7 @@ load Data\Database;Images = createImages();load Data\Sport+_DB;
 load Data\ExpImages.mat;     load Data\rectImage.mat
 
 
-Image=Irect(13).Image;
+Image=Irect(14).Image;
 description='test evolving lambda';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
@@ -98,7 +98,7 @@ visualtime=toc-contexttime-cleaningtime-itertime;
 %% ----------------------  Summary  ------------------
 fprintf(['#Centers    psnr    noise    ',Method,'    normalize',' cluster(s)','  Clean(s)','  visual(s)\n',...
     ' %3u       %2.3f   %3u        %u          %u      %3G     %3G     %3G\n'],...
-    size(Centers,3), result, sigma,Parameter.values.(Method),Parameter.normalize ,itertime, cleaningtime,visualtime);
+    size(Centers,3), result, sigma,Parameter.values.(Parameter.Method),Parameter.normalize ,itertime, cleaningtime,visualtime);
 
 if ischar(Parameter.Context)
     if ischar(Parameter.CoOc.Thr);Parameter.CoOc.Thr=nan;end
