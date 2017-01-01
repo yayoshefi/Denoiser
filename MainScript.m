@@ -3,13 +3,13 @@ load Data\Database;Images = createImages();load Data\Sport+_DB;
 load Data\ExpImages.mat;     load Data\rectImage.mat
 
 
-Image=Irect(14).Image;
+Image=barbara;%Irect(14).Image;
 description='test evolving lambda';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 
 Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
-sigma=50;
+sigma=25;
 wsize=11;
 normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain (-5)- Oracle
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'
@@ -26,7 +26,7 @@ addpath(NewPath);
 setGlobalParameter();
 
 row=Parameter.row;      col=Parameter.col;
-Analysis.DebuggerMode=true;
+Analysis.DebuggerMode=false;
 
 Noise=randn(size(Image))*sigma;
 Input=double(Image)+Noise;

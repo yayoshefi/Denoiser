@@ -2,16 +2,14 @@ function []=DrawPixels (h, pxl,space)
 %% DrawPixels (h, pxl)
 % Input:
 %   h-      handle to image
-%   pxl-    index pixels in a cropped image (after imf2col) 
-%           OR      [x,y] values
-%   in he Original size Image
+%   pxl-    index pixels in a cropped image (after imfilter)
 %   space-  boolean field. true-visual space; false- label space
 global Parameter
 clrs={'r','g','b','c','m'};
 M=(sqrt(Parameter.wsize2)-1)/2;
 
 if length(size(pxl))>1 % pixel given in [X,Y] pairs from the Orignal Image
-    i=pxl(:,1)-M;   j=pxl(:2)-M;
+    i=pxl(:,1)-
 end
 
 [i,j]=ind2sub([Parameter.row-2*M,Parameter.col-2*M],pxl);

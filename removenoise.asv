@@ -11,11 +11,9 @@ global Parameter Analysis
 wsize=Parameter.wsize2^0.5;
 row=Parameter.row;      col=Parameter.col;
 %% BeBug
-if isfield(Analysis,'samp') &&  Analysis.DebuggerMode
 h(1).fig=figure('Name',['pixel ',num2str(Analysis.samp(1))]);   h(1).i=1;
 h(2).fig=figure('Name',['pixel ',num2str(Analysis.samp(2))]);   h(2).i=1;
 h(3).fig=figure('Name',['pixel ',num2str(Analysis.samp(3))]);   h(3).i=1;
-end
 %%
 if ismatrix(Noise)
     
@@ -66,7 +64,9 @@ for k=1:K
         
         New_size= round(clstsize*0.92);
         if New_size==0; New_size=1; end
-
+%         if New_size<Parameter.wsize2        %DeBugging
+%             fprintf('\nlabel %i the New cluster holds %i data points',k,New_size)
+%         end
         A = cluster( :,I(1:New_size) );         % A - is the new (closer) cluster
         B = cluster( :,I(New_size+1:end) );     % B - is the outliers from A
         
@@ -88,7 +88,9 @@ for k=1:K
         Ind = ( (E(k,:) > 0) & ~(AssignVec==k) );
         B   = X(:,Ind );
         B_0 = B-center(:,ones(1,size(B,2)));
-
+%         i want to put this box inside the regular part, i need to update:
+%         setting the choosen data points to all those where ( E[k,:] > 0 )
+%         and using an aggregate value to EX.    EX(:,ind)= EX(:,ind)+.... E[k*ones(length(center),1),:]* Recosntruct
     end
 %% ##############################################            
     cluster_0=X(:,AssignVec==k)-center(:,ones(1,clstsize));
@@ -98,8 +100,8 @@ for k=1:K
     SV_hat = shrinkage(SV, 1.1, Parameter.sigma, wsize, 'NULL_LAST_COEFF'); %nulling last coeffs
     UB_hat = shrinkage(UB, 1.1, Parameter.sigma, wsize, 'NULL_LAST_COEFF');
     
-    EX(:,(AssignVec==k))= EX(:,(AssignVec==k)) + ones(wsize^2,1)*E(k,AssignVec==k) .*(center(:,ones(1,clstsize))+U*SV_hat);
-                                                
+    EX(:,(AssignVec==k))= EX(:,(AssignVec==k)) + center(:,ones(1,clstsize))+U*SV_hat;
+    
     if Parameter.DeNoise.soft
         W(AssignVec==k) = W(AssignVec==k) + E(k,AssignVec==k);
         EX(:,Ind)= EX(:,Ind) + ones(wsize^2,1)*E(k,Ind) .* ( center(:,ones(1,sum(Ind)))+ (U*UB_hat) ); %E(double(k)*ones(wsize^2,1),Ind)
@@ -131,14 +133,9 @@ if  Analysis.DebuggerMode  %Debug
         subplot(3,5,2);imshow(reshape(X(:,Analysis.samp(f)),[11,11]),[] );title('Noisy Input');
         subplot(3,5,5);imshow(reshape(EX(:,Analysis.samp(f)),[11,11]),[] );title('Soft Reconsturct');
         subplot(3,5,6);ylabel ('Centers');subplot(3,5,11);ylabel ('Reconstruct')
-        if ismatrix(Noise)
-            M=floor(wsize/2);
-            [j,i]=ind2sub([row-2*M,col-2*M],Analysis.samp(f));
-            subplot(3,5,1);imshow(Image(i:i+2*M,j:j+2*M),[] );title('Clean');
-        end
+        ifismatrix(Noise)
     end
 end
-%% End Debug
 if ismatrix(Noise) && Analysis.Show
     P=im2col(Image,[wsize,wsize],'sliding');
     Analysis.PatchRmse=sqrt( mean((P-EX).^2) );

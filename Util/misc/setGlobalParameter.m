@@ -59,7 +59,7 @@ Parameter.KSVD_params=struct('x',[],'blocksize',8,'dictsize',256,'sigma',[],'max
 if Parameter.ORACLE; if isstruct('ORACLE');ORACLE=Analysis.ORACLE;end;end %save last ORACLE Or update
 Analysis=struct('Show',false,'Save',false,'figures',1,'Fast',true,'Handles',[]...
     ,'K',0,'DebuggerMode',Debug,'DebuggerIter',DebugIter,'ColorMap','jet','LabelsSize',...
-    [Parameter.row-sqrt(Parameter.wsize2)+1,Parameter.col-sqrt(Parameter.wsize2)+1]);
+    [Parameter.row-sqrt(Parameter.wsize2)+1,Parameter.col-sqrt(Parameter.wsize2)+1],'samp',[]);
 if Parameter.ORACLE;
     fprintf ('You choose to use ORACLE with level %u!\n',ORACLE_level)
     Analysis.ORACLE=ORACLE; Analysis.ORACLE.level=ORACLE_level;end
