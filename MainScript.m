@@ -3,13 +3,13 @@ load Data\Database;Images = createImages();load Data\Sport+_DB;
 load Data\ExpImages.mat;     load Data\rectImage.mat
 
 
-Image=barbara;%Irect(14).Image;
+Image=x52205917_ethnic_floral_seamless_pattern_abstract_ornamental_pa;%Irect(14).Image;
 description='test evolving lambda';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
 
 Method='kmeans';        %Distance  ,  VarianceSplit , kmeans , 'Spectral'
-sigma=25;
+sigma=50;
 wsize=11;
 normalize=0;            %normalize 0-do nothing ; 1-only bias; 2- bias and gain (-5)- Oracle
 metric ='euclidean';    %distance function can be 'euclidean','mahalanobis'

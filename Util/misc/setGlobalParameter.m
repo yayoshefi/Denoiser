@@ -21,7 +21,7 @@ function setGlobalParameter()
 %
 global Parameter Analysis ORACLE
 %%  ############# Parameter  ##############
-InitClustersNUM=150;            Context=[];      UpdateRule=3;   Type='CC'; 
+InitClustersNUM=300;            Context='comeans';      UpdateRule=3;   Type='CC'; 
 Debug=false;    DebugIter=5;   USEORACLE=false;      ORACLE_level=0;
 SplitType='median'; % 'median' or 'totvar'
 %Context options:[]\'spectral'\'graphcut'\'rl'\'mrf' 'entropy' 'mutualdist' 'comeans'
@@ -32,7 +32,7 @@ Parameter.SplitType=SplitType;      Parameter.Context=Context;
 Parameter.subsample=0.20;           Parameter.ORACLE=USEORACLE;
 
 % **************     Context clustring Parameters     ****************
-Parameter.spatial.spatialdist='decomposition';          Parameter.spatial.lambda=0.000001;
+Parameter.spatial.spatialdist='decomposition';          Parameter.spatial.lambda=0.0000001;
 %'landmarks' / 'decomposition'  /  'simplenoramlize' /'none'
 Parameter.spatial.sigma=20;             Parameter.spatial.NN=9;   
 Parameter.spatial.UpdateRule=UpdateRule;                
@@ -57,7 +57,7 @@ Parameter.KSVD_params=struct('x',[],'blocksize',8,'dictsize',256,'sigma',[],'max
 
 %%  ############# Analysis  ##############
 if Parameter.ORACLE; if isstruct('ORACLE');ORACLE=Analysis.ORACLE;end;end %save last ORACLE Or update
-Analysis=struct('Show',false,'Save',false,'figures',1,'Fast',true,'Handles',[]...
+Analysis=struct('Show',false,'Save',true,'figures',1,'Fast',true,'Handles',[]...
     ,'K',0,'DebuggerMode',Debug,'DebuggerIter',DebugIter,'ColorMap','jet','LabelsSize',...
     [Parameter.row-sqrt(Parameter.wsize2)+1,Parameter.col-sqrt(Parameter.wsize2)+1],'samp',[]);
 if Parameter.ORACLE;

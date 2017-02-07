@@ -7,7 +7,7 @@ function Output=removenoise(Image,Noise,AssignVec)
 
 
 global Parameter Analysis
-
+AssignVec=AssignVec(:)';
 wsize=Parameter.wsize2^0.5;
 row=Parameter.row;      col=Parameter.col;
 %% BeBug
@@ -124,7 +124,7 @@ for k=1:K
     
     end
 end
-fprintf ('the total sum of ewights is %f out of %i pixels\n',sum(W),length(X))        %DEBUG
+% fprintf ('the total sum of ewights is %f out of %i pixels\n',sum(W),length(X))        %DEBUG
 if  Analysis.DebuggerMode  %Debug
     for f=1:3
         figure(h(f).fig);

@@ -7,12 +7,17 @@ load Data\BSDS300_test.mat;     load Data\BSDS68.mat;
 description='Avg denoising values lambda 1E-7';
 %% --------------------------- PARAMETERS ------------------------------
 I=BSDS68;         clearvars -except I description
+List_samp=dir('../../Misc/Intersting sample images');
+List_samp=List_samp(3:end);
+for s=1:length(List_samp)
+    I(s)=struct('name',List_samp(s).name(1:min(length(List_samp(s).name),63)),'Image',rgb2gray(imread([List_samp(s).folder,'\',List_samp(s).name])) );
+end
 
 global Parameter Analysis
 Method='kmeans';        metric ='euclidean';
 
 sigma=50;       wsize=11;       NN=9;
-lambda= 1e-7;    rule=3;         sigmaArr=10:10:100;        
+lambda= 1e-7;    rule=3;         sigmaArr=50;        
 
 for sigma=sigmaArr
 clearvars full_Data PsnrStrct CoOcStrct
@@ -104,6 +109,11 @@ CoOc_V1 (lcm(AssignVec2,Parameter.CoOc.AssginType,Parameter.CoOc.Type),false,'bo
     Avg_res=Avg_res+result;                 Avg_Context_res=Avg_Context_res+Context_result;
     Avg_BM3D_res=Avg_BM3D_res+BM3dresult;   Avg_ORACLE_res=Avg_ORACLE_res+ORACLEresult;         Avg_KSVD_res=Avg_KSVD_res+KSVDresult;
     Avg_Context_Sps=Avg_Context_Sps+Context_l_1;   Avg_ORACLE_Sps=Avg_ORACLE_Sps+ORACLE_l_1; Avg_sps=Avg_sps+l_1;
+ %% Saving Images
+        PrintDnoise ({Output,Context_Output},{result,Context_result},AssignVec,AssignVec2)
+        PrintDnoise ({lcm(AssignVec,Parameter.CoOc.AssginType,Parameter.CoOc.Type),lcm(AssignVec2,Parameter.CoOc.AssginType,Parameter.CoOc.Type)},...
+            {result,Context_result})
+
            
 end % Image
 Avg_res=Avg_res/i;  Avg_Context_res=Avg_Context_res/i;  Avg_BM3D_res=Avg_BM3D_res/i;  Avg_ORACLE_res=Avg_ORACLE_res/i;      Avg_KSVD_res=Avg_KSVD_res/i;

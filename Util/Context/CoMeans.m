@@ -29,10 +29,10 @@ Parameter.spatial.MaxIter=10;               iter=0;
 % iter=iter+1;
 for iter=1:Parameter.spatial.MaxIter
 %% evolving lambda
-%     if ( ~mod(iter-1,3) );lambda = lambda*10;
-%     [~,P_Ni]=lcm(Lhat,'hard',Parameter.CoOc.Type);
-% % %     Parameter.CoOc.ShrinkPer=Parameter.CoOc.ShrinkPer+0.075;
-%     end
+    if ( ~mod(iter-1,3) );lambda = lambda*10;
+    [~,P_Ni]=lcm(Lhat,'hard',Parameter.CoOc.Type);
+% %     Parameter.CoOc.ShrinkPer=Parameter.CoOc.ShrinkPer+0.075;
+    end
 %% evolving lambda
 
     if (Parameter.ORACLE) && (Analysis.ORACLE.level>=2)
