@@ -6,7 +6,6 @@ load Data\BSDS300_test.mat;     load Data\BSDS68.mat;
 
 description='Avg denoising values lambda 1E-7';
 %% --------------------------- PARAMETERS ------------------------------
-I=BSDS68;         clearvars -except I description
 List_samp=dir('../../Misc/Intersting sample images');
 List_samp=List_samp(3:end);
 for s=1:length(List_samp)
@@ -61,10 +60,13 @@ ORACLEresult=psnr(ORACLEOutput,double(Image),255);
     CoOc_V1 (lcm(ORACLE,Parameter.CoOc.AssginType,Parameter.CoOc.Type),false,'both',Parameter.CoOc.epsilon);
 % BM3D
 [BM3dresult, BM3dOutput] = BM3D(im2double(Image), im2double(Image)+(Noise/255), sigma,'np',0);
+
+%% Not Worlkin Throgh
 %KSVD
-Parameter.KSVD_params.x=Input;      Parameter.KSVD_params.sigma=sigma;
-[KSVDOutput, ~] = ksvddenoise(Parameter.KSVD_params,0);
-KSVDresult=psnr(KSVDOutput,double(Image),255);
+% Parameter.KSVD_params.x=Input;      Parameter.KSVD_params.sigma=sigma;
+% [KSVDOutput, ~] = ksvddenoise(Parameter.KSVD_params,0);
+% KSVDresult = psnr(KSVDOutput,double(Image),255);
+KSVDresult = 0;
 
 
 if Parameter.normalize==2; Patches=Xn;
@@ -110,9 +112,10 @@ CoOc_V1 (lcm(AssignVec2,Parameter.CoOc.AssginType,Parameter.CoOc.Type),false,'bo
     Avg_BM3D_res=Avg_BM3D_res+BM3dresult;   Avg_ORACLE_res=Avg_ORACLE_res+ORACLEresult;         Avg_KSVD_res=Avg_KSVD_res+KSVDresult;
     Avg_Context_Sps=Avg_Context_Sps+Context_l_1;   Avg_ORACLE_Sps=Avg_ORACLE_Sps+ORACLE_l_1; Avg_sps=Avg_sps+l_1;
  %% Saving Images
-        PrintDnoise ({Output,Context_Output},{result,Context_result},AssignVec,AssignVec2)
-        PrintDnoise ({lcm(AssignVec,Parameter.CoOc.AssginType,Parameter.CoOc.Type),lcm(AssignVec2,Parameter.CoOc.AssginType,Parameter.CoOc.Type)},...
-            {result,Context_result})
+    close all
+    PrintDnoise ({ORACLEOutput,ORACLEOutput},{ORACLEresult,ORACLEresult},ORACLE,ORACLE,lcm(ORACLE,Parameter.CoOc.AssginType,Parameter.CoOc.Type),[])
+    PrintDnoise ({Output,Context_Output},{result,Context_result},AssignVec,AssignVec2,...
+        lcm(AssignVec,Parameter.CoOc.AssginType,Parameter.CoOc.Type),lcm(AssignVec2,Parameter.CoOc.AssginType,Parameter.CoOc.Type) )
 
            
 end % Image

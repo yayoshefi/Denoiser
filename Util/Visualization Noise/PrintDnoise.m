@@ -59,11 +59,11 @@ if nargin>2
     Lables1=col2im(varargin{1},[wsize,wsize],[r1,c1],'sliding');
     Lables2=col2im(varargin{2},[wsize,wsize],[r2,c2],'sliding');
     subplot(1,2,1); 
-    imshow(Lables1,[])
+    imshow(Lables1,[],'Colormap',  colormap (Analysis.ColorMap))
     xlabel(Method);
     if i>1
     subplot(1,2,2);
-    imshow(Lables2,[])
+    imshow(Lables2,[],'Colormap',  colormap (Analysis.ColorMap))
     xlabel(['Context: ',Parameter.Context])
     xlabel(ax_psnr2,strcat('Context: ',Parameter.Context,num2str( length(unique(Lables2(:))) ),' clusters'))
     end
@@ -72,6 +72,32 @@ annotation('textbox',dim,'String',str,'FitBoxToText','on','LineStyle','none');
 if Parameter.ORACLE
     annotation ('textbox',[0.5,0.1,0.2,0.2],'Color','b','FaceAlpha',0.2...
         ,'String',strcat('ORACLE-',num2str(Analysis.ORACLE.level)));end
+%% Co Occurrence matrix
+    if nargin > 4  
+        h3=figure('name','Co-Occurrence','Position',figsize);
+        if verLessThan('matlab','8.4')
+            % -- Code to run in MATLAB R2014a and earlier here --
+            h3Num = num2str(h3);
+        else
+            % -- Code to run in MATLAB R2014b and later here --
+           h3Num = num2str(h3.Number);
+        end    
+        subplot(1,2,1); 
+        imshow(varargin{3},[],'Colormap',  colormap (Analysis.ColorMap))
+        xlabel(Method);
+        if i>1
+        subplot(1,2,2);
+        imshow(varargin{4},[],'Colormap',  colormap (Analysis.ColorMap))
+        xlabel(['Context: ',Parameter.Context])
+        xlabel(ax_psnr2,strcat('Context: ',Parameter.Context,num2str( length(unique(Lables2(:))) ),' clusters'))
+        end
+        colormap (Analysis.ColorMap);
+    annotation('textbox',dim,'String',str,'FitBoxToText','on','LineStyle','none');
+    if Parameter.ORACLE
+        annotation ('textbox',[0.5,0.1,0.2,0.2],'Color','b','FaceAlpha',0.2...
+            ,'String',strcat('ORACLE-',num2str(Analysis.ORACLE.level)));end
+    end
+        
 end
 %% SAVING DATA
 if Analysis.Save
@@ -89,6 +115,10 @@ if Analysis.Save
     if exist('h2','var')         % print Lables if there is
         saveas(h2,strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix,'\',h2Num,Analysis.ShortPrefix,'_Lables.png'))
     end
+    if exist('h3','var')         % print Co-Oc if there is
+        saveas(h3,strcat(Parameter.location,'\Results\',date,'\',Analysis.DirSuffix,'\',h3Num,Analysis.ShortPrefix,'_CoOc.png'))
+    end
+    
 
     % write parameters to text file
     fileID = fopen(strcat(Parameter.location,'\Results\',date(),'\',Analysis.DirSuffix,'\','Params_',Analysis.ShortPrefix,'.txt'),'w');
@@ -125,9 +155,9 @@ switch Parameter.CoOc.Type
 end
 str={['\bf Context: ',Parameter.Context],...
     ['\rm \lambda: ',num2str(Parameter.spatial.lambda,'%G'),' NN:',num2str(Parameter.spatial.NN)]...
-    ,[Type,' Shrinkage  %=',num2str(Parameter.CoOc.ShrinkPer)],' Thr@',num2str(Parameter.CoOc.Thr,'%2.1G'),...
+    ,[Type,' Shrinkage  %=',num2str(Parameter.CoOc.ShrinkPer)],[' Thr@',num2str(Parameter.CoOc.Thr,'%2.1G')],...
     ['W_1: ',num2str(Parameter.wsize2^0.5),'   \sigma: ',num2str(Parameter.sigma)],...
-    ['Update rule: ',num2str(Parameter.spatial.UpdateRule),' with ',Parameter.CoOc.AssginType,' assignment'],...
+    ['Update rule: '],[num2str(Parameter.spatial.UpdateRule),' with ',Parameter.CoOc.AssginType,' assignment'],...
     'reserved..'};
 
 end

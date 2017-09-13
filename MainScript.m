@@ -1,9 +1,9 @@
 %%---------------- Main Script: De noising-------------------GitHub Version
-load Data\Database;Images = createImages();load Data\Sport+_DB;
-load Data\ExpImages.mat;     load Data\rectImage.mat
+% load Data\Database;Images = createImages();load Data\Sport+_DB;
+ load Data\ExpImages.mat;     load Data\rectImage.mat
 
 
-Image=x52205917_ethnic_floral_seamless_pattern_abstract_ornamental_pa;%Irect(14).Image;
+Image=Irect(7).Image;%x52205917_ethnic_floral_seamless_pattern_abstract_ornamental_pa;
 description='test evolving lambda';
 %%--------------------------- PARAMETERS ------------------------------
 global Parameter Analysis
